@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Apex Partners — Investment Banking</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A1628;--bg2:#111D32;--bg3:#162240;--bg4:#1C2B4A;--blue:#0078D4;--cyan:#00B4D8;--white:#FFFFFF;--gray:#8899B0;--border:rgba(255,255,255,0.07);--green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--white);font-size:13px}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:215px;background:var(--bg2);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-logo{padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.logo-row{display:flex;align-items:center;gap:8px}
+.logo-box{width:26px;height:26px;background:var(--blue);border-radius:5px;display:flex;align-items:center;justify-content:center}
+.logo-diamond{width:9px;height:9px;background:var(--bg);transform:rotate(45deg)}
+.logo-txt{font-size:17px;font-weight:700;letter-spacing:2.5px}
+.logo-sub{font-size:10px;color:var(--gray);margin-top:4px;letter-spacing:.8px}
+.nav-section{font-size:9px;color:var(--gray);text-transform:uppercase;letter-spacing:1.2px;padding:12px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:var(--gray);font-size:12px;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--white);background:var(--bg3)}
+.nav-item.active{color:var(--white);border-left-color:var(--blue);background:var(--bg3);font-weight:600}
+.nav-icon{font-size:13px;width:18px;text-align:center}
+.nav-divider{height:1px;background:var(--border);margin:8px 16px}
+.main{flex:1;overflow-y:auto;padding:24px;margin-left:215px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.page-title{font-size:21px;font-weight:700}
+.page-sub{font-size:12px;color:var(--gray);margin-top:3px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--bg2);border-radius:12px;padding:16px 18px;border:1px solid var(--border)}
+.kpi.accent{background:linear-gradient(135deg,#0078D4,#0052A3);border:none}
+.kpi-label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.kpi.accent .kpi-label{color:rgba(255,255,255,0.6)}
+.kpi-value{font-size:22px;font-weight:700;line-height:1.1}
+.kpi-sub{font-size:10px;color:var(--gray);margin-top:4px}
+.kpi.accent .kpi-sub{color:rgba(255,255,255,0.5)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:var(--bg2);border-radius:12px;padding:18px;border:1px solid var(--border);margin-bottom:14px}
+.card-title{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+.bar-row{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.bar-track{height:6px;background:var(--bg3);border-radius:3px}
+.bar-fill{height:6px;border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 8px;font-weight:600;color:var(--gray);font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
+td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.btn{background:var(--blue);border:none;color:#fff;border-radius:7px;padding:6px 14px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
+.btn:hover{opacity:.85}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:7px;padding:5px 12px;cursor:pointer;font-size:11px;font-family:inherit}
+.btn-ghost:hover{color:var(--white)}
+.btn-danger{background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:inherit}
+.btn-danger:hover{background:rgba(239,68,68,.08)}
+.btn-success{background:transparent;border:1px solid rgba(34,197,94,.3);color:var(--green);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:inherit}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:var(--bg2);border-radius:16px;padding:24px;border:1px solid var(--border);width:92%;max-width:620px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:#fff;font-size:12px;font-family:inherit;outline:none;width:100%}
+.fg input:focus,.fg select:focus{border-color:var(--blue)}
+.fg select option{background:var(--bg)}
+.fg textarea{resize:vertical;min-height:60px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.footer-bar{text-align:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:10px;color:var(--gray);letter-spacing:2px}
+.empty{text-align:center;padding:36px;color:var(--gray)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;margin-right:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fase-tag{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.confirm-box{background:var(--bg3);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px;margin-bottom:14px}
+.chart-wrap{position:relative;height:180px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main"></div>
+</div>
+<script>
+const SHEET_ID='1va3HsPbT4Ac_50VTKvTsCNSLD4OMHpZaQBakDw0sdDM';
+const SHEET_NAME='Contratos';
+const API_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+const SYNC_MS=30000;
+const PALETTE=['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B','#EF4444','#3BA0E6','#0056A0'];
+
+const STATUS_C={'Em execução':'#22C55E','Proposta enviada':'#F59E0B','Em negociação':'#3BA0E6','Concluído':'#64748B','Em estruturação':'#A78BFA','Congelado':'#EF4444','Ativo':'#22C55E'};
+const MAND_C={'Sell-side':'#0078D4','sell-side':'#0078D4','Buy-side':'#00B4D8','buy-side':'#00B4D8','Captação':'#22C55E','captacao':'#22C55E','Reestruturação':'#F59E0B','outro':'#8899B0'};
+const NAV=[
+  {section:'Visão geral'},
+  {key:'dashboard',label:'Dashboard',icon:'⬡'},
+  {section:'Projetos'},
+  {key:'ma',label:'Projetos M&A',icon:'◈'},
+  {key:'dcm',label:'Projetos DCM',icon:'◈'},
+  {key:'encerrados',label:'Encerrados / Congelados',icon:'◌'},
+  {section:'Financeiro'},
+  {key:'receita',label:'Receita',icon:'◆'},
+  {key:'alertas',label:'Alertas & cobranças',icon:'◎'},
+  {section:'Pessoas'},
+  {key:'equipe',label:'Equipe',icon:'◎'},
+];
+const TITLES={dashboard:'Dashboard',ma:'Projetos M&A',dcm:'Projetos DCM',encerrados:'Encerrados / Congelados',receita:'Receita',alertas:'Alertas & cobranças',equipe:'Equipe'};
+const SUBS={dashboard:'Visão geral da carteira',ma:'Mandatos M&A ativos',dcm:'Mandatos DCM ativos',encerrados:'Projetos concluídos e congelados',receita:'Retainers e success fees',alertas:'Calendário de cobranças',equipe:'Time de Investment Banking'};
+
+const badge=(t,c)=>`<span class="badge" style="background:${c||'#888'}22;color:${c||'#888'}">${t||''}</span>`;
+const ini=n=>n?n.trim().split(' ').filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join(''):'?';
+
+function parseNum(v){
+  if(v===null||v===undefined||v==='')return 0;
+  let s=String(v).trim();
+  s=s.replace(/R\$\s*/g,'').trim();
+  // Formato BR: 7.000,00 → remove ponto de milhar, troca vírgula por ponto
+  if(/\d\.\d{3}/.test(s)||/\d,\d/.test(s)){
+    s=s.replace(/\./g,'').replace(',','.');
+  }
+  // Remove % e outros caracteres
+  s=s.replace(/[^\d.-]/g,'');
+  return parseFloat(s)||0;
+}
+function fmtDate(v){
+  if(!v||v==='')return'—';
+  const s=String(v);
+  const m=s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if(m){return`${String(parseInt(m[3])).padStart(2,'0')}/${String(parseInt(m[2])+1).padStart(2,'0')}/${m[1]}`;}
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)){const[y,mo,d]=s.split('T')[0].split('-');return`${d}/${mo}/${y}`;}
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(s))return s;
+  return s;
+}
+function dateObj(v){
+  if(!v||v==='')return null;
+  const s=String(v);
+  const m=s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if(m)return new Date(parseInt(m[1]),parseInt(m[2]),parseInt(m[3]));
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return new Date(s.split('T')[0]);
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){const[d,mo,y]=s.split('/');return new Date(y,mo-1,d);}
+  return null;
+}
+const fmt=v=>{if(!v&&v!==0)return'N/A';const n=parseFloat(v);if(isNaN(n))return'N/A';if(n>=1e9)return`R$ ${(n/1e9).toFixed(1)}B`;if(n>=1e6)return`R$ ${(n/1e6).toFixed(1)}M`;if(n>=1e3)return`R$ ${(n/1e3).toFixed(0)}K`;return`R$ ${n.toLocaleString('pt-BR')}`;};
+
+let S={page:'dashboard',loading:true,deals:[],detail:null,detailType:null,modal:null,editForm:null,localEdits:{},nextId:2000,lastSync:null,charts:{}};
+
+async function fetchSheets(){
+  try{
+    const res=await fetch(API_URL);
+    const txt=await res.text();
+    const json=JSON.parse(txt.replace(/^.*?({.*}).*$/s,'$1'));
+    const rows=json.table.rows;
+    const seen=new Set();
+    const deals=[];
+    rows.forEach((row,idx)=>{
+      if(!row.c||!row.c[0]||!row.c[0].v)return;
+      const g=i=>(row.c[i]&&row.c[i].v!==null)?String(row.c[i].v):'';
+      const arquivo=g(0).trim();
+      if(seen.has(arquivo))return; // remove duplicatas
+      seen.add(arquivo);
+      const status=g(29)||'Ativo';
+      if(status==='ERRO NA EXTRACAO')return;
+      const id='sheet_'+idx;
+      const loc=S.localEdits[id]||{};
+      const retRaw=parseNum(g(13));
+      deals.push({
+        id,source:'sheet',arquivo,dataExtracao:g(1),
+        cliente:g(2)||arquivo,cnpj:g(3),contato:g(4),email:g(5),
+        projeto:g(6)||arquivo,mandato:g(7)||'outro',descricao:g(8),
+        dataAssinatura:g(9),dataInicio:g(10),dataTermino:g(11),prazoMeses:g(12),
+        retainer:retRaw,
+        retainerFase1:loc.retainerFase1||15000,
+        retainerFase2:loc.retainerFase2||retRaw||7000,
+        retainerMoeda:g(14)||'BRL',retainerPgto:g(15),
+        successFee:parseNum(g(16)),
+        successFeeFixo:parseNum(g(17)),
+        successFeeBase:g(18),
+        dealValue:parseNum(g(19)),
+        dealValueMoeda:g(20)||'BRL',
+        diaFat:g(21)||'30',condPgto:g(22),obs:g(23),
+        diretor:g(24),gerente:g(25),analista:g(26),
+        setor:g(27),status,statusFat:g(30),
+        tipo:'M&A',parcelas:[],dataEnvio:'',polo:'ES',
+        ...loc
+      });
+    });
+    S.deals=deals;
+    S.lastSync=new Date();S.loading=false;render();
+  }catch(e){console.error(e);S.loading=false;render();}
+}
+
+function gerarParcelas(d){
+  const db=dateObj(d.dataAssinatura);if(!db)return[];
+  const salvas=d.parcelas||[];
+  const getSt=mes=>{const s=salvas.find(p=>p.mes===mes);return s?s.status:'pendente';};
+  const hoje=new Date();
+  const r1=d.retainerFase1||15000;
+  const r2=d.retainerFase2||d.retainer||7000;
+  const res=[];
+  const d1=new Date(db);
+  const m1=`${String(d1.getMonth()+1).padStart(2,'0')}/${d1.getFullYear()}`;
+  res.push({mes:m1,data:d1.toLocaleDateString('pt-BR'),valor:r1,fase:'Fase 1',desc:'Parcela 1 — assinatura',status:d1<hoje?getSt(m1):'futuro'});
+  const d2=new Date(db);d2.setDate(d2.getDate()+30);
+  const m2=`${String(d2.getMonth()+1).padStart(2,'0')}/${d2.getFullYear()}`;
+  res.push({mes:m2,data:d2.toLocaleDateString('pt-BR'),valor:r1,fase:'Fase 1',desc:'Parcela 2 — fim Fase 1',status:d2<hoje?getSt(m2):'futuro'});
+  const ini2=new Date(d2);ini2.setDate(ini2.getDate()+30);
+  for(let i=0;i<24;i++){
+    const dt=new Date(ini2);dt.setMonth(dt.getMonth()+i);
+    if(dt>new Date(hoje.getFullYear(),hoje.getMonth()+7,1))break;
+    const mes=`${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+    const cur=dt.getMonth()===hoje.getMonth()&&dt.getFullYear()===hoje.getFullYear();
+    res.push({mes,data:dt.toLocaleDateString('pt-BR'),valor:r2,fase:'Fase 2',desc:`Retainer — ${mes}`,status:dt<hoje||cur?getSt(mes):'futuro'});
+  }
+  return res;
+}
+
+function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch(e){}});S.charts={};}
+function mkChart(id,cfg){const el=document.getElementById(id);if(!el)return;try{S.charts[id]=new Chart(el,cfg);}catch(e){}}
+
+function initCharts(){
+  destroyCharts();
+  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  if(S.page==='dashboard'){
+    const byMandato={};ativos.forEach(d=>{byMandato[d.mandato]=(byMandato[d.mandato]||0)+d.dealValue;});
+    if(document.getElementById('cMandato')&&Object.keys(byMandato).length){
+      mkChart('cMandato',{type:'doughnut',data:{labels:Object.keys(byMandato),datasets:[{data:Object.values(byMandato),backgroundColor:PALETTE,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
+    }
+    const byStatus={};S.deals.forEach(d=>{byStatus[d.status]=(byStatus[d.status]||0)+1;});
+    if(document.getElementById('cStatus')){
+      mkChart('cStatus',{type:'doughnut',data:{labels:Object.keys(byStatus),datasets:[{data:Object.values(byStatus),backgroundColor:Object.keys(byStatus).map(k=>STATUS_C[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
+    }
+  }
+  if(S.page==='receita'){
+    const sorted=[...ativos].sort((a,b)=>b.retainerFase2-a.retainerFase2||b.retainer-a.retainer);
+    if(document.getElementById('cRet')){
+      mkChart('cRet',{type:'bar',data:{labels:sorted.map(d=>d.cliente.split(' ')[0]),datasets:[{data:sorted.map(d=>d.retainerFase2||d.retainer),backgroundColor:'#0078D4',borderRadius:5,borderWidth:0,label:'Retainer/mês'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:10},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+    }
+  }
+}
+
+// ── AÇÕES ──
+function openAdd(){S.editForm={id:null,source:'local',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',dealValue:'',retainerFase1:'15000',retainerFase2:'7000',successFee:'',diaFat:'30',diretor:'',gerente:'',analista:'',dataAssinatura:'',dataInicio:'',polo:'ES',obs:''};S.modal='form';render();}
+function openEdit(id){
+  const d=S.deals.find(x=>x.id===id);if(!d)return;
+  S.editForm={...d,dealValue:String(d.dealValue||''),retainerFase1:String(d.retainerFase1||15000),retainerFase2:String(d.retainerFase2||d.retainer||7000),successFee:String(d.successFee||'')};
+  S.modal='form';render();
+}
+function openEditEquipe(id){const d=S.deals.find(x=>x.id===id);if(!d)return;S.editForm={...d};S.modal='equipe';render();}
+function uf(k,v){S.editForm[k]=v;}
+function saveForm(){
+  const f=S.editForm;if(!f.cliente.trim())return;
+  const rec={...f,dealValue:parseFloat(f.dealValue)||0,retainerFase1:parseFloat(f.retainerFase1)||15000,retainerFase2:parseFloat(f.retainerFase2)||7000,retainer:parseFloat(f.retainerFase2)||7000,successFee:parseFloat(f.successFee)||0};
+  if(f.source==='sheet'){S.localEdits[f.id]={...(S.localEdits[f.id]||{}),...rec};}
+  else{if(!rec.id)rec.id='local_'+S.nextId++;S.localEdits[rec.id]=rec;if(!S.deals.find(d=>d.id===rec.id))S.deals.push(rec);}
+  S.deals=S.deals.map(d=>d.id===rec.id?{...d,...rec}:d);
+  S.modal=null;S.editForm=null;render();
+}
+function saveEquipe(){
+  const f=S.editForm;
+  S.localEdits[f.id]={...(S.localEdits[f.id]||{}),diretor:f.diretor,gerente:f.gerente,analista:f.analista};
+  S.deals=S.deals.map(d=>d.id===f.id?{...d,diretor:f.diretor,gerente:f.gerente,analista:f.analista}:d);
+  S.modal=null;S.editForm=null;render();
+}
+function del(id){if(!confirm('Excluir este projeto?'))return;delete S.localEdits[id];S.deals=S.deals.filter(x=>x.id!==id);S.detail=null;render();}
+function marcarPago(dealId,mes){
+  const d=S.deals.find(x=>x.id===dealId);if(!d)return;
+  const parc=[...(d.parcelas||[])];
+  const i=parc.findIndex(p=>p.mes===mes);
+  if(i>=0)parc[i].status=parc[i].status==='pago'?'pendente':'pago';
+  else parc.push({mes,status:'pago'});
+  S.localEdits[dealId]={...(S.localEdits[dealId]||{}),parcelas:parc};
+  S.deals=S.deals.map(x=>x.id===dealId?{...x,parcelas:parc}:x);
+  render();
+}
+function confirmarEnvio(id){
+  if(!confirm('Confirmar envio do e-mail de cobrança ao cliente?'))return;
+  const dt=new Date().toLocaleDateString('pt-BR');
+  S.localEdits[id]={...(S.localEdits[id]||{}),statusFat:'Faturado',dataEnvio:dt};
+  S.deals=S.deals.map(d=>d.id===id?{...d,statusFat:'Faturado',dataEnvio:dt}:d);
+  render();
+}
+
+// ── MODAIS ──
+function renderFormModal(){
+  const f=S.editForm,isE=!!f.id;
+  const sel=(field,opts)=>`<select onchange="uf('${field}',this.value)">${opts.map(o=>`<option value="${o}"${f[field]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}">
+  <div class="modal"><h3>${isE?'Editar projeto':'Novo projeto'}</h3>
+    <div class="form-grid"><div class="fg"><label>Tipo</label>${sel('tipo',['M&A','DCM'])}</div><div class="fg"><label>Mandato</label>${sel('mandato',['Sell-side','Buy-side','Captação','Reestruturação','Outro'])}</div></div>
+    <div class="form-grid"><div class="fg"><label>Cliente</label><input value="${f.cliente||''}" oninput="uf('cliente',this.value)"/></div><div class="fg"><label>Projeto / ID</label><input value="${f.projeto||''}" oninput="uf('projeto',this.value)"/></div></div>
+    <div class="form-grid"><div class="fg"><label>Status</label>${sel('status',['Em execução','Em negociação','Proposta enviada','Em estruturação','Concluído','Congelado'])}</div><div class="fg"><label>Setor</label><input value="${f.setor||''}" oninput="uf('setor',this.value)" placeholder="Ex: Saúde"/></div></div>
+    <div class="form-grid"><div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.dealValue||''}" oninput="uf('dealValue',this.value)"/></div><div class="fg"><label>Success fee (%)</label><input type="number" step="0.1" value="${f.successFee||''}" oninput="uf('successFee',this.value)"/></div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Retainer</div>
+      <div class="form-grid">
+        <div class="fg"><label>Fase 1 — por parcela (R$)</label><input type="number" value="${f.retainerFase1||15000}" oninput="uf('retainerFase1',this.value)"/></div>
+        <div class="fg"><label>Fase 2 — mensal (R$)</label><input type="number" value="${f.retainerFase2||7000}" oninput="uf('retainerFase2',this.value)"/></div>
+      </div>
+    </div>
+    <div class="form-grid"><div class="fg"><label>Data assinatura</label><input type="date" value="${f.dataAssinatura||''}" oninput="uf('dataAssinatura',this.value)"/></div><div class="fg"><label>Polo</label><input value="${f.polo||''}" oninput="uf('polo',this.value)" placeholder="ES"/></div></div>
+    <div class="fg" style="margin-bottom:8px"><label>Observações</label><textarea oninput="uf('obs',this.value)">${f.obs||''}</textarea></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="saveForm()">Salvar</button></div>
+  </div></div>`;
+}
+function renderEquipeModal(){
+  const f=S.editForm;
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}">
+  <div class="modal"><h3>Editar equipe alocada</h3>
+    <div class="fg" style="margin-bottom:10px"><label>Diretor responsável</label><input value="${f.diretor||''}" oninput="uf('diretor',this.value)" placeholder="Nome do diretor"/></div>
+    <div class="fg" style="margin-bottom:10px"><label>Gerente responsável</label><input value="${f.gerente||''}" oninput="uf('gerente',this.value)" placeholder="Nome do gerente"/></div>
+    <div class="fg" style="margin-bottom:10px"><label>Analista responsável</label><input value="${f.analista||''}" oninput="uf('analista',this.value)" placeholder="Nome do analista"/></div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="saveEquipe()">Salvar equipe</button></div>
+  </div></div>`;
+}
+
+// ── DETALHE ──
+function renderDetail(d){
+  const parcelas=gerarParcelas(d);
+  const pagas=parcelas.filter(p=>p.status==='pago');
+  const pendentes=parcelas.filter(p=>p.status==='pendente');
+  const equipe=[{r:'Diretor',n:d.diretor},{r:'Gerente',n:d.gerente},{r:'Analista',n:d.analista}].filter(p=>p.n);
+  const faturado=d.statusFat==='Faturado';
+  return`
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">${badge(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}${badge(d.mandato,MAND_C[d.mandato]||'#888')}${badge(d.status,STATUS_C[d.status]||'#888')}</div>
+      <h2 style="font-size:19px;font-weight:700">${d.projeto}</h2>
+      <div style="font-size:12px;color:var(--gray);margin-top:3px">${d.cliente}${d.cnpj?' · CNPJ '+d.cnpj:''}${d.setor?' · '+d.setor:''}</div>
+    </div>
+    <button class="btn-ghost" onclick="S.detail=null;render()">← Voltar</button>
+  </div>
+  <div class="kpis">
+    <div class="kpi accent"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(d.dealValue)}</div></div>
+    <div class="kpi"><div class="kpi-label">Retainer Fase 2</div><div class="kpi-value">${fmt(d.retainerFase2||d.retainer)}<span style="font-size:12px;font-weight:400">/mês</span></div><div class="kpi-sub">Fase 1: ${fmt(d.retainerFase1||15000)} × 2</div></div>
+    <div class="kpi"><div class="kpi-label">Success fee</div><div class="kpi-value">${d.successFee||'—'}%</div><div class="kpi-sub">${d.successFeeFixo?fmt(d.successFeeFixo)+' mínimo':'—'}</div></div>
+    <div class="kpi"><div class="kpi-label">Faturamento</div><div class="kpi-value">Dia ${d.diaFat||'30'}</div><div class="kpi-sub">Assinado ${fmtDate(d.dataAssinatura)}</div></div>
+  </div>
+  ${!faturado?`<div class="confirm-box">
+    <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:6px">Aguardando confirmação de cobrança</div>
+    <div style="font-size:11px;color:var(--gray);margin-bottom:10px">Após enviar o e-mail de cobrança ao cliente, confirme abaixo.</div>
+    <button class="btn-success" onclick="confirmarEnvio('${d.id}')">✓ Confirmar envio ao cliente</button>
+  </div>`:`<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:12px;font-weight:600;color:var(--green)">✓ E-mail enviado em ${d.dataEnvio||'—'}</div>
+    <button class="btn-ghost" style="font-size:10px" onclick="confirmarEnvio('${d.id}')">Reenviar</button>
+  </div>`}
+  <div class="grid2">
+    <div class="card"><div class="card-title">Dados do contrato</div>
+      ${[['Assinatura',fmtDate(d.dataAssinatura)],['Início',fmtDate(d.dataInicio)],['Mandato',d.mandato],['CNPJ',d.cnpj],['Polo',d.polo]].filter(([,v])=>v&&v!=='—').map(([k,v],i,a)=>`
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+        <span style="color:var(--gray)">${k}</span><span style="font-weight:600;font-size:12px">${v}</span>
+      </div>`).join('')}
+      ${d.obs?`<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--gray);line-height:1.6">${d.obs}</div>`:''}
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="card-title" style="margin:0">Equipe alocada</div>
+        <button class="btn-ghost" style="font-size:10px;padding:3px 8px" onclick="openEditEquipe('${d.id}')">Editar equipe</button>
+      </div>
+      ${equipe.length===0?`<div style="color:var(--gray);font-size:12px">Nenhuma equipe cadastrada.<br><button class="btn" style="margin-top:10px" onclick="openEditEquipe('${d.id}')">+ Adicionar equipe</button></div>`:
+      equipe.map((p,i,a)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+        <div class="avatar">${ini(p.n)}</div>
+        <div><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--gray)">${p.r}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin:0">Acompanhamento de retainer</div>
+      <div style="display:flex;gap:16px;font-size:11px">
+        <span style="color:var(--green)">✓ Pago: ${fmt(pagas.reduce((s,p)=>s+p.valor,0))} (${pagas.length})</span>
+        <span style="color:var(--amber)">⏳ Pendente: ${fmt(pendentes.reduce((s,p)=>s+p.valor,0))} (${pendentes.length})</span>
+      </div>
+    </div>
+    ${parcelas.length===0?`<div class="empty">Adicione a data de assinatura para gerar o cronograma.</div>`:`
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Mês</th><th>Data</th><th>Fase</th><th>Descrição</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+      <tbody>${parcelas.map(p=>`<tr style="${p.status==='futuro'?'opacity:.45':''}">
+        <td style="font-weight:600">${p.mes}</td>
+        <td style="color:var(--gray)">${p.data}</td>
+        <td><span class="fase-tag" style="background:${p.fase==='Fase 1'?'rgba(167,139,250,.15)':'rgba(0,120,212,.15)'};color:${p.fase==='Fase 1'?'#A78BFA':'#0078D4'}">${p.fase}</span></td>
+        <td style="color:var(--gray);font-size:11px">${p.desc}</td>
+        <td style="font-weight:600">${fmt(p.valor)}</td>
+        <td>${p.status==='pago'?`<span style="color:var(--green);font-weight:600;font-size:11px">✓ Pago</span>`:p.status==='pendente'?`<span style="color:var(--amber);font-weight:600;font-size:11px">⏳ Pendente</span>`:`<span style="color:var(--gray);font-size:11px">Futuro</span>`}</td>
+        <td>${p.status!=='futuro'?`<button class="${p.status==='pago'?'btn-ghost':'btn-success'}" style="font-size:10px;padding:3px 8px" onclick="marcarPago('${d.id}','${p.mes}')">${p.status==='pago'?'Desfazer':'Marcar pago'}</button>`:''}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`}
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn-ghost" onclick="openEdit('${d.id}')">Editar projeto</button>
+    <button class="btn-danger" onclick="del('${d.id}')">Excluir projeto</button>
+  </div>`;
+}
+
+// ── PÁGINAS ──
+function renderDashboard(){
+  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  const totalDV=ativos.reduce((s,d)=>s+d.dealValue,0);
+  const totalRet=ativos.reduce((s,d)=>s+(d.retainerFase2||d.retainer||0),0);
+  const totalSF=ativos.reduce((s,d)=>s+d.dealValue*(d.successFee/100),0);
+  const bySetor={};ativos.forEach(d=>{if(d.setor)bySetor[d.setor]=(bySetor[d.setor]||0)+1;});
+  const proximos=S.deals.filter(r=>r.status==='Ativo'||r.status==='Em execução').slice(0,5);
+  return`
+  <div class="kpis">
+    <div class="kpi accent"><div class="kpi-label">Projetos ativos</div><div class="kpi-value">${ativos.length}</div><div class="kpi-sub">${S.deals.filter(d=>d.status==='Concluído').length} concluído(s)</div></div>
+    <div class="kpi"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(totalDV)}</div></div>
+    <div class="kpi"><div class="kpi-label">Success fee estimado</div><div class="kpi-value">${fmt(totalSF)}</div></div>
+    <div class="kpi"><div class="kpi-label">MRR retainers</div><div class="kpi-value">${fmt(totalRet)}</div><div class="kpi-sub">Recorrente mensal</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Deal value por mandato</div><div class="chart-wrap"><canvas id="cMandato"></canvas></div></div>
+    <div class="card"><div class="card-title">Status dos projetos</div><div class="chart-wrap"><canvas id="cStatus"></canvas></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Distribuição por setor</div>
+      ${Object.keys(bySetor).length===0?`<div class="empty" style="padding:16px">Sem dados de setor — edite os projetos para adicionar</div>`:
+      Object.entries(bySetor).map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span>${k}</span><span style="font-weight:600">${v} deal${v!==1?'s':''}</span></div>`).join('')}
+    </div>
+    <div class="card"><div class="card-title">Projetos recentes</div>
+      ${proximos.length===0?`<div class="empty" style="padding:16px">Nenhum projeto</div>`:
+      proximos.map((d,i,a)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+        <div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--gray)">${d.mandato} · ${fmtDate(d.dataAssinatura)}</div></div>
+        <div style="text-align:right"><div style="font-size:12px;font-weight:600">${fmt(d.retainerFase2||d.retainer)}/mês</div>${badge(d.status,STATUS_C[d.status]||'#888')}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderProjetos(){
+  const tipo=S.page==='ma'?'M&A':S.page==='dcm'?'DCM':null;
+  let list=S.deals;
+  if(S.page==='encerrados')list=S.deals.filter(d=>d.status==='Concluído'||d.status==='Congelado');
+  else if(tipo)list=S.deals.filter(d=>d.tipo===tipo&&d.status!=='Concluído'&&d.status!=='Congelado');
+  const totalDV=list.reduce((s,d)=>s+d.dealValue,0);
+  const totalRet=list.reduce((s,d)=>s+(d.retainerFase2||d.retainer||0),0);
+  return`
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi accent"><div class="kpi-label">Projetos</div><div class="kpi-value">${list.length}</div></div>
+    <div class="kpi"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(totalDV)}</div></div>
+    <div class="kpi"><div class="kpi-label">Retainer mensal</div><div class="kpi-value">${fmt(totalRet)}</div></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    ${S.page!=='encerrados'?`<button class="btn" onclick="openAdd()">+ Novo projeto</button>`:''}
+  </div>
+  <div class="card">
+    ${list.length===0?`<div class="empty">Nenhum projeto encontrado.</div>`:`
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th><th>Status</th><th>Deal value</th><th>Retainer</th><th>Assinatura</th><th>Equipe</th><th></th></tr></thead>
+      <tbody>${list.map(d=>`<tr>
+        <td><div style="font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--gray)">${d.cnpj||''}</div></td>
+        <td style="color:var(--gray)">${d.projeto}</td>
+        <td>${badge(d.mandato,MAND_C[d.mandato]||'#888')}</td>
+        <td>${badge(d.status,STATUS_C[d.status]||'#888')}</td>
+        <td>${fmt(d.dealValue)}</td>
+        <td>${fmt(d.retainerFase2||d.retainer)}/mês</td>
+        <td style="font-size:11px;color:var(--gray)">${fmtDate(d.dataAssinatura)}</td>
+        <td style="font-size:11px;color:${d.diretor?'var(--white)':'var(--red)'}">${d.diretor||'Não definida'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn" onclick="S.detail='${d.id}';render()" style="padding:4px 10px;margin-right:4px">Ver</button>
+          <button class="btn-ghost" onclick="openEdit('${d.id}')" style="margin-right:4px">Editar</button>
+          <button class="btn-danger" onclick="del('${d.id}')">✕</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+
+function renderReceita(){
+  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  const totalRet=ativos.reduce((s,d)=>s+(d.retainerFase2||d.retainer||0),0);
+  const totalSF=ativos.reduce((s,d)=>s+d.dealValue*(d.successFee/100),0);
+  return`
+  <div class="kpis">
+    <div class="kpi accent"><div class="kpi-label">MRR retainers</div><div class="kpi-value">${fmt(totalRet)}</div><div class="kpi-sub">Recorrente mensal</div></div>
+    <div class="kpi"><div class="kpi-label">ARR projetado</div><div class="kpi-value">${fmt(totalRet*12)}</div></div>
+    <div class="kpi"><div class="kpi-label">Success fees potenciais</div><div class="kpi-value">${fmt(totalSF)}</div></div>
+    <div class="kpi"><div class="kpi-label">Fee médio</div><div class="kpi-value">${ativos.length?(ativos.reduce((s,d)=>s+d.successFee,0)/ativos.length).toFixed(1)+'%':'—'}</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Retainer por cliente</div><div class="chart-wrap"><canvas id="cRet"></canvas></div></div>
+    <div class="card"><div class="card-title">Detalhamento</div>
+      ${ativos.map((d,i,a)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+        <div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--gray)">${d.successFee}% SF · Dia ${d.diaFat}</div></div>
+        <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(d.dealValue*d.successFee/100)}</div><div style="font-size:10px;color:var(--gray)">SF potencial</div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderAlertas(){
+  const hoje=new Date();
+  const lista=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado').map(d=>{
+    const db=dateObj(d.dataAssinatura);
+    let proxData=null;
+    if(db){const p=new Date(db);p.setDate(p.getDate()+30);proxData=p;}
+    const dias=proxData?Math.round((proxData-hoje)/864e5):null;
+    return{...d,proxData,dias};
+  }).sort((a,b)=>(a.dias||999)-(b.dias||999));
+  return`<div class="card"><div class="card-title">Calendário de cobranças</div>
+    ${lista.length===0?`<div class="empty">Nenhum projeto ativo.</div>`:
+    lista.map((d,i,a)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+      <div>
+        <div style="font-weight:600">${d.cliente}</div>
+        <div style="font-size:11px;color:var(--gray);margin-top:2px">${d.projeto} · ${fmtDate(d.dataAssinatura)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700">${fmt(d.retainerFase2||d.retainer)}</div>
+        <div style="font-size:11px;color:${d.dias!==null&&d.dias<=5?'var(--amber)':'var(--gray)'}">${d.dias!==null?`Próximo em ${d.dias}d`:'—'}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderEquipe(){
+  const byDir={};
+  S.deals.forEach(d=>{
+    const n=d.diretor||'Não informado';
+    if(!byDir[n])byDir[n]={n,deals:0,ativos:0,ret:0,dv:0,sf:0,gerentes:new Set()};
+    byDir[n].deals++;
+    if(d.status!=='Concluído'&&d.status!=='Congelado')byDir[n].ativos++;
+    byDir[n].ret+=d.retainerFase2||d.retainer||0;byDir[n].dv+=d.dealValue;
+    byDir[n].sf+=d.dealValue*(d.successFee/100);
+    if(d.gerente)byDir[n].gerentes.add(d.gerente);
+  });
+  const dirs=Object.values(byDir).filter(d=>d.n!=='Não informado');
+  const colors=['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B'];
+  return`
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn" onclick="openAdd()">+ Novo projeto</button></div>
+  <div class="grid2">
+    ${dirs.length===0?`<div class="card"><div class="empty">Nenhum diretor cadastrado. Edite os projetos para adicionar equipe.</div></div>`:
+    dirs.map((d,i)=>`<div class="card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div class="avatar" style="width:44px;height:44px;font-size:14px;background:linear-gradient(135deg,${colors[i%colors.length]},${colors[(i+1)%colors.length]})">${ini(d.n)}</div>
+        <div><div style="font-size:14px;font-weight:700">${d.n}</div><div style="font-size:11px;color:var(--gray)">Diretor — ${d.ativos} ativo${d.ativos!==1?'s':''}</div></div>
+      </div>
+      ${[['Deal value',fmt(d.dv)],['Retainer',fmt(d.ret)+'/mês'],['SF potencial',fmt(d.sf)],['Total deals',d.deals]].map(([k,v],j,a)=>`
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${j<a.length-1?'1px solid var(--border)':'none'}">
+        <span style="color:var(--gray);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span>
+      </div>`).join('')}
+      ${d.gerentes.size?`<div style="margin-top:10px;font-size:11px;color:var(--gray)">Gerentes: ${[...d.gerentes].join(', ')}</div>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── RENDER ──
+function render(){
+  const syncTime=S.lastSync?S.lastSync.toLocaleTimeString('pt-BR'):'—';
+  let content='';
+  if(S.loading){
+    content=`<div style="display:flex;align-items:center;justify-content:center;padding:80px;gap:12px;color:var(--gray)"><div class="spinner"></div>Carregando dados...</div>`;
+  } else if(S.detail){
+    const d=S.deals.find(x=>x.id===S.detail);
+    content=`<div class="topbar"><div><div class="page-title">Detalhes do projeto</div></div><div style="font-size:11px;color:var(--gray)"><span class="sync-dot"></span>Sync ${syncTime}</div></div>${d?renderDetail(d):'<div class="empty">Não encontrado.</div>'}`;
+  } else {
+    const topbar=`<div class="topbar">
+      <div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div>
+      <div style="font-size:11px;color:var(--gray)"><span class="sync-dot"></span>Atualizado: ${syncTime}</div>
+    </div>`;
+    switch(S.page){
+      case'dashboard':content=topbar+renderDashboard();break;
+      case'ma':case'dcm':case'encerrados':content=topbar+renderProjetos();break;
+      case'receita':content=topbar+renderReceita();break;
+      case'alertas':content=topbar+renderAlertas();break;
+      case'equipe':content=topbar+renderEquipe();break;
+    }
+  }
+  document.getElementById('sidebar').innerHTML=`
+    <div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><span class="logo-txt">APEX</span></div><div class="logo-sub">Investment Banking</div></div>
+    ${NAV.map(n=>n.section?`<div class="nav-section">${n.section}</div>`:
+    `<div class="nav-item ${S.page===n.key&&!S.detail?'active':''}" onclick="S.page='${n.key}';S.detail=null;render()"><span class="nav-icon">${n.icon}</span>${n.label}</div>`).join('')}
+    <div style="flex:1"></div>
+    <div style="border-top:1px solid var(--border);padding:16px"><button class="btn" style="width:100%;font-size:11px" onclick="openAdd()">+ Novo projeto</button></div>`;
+  document.getElementById('main').innerHTML=`${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div>${S.modal==='form'?renderFormModal():S.modal==='equipe'?renderEquipeModal():''}`;
+  if(!S.loading&&!S.detail)setTimeout(initCharts,60);
+}
+
+render();
+fetchSheets();
+setInterval(fetchSheets,SYNC_MS);
+</script>
+</body>
+</html>
