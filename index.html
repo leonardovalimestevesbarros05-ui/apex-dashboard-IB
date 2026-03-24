@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Apex Partners — Investment Banking</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A1628;--bg2:#111D32;--bg3:#162240;--bg4:#1C2B4A;
+  --blue:#0078D4;--cyan:#00B4D8;--white:#FFFFFF;--gray:#8899B0;
+  --border:rgba(255,255,255,0.07);
+  --green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--white);font-size:13px}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-logo{padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.logo-row{display:flex;align-items:center;gap:8px}
+.logo-box{width:26px;height:26px;background:var(--blue);border-radius:5px;display:flex;align-items:center;justify-content:center}
+.logo-diamond{width:9px;height:9px;background:var(--bg);transform:rotate(45deg)}
+.logo-txt{font-size:17px;font-weight:700;letter-spacing:2.5px}
+.logo-sub{font-size:10px;color:var(--gray);margin-top:4px;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--gray);font-size:12px;border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--white);background:var(--bg3)}
+.nav-item.active{color:var(--white);border-left-color:var(--blue);background:var(--bg3);font-weight:600}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.nav-divider{height:1px;background:var(--border);margin:8px 16px}
+.main{flex:1;overflow-y:auto;padding:24px;margin-left:210px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
+.page-title{font-size:21px;font-weight:700}
+.page-sub{font-size:12px;color:var(--gray);margin-top:3px}
+.seg{display:flex;gap:3px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--border)}
+.seg-btn{padding:5px 14px;font-size:11px;background:transparent;color:var(--gray);border:none;border-radius:6px;cursor:pointer;transition:all .15s;font-family:inherit}
+.seg-btn.active{background:var(--blue);color:#fff;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--bg2);border-radius:12px;padding:16px 18px;border:1px solid var(--border)}
+.kpi.accent{background:linear-gradient(135deg,#0078D4,#0052A3);border:none}
+.kpi-label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.kpi.accent .kpi-label{color:rgba(255,255,255,0.6)}
+.kpi-value{font-size:22px;font-weight:700;line-height:1.1}
+.kpi-sub{font-size:10px;color:var(--gray);margin-top:4px}
+.kpi.accent .kpi-sub{color:rgba(255,255,255,0.5)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:var(--bg2);border-radius:12px;padding:18px;border:1px solid var(--border)}
+.card-title{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+.bar-row{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.bar-track{height:6px;background:var(--bg3);border-radius:3px}
+.bar-fill{height:6px;border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 8px;font-weight:600;color:var(--gray);font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
+td{padding:11px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.btn{background:var(--blue);border:none;color:#fff;border-radius:7px;padding:6px 14px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:7px;padding:5px 12px;cursor:pointer;font-size:11px;font-family:inherit}
+.btn-ghost:hover{color:var(--white)}
+.btn-danger{background:transparent;border:1px solid rgba(239,68,68,0.25);color:var(--red);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:inherit}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:var(--bg2);border-radius:16px;padding:24px;border:1px solid var(--border);width:92%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg label{display:block;font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.fg input,.fg select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:#fff;font-size:12px;font-family:inherit;outline:none}
+.fg input:focus,.fg select:focus{border-color:var(--blue)}
+.fg select option{background:var(--bg)}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.footer-bar{text-align:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:10px;color:var(--gray);letter-spacing:2px}
+.empty{text-align:center;padding:40px;color:var(--gray)}
+.sync-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--gray)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--gray);font-size:13px;gap:10px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main"></div>
+</div>
+
+<script>
+// -------------------------------------------------------
+// CONFIG
+// -------------------------------------------------------
+const SHEET_ID = '1va3HsPbT4Ac_50VTKvTsCNSLD4OMHpZaQBakDw0sdDM';
+const SHEET_NAME = 'Contratos';
+const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+const INTERVALO_SYNC = 30000; // 30 segundos
+
+// -------------------------------------------------------
+// UTILS
+// -------------------------------------------------------
+const fmt = v => {
+  if(!v||isNaN(v)) return 'N/A';
+  v = parseFloat(v);
+  if(v>=1e9) return `R$ ${(v/1e9).toFixed(1)}B`;
+  if(v>=1e6) return `R$ ${(v/1e6).toFixed(1)}M`;
+  if(v>=1e3) return `R$ ${(v/1e3).toFixed(0)}K`;
+  return `R$ ${v.toLocaleString('pt-BR')}`;
+};
+const ini = n => n ? n.trim().split(' ').filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join('') : '?';
+const STATUS_C = {'Em execução':'#22C55E','Proposta enviada':'#F59E0B','Em negociação':'#3BA0E6','Concluído':'#64748B','Em estruturação':'#A78BFA','Congelado':'#EF4444','Ativo':'#22C55E'};
+const MAND_C = {'Sell-side':'#0078D4','sell-side':'#0078D4','Buy-side':'#00B4D8','buy-side':'#00B4D8','Captação':'#22C55E','captacao':'#22C55E','Reestruturação':'#F59E0B','reestruturacao':'#F59E0B','Outro':'#8899B0','outro':'#8899B0'};
+const FASES = ['Preparação','Abordagem','MoU em Discussão','Due Diligence','Contratos','Concluído'];
+const badge = (t,c) => `<span class="badge" style="background:${c||'#888'}22;color:${c||'#888'}">${t||''}</span>`;
+
+const NAV = [
+  {key:'dashboard',label:'Dashboard',icon:'⬡'},
+  {key:'receita',label:'Receita',icon:'◆'},
+  {key:'projetos-ma',label:'Projetos M&A',icon:'◈'},
+  {key:'projetos-dcm',label:'Projetos DCM',icon:'◈'},
+  {key:'encerrados',label:'Encerrados / Congelados',icon:'◌'},
+  {key:'equipe',label:'Equipe',icon:'◎'},
+];
+
+// -------------------------------------------------------
+// ESTADO
+// -------------------------------------------------------
+let S = {
+  page: 'dashboard',
+  seg: 'consolidado',
+  modal: null,
+  detail: null,
+  editForm: null,
+  nextId: 1000,
+  deals: [],
+  sheetsDeals: [],
+  loading: true,
+  lastSync: null,
+  editingLocal: {}
+};
+
+// -------------------------------------------------------
+// BUSCAR DADOS DO GOOGLE SHEETS
+// -------------------------------------------------------
+async function fetchSheets() {
+  try {
+    const res = await fetch(API_URL);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^.*?({.*}).*$/s, '$1'));
+    const rows = json.table.rows;
+    const cols = json.table.cols.map(c => c.label);
+
+    const deals = [];
+    rows.forEach((row, idx) => {
+      if(!row.c || !row.c[0] || !row.c[0].v) return;
+      const get = i => (row.c[i] && row.c[i].v !== null) ? String(row.c[i].v) : '';
+
+      const arquivo = get(0);
+      const status = get(29) || 'Ativo';
+      if(status === 'ERRO NA EXTRACAO') return;
+
+      const mandato = get(7);
+      let tipo = 'M&A';
+      if(mandato.toLowerCase().includes('captacao') || mandato.toLowerCase().includes('captação')) {
+        tipo = get(0).toLowerCase().includes('dcm') ? 'DCM' : 'M&A';
+      }
+
+      const retainerStr = get(13).replace(/[^\d.,]/g,'').replace(',','.');
+      const dvStr = get(19).replace(/[^\d.,]/g,'').replace(',','.');
+      const sfStr = get(16).replace(/[^\d.,]/g,'').replace(',','.');
+
+      deals.push({
+        id: 'sheet_' + idx,
+        source: 'sheet',
+        arquivo,
+        tipo,
+        cliente: get(2) || arquivo,
+        cnpj: get(3),
+        contato: get(4),
+        email: get(5),
+        projeto: get(6) || arquivo,
+        mandato: mandato || 'outro',
+        descricao: get(8),
+        dataAssinatura: get(9),
+        dataInicio: get(10),
+        dataTermino: get(11),
+        prazoMeses: get(12),
+        retainer: parseFloat(retainerStr) || 0,
+        retainerMoeda: get(14) || 'BRL',
+        retainerPgto: get(15),
+        successFee: parseFloat(sfStr) || 0,
+        successFeeFixo: get(17),
+        successFeeBase: get(18),
+        dealValue: parseFloat(dvStr) || 0,
+        dealValueMoeda: get(20) || 'BRL',
+        diaFat: get(21),
+        condPgto: get(22),
+        obs: get(23),
+        diretor: get(24),
+        gerente: get(25),
+        analista: get(26),
+        setor: get(27),
+        tamanho: get(28),
+        status: status || 'Ativo',
+        statusFat: get(30),
+        dataExtracao: get(1),
+      });
+    });
+
+    S.sheetsDeals = deals;
+    S.lastSync = new Date();
+
+    // Mescla com lançamentos manuais locais
+    mergeDeals();
+    S.loading = false;
+    render();
+  } catch(e) {
+    console.error('Erro ao buscar Sheets:', e);
+    S.loading = false;
+    render();
+  }
+}
+
+function mergeDeals() {
+  const localDeals = Object.values(S.editingLocal);
+  S.deals = [...S.sheetsDeals, ...localDeals];
+}
+
+// -------------------------------------------------------
+// FORMULÁRIO / EDIÇÃO LOCAL
+// -------------------------------------------------------
+function openAdd() {
+  S.editForm = {
+    id: null, source:'local', tipo:'M&A', cliente:'', projeto:'', mandato:'Sell-side',
+    setor:'', status:'Em execução', fase:'Preparação', dealValue:'', retainer:'',
+    successFee:'', diaFat:'10', diretor:'', gerente:'', analista:'',
+    dataAssinatura:'', dataInicio:'', polo:'', obs:''
+  };
+  S.modal = 'form';
+  render();
+}
+
+function openEdit(id) {
+  const d = S.deals.find(x => x.id === id);
+  if(!d) return;
+  S.editForm = {
+    ...d,
+    dealValue: String(d.dealValue),
+    retainer: String(d.retainer),
+    successFee: String(d.successFee),
+    diaFat: String(d.diaFat || '10')
+  };
+  S.modal = 'form';
+  render();
+}
+
+function uf(k, v) { S.editForm[k] = v; }
+
+function saveForm() {
+  const f = S.editForm;
+  if(!f.cliente.trim() || !f.projeto.trim()) return;
+  const d = {
+    ...f,
+    dealValue: parseFloat(f.dealValue) || 0,
+    retainer: parseFloat(f.retainer) || 0,
+    successFee: parseFloat(f.successFee) || 0,
+    diaFat: f.diaFat,
+    source: 'local'
+  };
+  if(!d.id) {
+    d.id = 'local_' + S.nextId++;
+  }
+  S.editingLocal[d.id] = d;
+  mergeDeals();
+  S.modal = null;
+  S.editForm = null;
+  render();
+}
+
+function del(id) {
+  if(!confirm('Excluir este projeto da visualização local?')) return;
+  delete S.editingLocal[id];
+  S.deals = S.deals.filter(x => x.id !== id);
+  S.detail = null;
+  render();
+}
+
+// -------------------------------------------------------
+// FILTROS
+// -------------------------------------------------------
+function filtered() {
+  const ds = S.deals;
+  if(S.page === 'projetos-ma') return ds.filter(d => d.tipo === 'M&A' && d.status !== 'Concluído' && d.status !== 'Congelado');
+  if(S.page === 'projetos-dcm') return ds.filter(d => d.tipo === 'DCM' && d.status !== 'Concluído' && d.status !== 'Congelado');
+  if(S.page === 'encerrados') return ds.filter(d => d.status === 'Concluído' || d.status === 'Congelado');
+  if(S.seg === 'ma') return ds.filter(d => d.tipo === 'M&A');
+  if(S.seg === 'dcm') return ds.filter(d => d.tipo === 'DCM');
+  return ds;
+}
+
+// -------------------------------------------------------
+// RENDERS
+// -------------------------------------------------------
+function renderForm() {
+  const f = S.editForm, isE = !!f.id;
+  const sel = (field, opts) => `<select onchange="uf('${field}',this.value)">${opts.map(o=>`<option value="${o}"${f[field]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+  return `<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}">
+  <div class="modal"><h3>${isE?'Editar projeto':'Novo projeto'}</h3>
+    <div class="form-grid">
+      <div class="fg"><label>Tipo</label>${sel('tipo',['M&A','DCM'])}</div>
+      <div class="fg"><label>Mandato</label>${sel('mandato',['Sell-side','Buy-side','Captação','Reestruturação','Outro'])}</div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Cliente</label><input value="${f.cliente}" oninput="uf('cliente',this.value)" placeholder="Empresa cliente"/></div>
+      <div class="fg"><label>Projeto</label><input value="${f.projeto}" oninput="uf('projeto',this.value)" placeholder="Nome do deal"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Status</label>${sel('status',Object.keys(STATUS_C))}</div>
+      <div class="fg"><label>Setor</label><input value="${f.setor||''}" oninput="uf('setor',this.value)" placeholder="Ex: Logística"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.dealValue}" oninput="uf('dealValue',this.value)"/></div>
+      <div class="fg"><label>Retainer mensal (R$)</label><input type="number" value="${f.retainer}" oninput="uf('retainer',this.value)"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Success fee (%)</label><input type="number" step="0.1" value="${f.successFee}" oninput="uf('successFee',this.value)"/></div>
+      <div class="fg"><label>Dia faturamento</label><input type="number" value="${f.diaFat}" oninput="uf('diaFat',this.value)"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Data assinatura</label><input type="date" value="${f.dataAssinatura||''}" oninput="uf('dataAssinatura',this.value)"/></div>
+      <div class="fg"><label>Data início</label><input type="date" value="${f.dataInicio||''}" oninput="uf('dataInicio',this.value)"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Diretor</label><input value="${f.diretor||''}" oninput="uf('diretor',this.value)"/></div>
+      <div class="fg"><label>Gerente</label><input value="${f.gerente||''}" oninput="uf('gerente',this.value)"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Analista</label><input value="${f.analista||''}" oninput="uf('analista',this.value)"/></div>
+      <div class="fg"><label>Observações</label><input value="${f.obs||''}" oninput="uf('obs',this.value)"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="S.modal=null;render()">Cancelar</button>
+      <button class="btn" onclick="saveForm()">Salvar</button>
+    </div>
+  </div></div>`;
+}
+
+function renderDetail() {
+  const d = S.deals.find(x => x.id === S.detail);
+  if(!d) return '';
+  const sf = d.dealValue * (d.successFee / 100);
+  const mc = MAND_C[d.mandato] || '#888';
+  return `<div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        ${badge(d.tipo, d.tipo==='M&A'?'#0078D4':'#00B4D8')}
+        ${badge(d.mandato, mc)}
+        ${badge(d.status, STATUS_C[d.status]||'#888')}
+        ${d.source==='local'?badge('Manual','#A78BFA'):''}
+      </div>
+      <h2 style="font-size:19px;font-weight:700">${d.projeto}</h2>
+      <div style="font-size:12px;color:var(--gray);margin-top:3px">${d.cliente}${d.setor?' — '+d.setor:''}</div>
+    </div>
+    <button class="btn-ghost" onclick="S.detail=null;render()">← Voltar</button>
+  </div>
+  <div class="kpis" style="margin-bottom:18px">
+    <div class="kpi accent"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(d.dealValue)}</div></div>
+    <div class="kpi"><div class="kpi-label">Retainer mensal</div><div class="kpi-value">${fmt(d.retainer)}</div></div>
+    <div class="kpi"><div class="kpi-label">Success fee</div><div class="kpi-value">${d.successFee}%</div><div class="kpi-sub">${fmt(sf)} potencial</div></div>
+    <div class="kpi"><div class="kpi-label">Faturamento</div><div class="kpi-value">${d.diaFat?'Dia '+d.diaFat:'N/A'}</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Dados do contrato</div>
+      ${[['Assinatura',d.dataAssinatura],['Início',d.dataInicio],['Mandato',d.mandato],['Extraído em',d.dataExtracao]].filter(([,v])=>v).map(([k,v],i,a)=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+          <span style="color:var(--gray)">${k}</span><span style="font-weight:600">${v}</span>
+        </div>`).join('')}
+      ${d.obs?`<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--gray)">${d.obs}</div>`:''}
+    </div>
+    <div class="card"><div class="card-title">Equipe alocada</div>
+      ${[{r:'Diretor',n:d.diretor},{r:'Gerente',n:d.gerente},{r:'Analista',n:d.analista}].filter(p=>p.n).map((p,i,a)=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+          <div class="avatar">${ini(p.n)}</div>
+          <div><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--gray)">${p.r}</div></div>
+        </div>`).join('')}
+      ${![d.diretor,d.gerente,d.analista].some(x=>x)?'<div style="color:var(--gray);font-size:12px">Equipe não informada — edite para adicionar</div>':''}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+    <button class="btn-ghost" onclick="openEdit('${d.id}')">Editar</button>
+    ${d.source==='local'?`<button class="btn-danger" onclick="del('${d.id}')">Excluir</button>`:''}
+  </div></div>`;
+}
+
+function renderDashboard() {
+  const ds = filtered();
+  const ativos = ds.filter(d => d.status !== 'Concluído' && d.status !== 'Congelado');
+  const totalDV = ativos.reduce((s,d) => s+d.dealValue, 0);
+  const totalRet = ativos.reduce((s,d) => s+d.retainer, 0);
+  const totalSF = ativos.reduce((s,d) => s+d.dealValue*(d.successFee/100), 0);
+
+  const byMandato = {};
+  ativos.forEach(d => { byMandato[d.mandato] = (byMandato[d.mandato]||0) + d.dealValue; });
+  const maxM = Math.max(...Object.values(byMandato), 1);
+
+  const bySetor = {};
+  ativos.forEach(d => { if(d.setor) bySetor[d.setor] = (bySetor[d.setor]||0) + 1; });
+
+  const byStatus = {};
+  ds.forEach(d => { byStatus[d.status] = (byStatus[d.status]||0) + 1; });
+
+  const byTipo = {};
+  ativos.forEach(d => { byTipo[d.tipo] = (byTipo[d.tipo]||0) + d.dealValue; });
+  const maxT = Math.max(...Object.values(byTipo), 1);
+
+  return `
+  <div class="kpis">
+    <div class="kpi accent"><div class="kpi-label">Projetos ativos</div><div class="kpi-value">${ativos.length}</div><div class="kpi-sub">${ds.filter(d=>d.status==='Concluído').length} concluído(s)</div></div>
+    <div class="kpi"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(totalDV)}</div></div>
+    <div class="kpi"><div class="kpi-label">Success fee estimado</div><div class="kpi-value">${fmt(totalSF)}</div></div>
+    <div class="kpi"><div class="kpi-label">MRR retainers</div><div class="kpi-value">${fmt(totalRet)}</div><div class="kpi-sub">Recorrente mensal</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Deal value por mandato</div>
+      ${Object.entries(byMandato).map(([k,v])=>`
+        <div class="bar-row">
+          <div class="bar-label"><span>${k}</span><span style="color:var(--gray)">${fmt(v)}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="background:${MAND_C[k]||'#888'};width:${Math.round(v/maxM*100)}%"></div></div>
+        </div>`).join('')}
+    </div>
+    <div class="card"><div class="card-title">Deal value por tipo</div>
+      ${Object.entries(byTipo).map(([k,v])=>`
+        <div class="bar-row">
+          <div class="bar-label"><span>${k}</span><span style="color:var(--gray)">${fmt(v)}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="background:${k==='M&A'?'#0078D4':'#00B4D8'};width:${Math.round(v/maxT*100)}%"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Distribuição por setor</div>
+      ${Object.keys(bySetor).length===0?'<div class="empty">Sem dados de setor</div>':Object.entries(bySetor).map(([k,v],i,a)=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+          <span>${k}</span><span style="font-weight:600">${v} deal${v!==1?'s':''}</span>
+        </div>`).join('')}
+    </div>
+    <div class="card"><div class="card-title">Status dos projetos</div>
+      ${Object.entries(byStatus).map(([k,v],i,a)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+          <div><span class="dot" style="background:${STATUS_C[k]||'#888'}"></span>${k}</div>
+          <span style="font-weight:600">${v}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderProjetos() {
+  const ds = filtered();
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-size:12px;color:var(--gray)">${ds.length} projeto${ds.length!==1?'s':''}</div>
+    ${S.page!=='encerrados'?`<button class="btn" onclick="openAdd()">+ Novo projeto</button>`:''}
+  </div>
+  <div class="card">
+    ${ds.length===0?`<div class="empty">Nenhum projeto encontrado.</div>`:`
+    <div style="overflow-x:auto"><table>
+      <thead><tr>
+        <th>Cliente</th><th>Projeto</th><th>Tipo</th><th>Mandato</th><th>Status</th>
+        <th>Deal value</th><th>Retainer</th><th>Diretor</th><th></th>
+      </tr></thead>
+      <tbody>${ds.map(d=>`<tr>
+        <td style="font-weight:600">${d.cliente}</td>
+        <td style="color:var(--gray);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.projeto}</td>
+        <td>${badge(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}</td>
+        <td>${badge(d.mandato,MAND_C[d.mandato]||'#888')}</td>
+        <td>${badge(d.status,STATUS_C[d.status]||'#888')}</td>
+        <td>${fmt(d.dealValue)}</td>
+        <td style="color:var(--gray)">${d.retainer?fmt(d.retainer)+'/mês':'N/A'}</td>
+        <td style="color:var(--gray);font-size:11px">${d.diretor||'—'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn" onclick="S.detail='${d.id}';render()" style="padding:4px 10px;margin-right:4px">Ver</button>
+          <button class="btn-ghost" onclick="openEdit('${d.id}')" style="margin-right:4px">Editar</button>
+          ${d.source==='local'?`<button class="btn-danger" onclick="del('${d.id}')">✕</button>`:''}
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>`}
+  </div>`;
+}
+
+function renderReceita() {
+  const ativos = S.deals.filter(d => d.status !== 'Concluído' && d.status !== 'Congelado');
+  const totalRet = ativos.reduce((s,d) => s+d.retainer, 0);
+  const totalSF = ativos.reduce((s,d) => s+d.dealValue*(d.successFee/100), 0);
+  const sorted = [...ativos].sort((a,b) => b.retainer-a.retainer);
+  const maxR = Math.max(...sorted.map(d=>d.retainer), 1);
+  const sfSorted = [...S.deals].filter(d=>d.status!=='Congelado').sort((a,b)=>b.dealValue*b.successFee/100-a.dealValue*a.successFee/100);
+
+  return `
+  <div class="kpis">
+    <div class="kpi accent"><div class="kpi-label">MRR retainers</div><div class="kpi-value">${fmt(totalRet)}</div><div class="kpi-sub">Recorrente mensal</div></div>
+    <div class="kpi"><div class="kpi-label">ARR projetado</div><div class="kpi-value">${fmt(totalRet*12)}</div></div>
+    <div class="kpi"><div class="kpi-label">Success fees potenciais</div><div class="kpi-value">${fmt(totalSF)}</div></div>
+    <div class="kpi"><div class="kpi-label">Fee médio</div><div class="kpi-value">${ativos.length?(ativos.reduce((s,d)=>s+d.successFee,0)/ativos.length).toFixed(1)+'%':'N/A'}</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">Retainer por cliente</div>
+      ${sorted.length===0?'<div class="empty">Sem dados</div>':sorted.map(d=>`
+        <div class="bar-row">
+          <div class="bar-label"><span style="font-weight:600">${d.cliente}</span><span style="color:var(--gray)">${fmt(d.retainer)}/mês</span></div>
+          <div class="bar-track"><div class="bar-fill" style="background:var(--blue);width:${Math.round(d.retainer/maxR*100)}%"></div></div>
+        </div>`).join('')}
+    </div>
+    <div class="card"><div class="card-title">Success fee potencial</div>
+      ${sfSorted.slice(0,10).map((d,i,a)=>{
+        const sf = d.dealValue*(d.successFee/100);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
+          <div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--gray)">${d.successFee}% · ${d.mandato}</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(sf)}</div></div>
+        </div>`;}).join('')}
+    </div>
+  </div>`;
+}
+
+function renderEquipe() {
+  const byDir = {};
+  S.deals.forEach(d => {
+    const n = d.diretor || 'Não informado';
+    if(!byDir[n]) byDir[n] = {n, deals:0, ativos:0, ret:0, dv:0, sf:0, gerentes:new Set()};
+    byDir[n].deals++;
+    if(d.status!=='Concluído'&&d.status!=='Congelado') byDir[n].ativos++;
+    byDir[n].ret += d.retainer;
+    byDir[n].dv += d.dealValue;
+    byDir[n].sf += d.dealValue*(d.successFee/100);
+    if(d.gerente) byDir[n].gerentes.add(d.gerente);
+  });
+  const dirs = Object.values(byDir).filter(d=>d.n!=='Não informado');
+  const colors = ['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B'];
+
+  return `
+  <div class="grid2">
+    ${dirs.length===0?`<div class="card"><div class="empty">Nenhum diretor informado nos projetos.</div></div>`:
+    dirs.map((d,i) => `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div class="avatar" style="width:44px;height:44px;font-size:14px;background:linear-gradient(135deg,${colors[i%colors.length]},${colors[(i+1)%colors.length]})">${ini(d.n)}</div>
+        <div><div style="font-size:14px;font-weight:700">${d.n}</div><div style="font-size:11px;color:var(--gray)">Diretor — ${d.ativos} ativo${d.ativos!==1?'s':''}</div></div>
+      </div>
+      ${[['Deal value total',fmt(d.dv)],['Retainer total',fmt(d.ret)+'/mês'],['SF potencial',fmt(d.sf)],['Total de deals',d.deals]].map(([k,v],j,a)=>`
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${j<a.length-1?'1px solid var(--border)':'none'}">
+          <span style="color:var(--gray);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span>
+        </div>`).join('')}
+      ${d.gerentes.size?`<div style="margin-top:10px;font-size:11px;color:var(--gray)">Gerentes: ${[...d.gerentes].join(', ')}</div>`:''}
+    </div>`).join('')}
+  </div>`;
+}
+
+// -------------------------------------------------------
+// RENDER PRINCIPAL
+// -------------------------------------------------------
+const TITLES = {dashboard:'Dashboard',receita:'Receita','projetos-ma':'Projetos M&A','projetos-dcm':'Projetos DCM',encerrados:'Encerrados / Congelados',equipe:'Equipe'};
+const SUBS = {dashboard:'Visão geral da carteira de projetos',receita:'Retainers e success fees','projetos-ma':'Gestão de mandatos M&A','projetos-dcm':'Gestão de mandatos DCM',encerrados:'Histórico de projetos',equipe:'Performance por diretor'};
+
+function render() {
+  const syncTime = S.lastSync ? S.lastSync.toLocaleTimeString('pt-BR') : 'Carregando...';
+
+  let content = '';
+
+  if(S.loading) {
+    content = `<div class="loading"><div class="spinner"></div>Carregando dados do Google Sheets...</div>`;
+  } else if(S.detail) {
+    content = `<div class="topbar"><div><div class="page-title">Detalhes do projeto</div></div><div class="sync-bar"><div class="sync-dot"></div>Sync: ${syncTime}</div></div>${renderDetail()}`;
+  } else {
+    const topbar = `<div class="topbar">
+      <div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="sync-bar"><div class="sync-dot"></div>Atualizado: ${syncTime}</div>
+        ${S.page==='dashboard'?`<div class="seg">
+          <button class="seg-btn ${S.seg==='consolidado'?'active':''}" onclick="S.seg='consolidado';render()">Consolidado</button>
+          <button class="seg-btn ${S.seg==='ma'?'active':''}" onclick="S.seg='ma';render()">M&A</button>
+          <button class="seg-btn ${S.seg==='dcm'?'active':''}" onclick="S.seg='dcm';render()">DCM</button>
+        </div>`:''}
+      </div>
+    </div>`;
+
+    switch(S.page) {
+      case 'dashboard': content = topbar + renderDashboard(); break;
+      case 'receita': content = topbar + renderReceita(); break;
+      case 'projetos-ma': content = topbar + renderProjetos(); break;
+      case 'projetos-dcm': content = topbar + renderProjetos(); break;
+      case 'encerrados': content = topbar + renderProjetos(); break;
+      case 'equipe': content = topbar + renderEquipe(); break;
+    }
+  }
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-logo">
+      <div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><span class="logo-txt">APEX</span></div>
+      <div class="logo-sub">Investment Banking</div>
+    </div>
+    ${NAV.map(n=>`<div class="nav-item ${S.page===n.key&&!S.detail?'active':''}" onclick="S.page='${n.key}';S.detail=null;render()">
+      <span class="nav-icon">${n.icon}</span>${n.label}
+    </div>`).join('')}
+    <div style="flex:1"></div>
+    <div class="nav-divider"></div>
+    <div style="padding:16px"><button class="btn" style="width:100%;font-size:11px" onclick="openAdd()">+ Novo projeto</button></div>`;
+
+  document.getElementById('main').innerHTML = `${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div>${S.modal==='form'?renderForm():''}`;
+}
+
+// -------------------------------------------------------
+// INICIALIZAÇÃO E AUTO-SYNC
+// -------------------------------------------------------
+render(); // mostra loading imediato
+fetchSheets();
+setInterval(fetchSheets, INTERVALO_SYNC);
+</script>
+</body>
+</html>
