@@ -7,26 +7,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root[data-theme="dark"]{
-  --bg:#0A1628;--bg2:#111D32;--bg3:#162240;--bg4:#1C2B4A;
-  --blue:#0078D4;--cyan:#00B4D8;--gray:#8899B0;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
-  --green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA;
-  --text:#FFFFFF;--text2:#8899B0;--card:#111D32;--input:#162240;
-  --shadow:rgba(0,0,0,0.45);
-}
-:root[data-theme="light"]{
-  --bg:#F0F4FA;--bg2:#FFFFFF;--bg3:#E8EEF8;--bg4:#D8E4F0;
-  --blue:#0063B2;--cyan:#0095B8;--gray:#4A6080;
-  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.18);
-  --green:#16A34A;--amber:#D97706;--red:#DC2626;--purple:#7C3AED;
-  --text:#0A1628;--text2:#4A6080;--card:#FFFFFF;--input:#F0F4FA;
-  --shadow:rgba(0,0,0,0.08);
-}
+:root[data-theme="dark"]{--bg:#0A1628;--bg2:#111D32;--bg3:#162240;--bg4:#1C2B4A;--blue:#0078D4;--cyan:#00B4D8;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);--green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA;--text:#FFFFFF;--text2:#8899B0;--card:#111D32;--input:#162240;--shadow:rgba(0,0,0,0.45)}
+:root[data-theme="light"]{--bg:#F0F4FA;--bg2:#FFFFFF;--bg3:#E8EEF8;--bg4:#D8E4F0;--blue:#0063B2;--cyan:#0095B8;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.18);--green:#16A34A;--amber:#D97706;--red:#DC2626;--purple:#7C3AED;--text:#0A1628;--text2:#4A6080;--card:#FFFFFF;--input:#F0F4FA;--shadow:rgba(0,0,0,0.08)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-card{background:var(--bg2);border-radius:20px;padding:40px;width:100%;max-width:400px;border:1px solid var(--border);box-shadow:0 20px 60px var(--shadow)}
+.lf{margin-bottom:14px}.lf label{display:block;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.lf input{width:100%;background:var(--input);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.lf input:focus{border-color:var(--blue)}
+.login-btn{width:100%;background:var(--blue);border:none;color:#fff;border-radius:10px;padding:13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-err{color:var(--red);font-size:11px;text-align:center;margin-top:8px}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;box-shadow:4px 0 20px var(--shadow)}
+.sidebar{width:225px;background:var(--bg2);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;box-shadow:4px 0 20px var(--shadow)}
 .sidebar-logo{padding:18px;border-bottom:1px solid var(--border)}
 .logo-row{display:flex;align-items:center;gap:10px}
 .logo-box{width:28px;height:28px;background:var(--blue);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -39,710 +32,795 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .nav-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--bg3);font-weight:600}
 .nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
 .sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);margin-top:auto}
-.user-chip{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.theme-btn,.logout-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border-radius:8px;padding:7px;cursor:pointer;font-size:11px;font-family:inherit;margin-bottom:6px;transition:all .15s}
+.theme-btn,.logout-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border-radius:8px;padding:7px;cursor:pointer;font-size:11px;font-family:inherit;margin-bottom:6px}
 .theme-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
-.theme-btn:hover{color:var(--text)}
 .logout-btn{background:transparent;border:1px solid rgba(239,68,68,.25);color:var(--red)}
-.main{flex:1;padding:24px;margin-left:220px}
+.main{flex:1;padding:24px;margin-left:225px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px}
-.page-title{font-size:20px;font-weight:700}
-.page-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.page-title{font-size:20px;font-weight:700}.page-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .seg{display:flex;gap:3px;background:var(--bg3);border-radius:10px;padding:3px;border:1px solid var(--border)}
-.seg-btn{padding:6px 16px;font-size:11px;background:transparent;color:var(--text2);border:none;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:500}
+.seg-btn{padding:6px 14px;font-size:11px;background:transparent;color:var(--text2);border:none;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:500}
 .seg-btn.active{background:var(--blue);color:#fff;font-weight:600}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.kpis-5{grid-template-columns:repeat(5,1fr)}
-.kpis-3{grid-template-columns:repeat(3,1fr)}
+.fsel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:11px;font-family:inherit;outline:none;cursor:pointer}
+.kpis{display:grid;gap:12px;margin-bottom:20px}
+.k4{grid-template-columns:repeat(4,1fr)}.k5{grid-template-columns:repeat(5,1fr)}.k3{grid-template-columns:repeat(3,1fr)}
 .kpi{background:var(--card);border-radius:14px;padding:16px 18px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow)}
-.kpi.accent{background:linear-gradient(135deg,#0078D4,#0052A3);border:none}
-.kpi.accent2{background:linear-gradient(135deg,#0095B8,#005F80);border:none}
-.kpi-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
-.kpi.accent .kpi-label,.kpi.accent2 .kpi-label{color:rgba(255,255,255,.6)}
-.kpi-value{font-size:22px;font-weight:700;color:var(--text)}
-.kpi.accent .kpi-value,.kpi.accent2 .kpi-value{color:#fff}
-.kpi-sub{font-size:10px;color:var(--text2);margin-top:3px}
-.kpi.accent .kpi-sub,.kpi.accent2 .kpi-sub{color:rgba(255,255,255,.5)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.kpi.ac{background:linear-gradient(135deg,#0078D4,#0052A3);border:none}
+.kpi.ac2{background:linear-gradient(135deg,#0095B8,#005F80);border:none}
+.kpi.ac3{background:linear-gradient(135deg,#16A34A,#0D7A2E);border:none}
+.kl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.kpi.ac .kl,.kpi.ac2 .kl,.kpi.ac3 .kl{color:rgba(255,255,255,.6)}
+.kv{font-size:22px;font-weight:700;color:var(--text)}
+.kpi.ac .kv,.kpi.ac2 .kv,.kpi.ac3 .kv{color:#fff}
+.ks{font-size:10px;color:var(--text2);margin-top:3px}
+.kpi.ac .ks,.kpi.ac2 .ks,.kpi.ac3 .ks{color:rgba(255,255,255,.5)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
 .card{background:var(--card);border-radius:14px;padding:18px;border:1px solid var(--border);margin-bottom:14px;box-shadow:0 2px 8px var(--shadow)}
-.card-title{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
+.ct{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px}
 .badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
-.polo-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px}
-.polo-ES{background:rgba(0,120,212,.15);color:#4A9FD4}
-.polo-SC{background:rgba(0,180,216,.15);color:#00B4D8}
-.polo-Ambos{background:rgba(167,139,250,.15);color:#A78BFA}
+.ptag{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase}
+.pES{background:rgba(0,120,212,.15);color:#4A9FD4}.pSC{background:rgba(0,180,216,.15);color:#00B4D8}.pAmbos{background:rgba(167,139,250,.15);color:#A78BFA}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:9px 10px;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
-td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--bg3)}
+td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--bg3)}
 .btn{background:var(--blue);border:none;color:#fff;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
 .btn:hover{opacity:.85}
-.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 13px;cursor:pointer;font-size:11px;font-family:inherit}
-.btn-ghost:hover{color:var(--text)}
-.btn-danger{background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:11px;font-family:inherit}
-.btn-sm{padding:4px 10px;font-size:10px}
+.bgh{background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 13px;cursor:pointer;font-size:11px;font-family:inherit}
+.bgh:hover{color:var(--text)}
+.bdg{background:transparent;border:1px solid rgba(239,68,68,.3);color:var(--red);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:11px;font-family:inherit}
+.bsm{padding:4px 10px;font-size:10px}
 .modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:1000}
-.modal{background:var(--bg2);border-radius:18px;padding:26px;border:1px solid var(--border);width:92%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px var(--shadow)}
+.modal{background:var(--bg2);border-radius:18px;padding:26px;border:1px solid var(--border);width:92%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px var(--shadow)}
 .modal h3{font-size:15px;font-weight:700;margin-bottom:18px;color:var(--text)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.form-full{grid-template-columns:1fr}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fg label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
 .fg input,.fg select,.fg textarea{background:var(--input);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:var(--text);font-size:12px;font-family:inherit;outline:none;width:100%}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
-.fg select option{background:var(--bg2)}
-.fg textarea{resize:vertical;min-height:70px}
-.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
-.sec-div{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-.progress-bar{height:6px;background:var(--bg3);border-radius:3px;margin-bottom:14px;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:3px;transition:width .4s}
-.etapa-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
-.etapa-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:all .15s}
-.etapa-check.done{background:var(--green);border-color:var(--green)}
-.pipe-col{flex:1;min-width:155px}
+.fg select option{background:var(--bg2)}.fg textarea{resize:vertical;min-height:70px}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.sdiv{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+/* SALESFORCE STEPPER */
+.sf-wrap{overflow-x:auto;padding:8px 0 16px;margin-bottom:8px}
+.sf-track{display:flex;align-items:center;min-width:max-content;gap:0}
+.sf-step{display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer}
+.sf-step:not(:last-child)::after{content:'';position:absolute;top:18px;left:calc(50% + 18px);width:calc(100% - 12px);height:2px;background:var(--border2);z-index:0}
+.sf-step:not(:last-child).done::after{background:var(--green)}
+.sf-step:not(:last-child).active::after{background:var(--blue)}
+.sf-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text2);background:var(--bg3);position:relative;z-index:1;transition:all .2s;margin:0 24px}
+.sf-step.done .sf-circle{background:var(--green);border-color:var(--green);color:#fff}
+.sf-step.active .sf-circle{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(0,120,212,.2)}
+.sf-step:hover .sf-circle{border-color:var(--blue);color:var(--blue)}
+.sf-label{font-size:9px;color:var(--text2);margin-top:6px;text-align:center;max-width:70px;line-height:1.3}
+.sf-step.done .sf-label{color:var(--green)}
+.sf-step.active .sf-label{color:var(--blue);font-weight:600}
+.sf-fase-header{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;padding:4px 10px;background:var(--bg3);border-radius:6px;display:inline-block}
+/* FASE DASHBOARD VISUAL */
+.fase-kanban{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-top:8px}
+.fk-col{min-width:130px;flex:1}
+.fk-head{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:6px 10px;border-radius:6px 6px 0 0;text-align:center}
+.fk-body{border-radius:0 0 6px 6px;padding:6px;min-height:50px;border:1px solid var(--border);border-top:none}
+.fk-chip{background:var(--card);border-radius:6px;padding:6px 8px;margin-bottom:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);border-left:3px solid var(--blue)}
+.fk-chip:hover{border-left-color:var(--cyan)}
+/* COMENTÁRIOS */
+.cmt-box{background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.cmt-meta{font-size:10px;color:var(--text2);margin-bottom:4px}
+.cmt-inp{display:flex;gap:8px;margin-top:8px}
+.cmt-inp input{flex:1;background:var(--input);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:11px;font-family:inherit;outline:none}
+.cmt-inp input:focus{border-color:var(--blue)}
+/* HIST */
+.hist-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px}
+.hist-item:last-child{border-bottom:none}
+/* ANALISTA PERFIL */
+.ap-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.ap-av{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
+/* PIPE */
+.pipe-col{flex:1;min-width:150px}
 .pipe-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:8px 12px;background:var(--bg3);border-radius:8px 8px 0 0;border-bottom:2px solid var(--blue);text-align:center;color:var(--blue)}
 .pipe-body{background:var(--bg3);border-radius:0 0 8px 8px;padding:8px;min-height:80px}
-.pipe-card{background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border);border-left:3px solid var(--blue);cursor:pointer;transition:border-color .15s}
+.pipe-card{background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border);border-left:3px solid var(--blue);cursor:pointer}
 .pipe-card:hover{border-left-color:var(--cyan)}
+/* TAGS */
+.tg{background:rgba(34,197,94,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+.tp{background:rgba(239,68,68,.15);color:var(--red);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+.tc{background:rgba(245,158,11,.15);color:var(--amber);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block}
+/* TAREFA */
+.tarefa-card{background:var(--card);border-radius:10px;padding:12px 14px;border:1px solid var(--border);margin-bottom:8px;border-left:4px solid var(--blue)}
+.tarefa-card.alta{border-left-color:var(--red)}
+.tarefa-card.media{border-left-color:var(--amber)}
+.tarefa-card.baixa{border-left-color:var(--green)}
+.tarefa-card.Concluída{opacity:.6}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;margin-right:5px}
-.loading-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse .6s infinite;display:inline-block;margin-right:5px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:40px;color:var(--text2)}
-.chart-wrap{position:relative;height:200px;margin-top:6px}
+.cw{position:relative;height:200px;margin-top:6px}
 .footer-bar{text-align:center;margin-top:24px;padding-top:14px;border-top:1px solid var(--border);font-size:10px;color:var(--text2);letter-spacing:2px}
-@media(max-width:900px){.kpis,.kpis-5{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:900px){.k4,.k5{grid-template-columns:repeat(2,1fr)}.g2,.g3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id="app"><div style="display:flex;align-items:center;justify-content:center;height:100vh;gap:12px;color:#8899B0"><div class="spinner"></div>Iniciando plataforma...</div></div>
+<div id="app"><div style="display:flex;align-items:center;justify-content:center;height:100vh;gap:12px;color:#8899B0"><div class="spinner"></div>Iniciando...</div></div>
 <script>
-const SUPABASE_URL='https://oodehuyjatwvxgwvbmvd.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZGVodXlqYXR3dnhnd3ZibXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzEwMDAsImV4cCI6MjA5MDA0NzAwMH0.HXavB13CltYJ2_ivcFkLhkY_hF0zx7sdNtU-lxWk6wQ';
+const SURL='https://oodehuyjatwvxgwvbmvd.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZGVodXlqYXR3dnhnd3ZibXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzEwMDAsImV4cCI6MjA5MDA0NzAwMH0.HXavB13CltYJ2_ivcFkLhkY_hF0zx7sdNtU-lxWk6wQ';
 const SHEET_ID='1va3HsPbT4Ac_50VTKvTsCNSLD4OMHpZaQBakDw0sdDM';
-const SYNC_MS=60000;
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-const PALETTE=['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B','#EF4444','#3BA0E6','#0056A0'];
-const STATUS_C={'Em execução':'#22C55E','Proposta enviada':'#F59E0B','Em negociação':'#3BA0E6','Concluído':'#64748B','Em estruturação':'#A78BFA','Congelado':'#EF4444','Ativo':'#22C55E'};
-const MAND_C={'Sell-side':'#0078D4','sell-side':'#0078D4','Buy-side':'#00B4D8','buy-side':'#00B4D8','Captação':'#22C55E','Reestruturação':'#F59E0B','Outro':'#8899B0'};
-const PROB_C={'Alta':'#22C55E','Média':'#F59E0B','Baixa':'#EF4444'};
+const sb=supabase.createClient(SURL,SKEY);
+const PAL=['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B','#EF4444','#3BA0E6','#F97316'];
+const SC={'Em execução':'#22C55E','Proposta enviada':'#F59E0B','Em negociação':'#3BA0E6','Concluído':'#64748B','Em estruturação':'#A78BFA','Congelado':'#EF4444','Ativo':'#22C55E'};
+const MC={'Sell-side':'#0078D4','sell-side':'#0078D4','Buy-side':'#00B4D8','buy-side':'#00B4D8','Captação':'#22C55E','Reestruturação':'#F59E0B','Outro':'#8899B0'};
+const PC={'Alta':'#22C55E','Média':'#F59E0B','Baixa':'#EF4444'};
 const CARGOS=['Sócio / Diretor','Gerente','Analista Sênior','Analista','Assistente','Estagiário'];
 const POLOS=['ES','SC','Ambos'];
 const AREAS=['M&A','DCM','Ambas'];
-const FASES_MA=[
-  {n:'Kickoff & Info Request',f:1},{n:'Análise de Informações',f:1},{n:'Valuation',f:1},
-  {n:'Teaser + Info Memo',f:1},{n:'Buyers List',f:1},{n:'Go-to-market',f:1},
-  {n:'IO / NBO',f:2},{n:'Negociação de Propostas',f:2},{n:'LOI / MOU',f:2},
-  {n:'Due Diligence',f:2},{n:'Contratos Definitivos',f:2},{n:'Signing & Closing',f:2},
+const FASES=[
+  {n:'Kickoff & Info',f:1},{n:'Análise & Info',f:1},{n:'Valuation',f:1},
+  {n:'Teaser + Memo',f:1},{n:'Buyers List',f:1},{n:'Go-to-market',f:1},
+  {n:'IO / NBO',f:2},{n:'Negociação',f:2},{n:'LOI / MOU',f:2},
+  {n:'Due Diligence',f:2},{n:'Contratos',f:2},{n:'Signing & Closing',f:2},
 ];
 const NAV=[
-  {sec:'Visão Geral'},{key:'dashboard',label:'Dashboard',icon:'⬡'},{key:'pipeline',label:'Pipeline',icon:'◐'},
-  {sec:'Projetos'},{key:'ma',label:'Projetos M&A',icon:'◈'},{key:'dcm',label:'Projetos DCM',icon:'◈'},{key:'encerrados',label:'Encerrados',icon:'◌'},
-  {sec:'Pessoas'},{key:'equipe',label:'Equipe',icon:'◎'},
-  {sec:'Financeiro'},{key:'receita',label:'Receita',icon:'◆'},{key:'horas',label:'Gestão de Horas',icon:'◷'},
+  {s:'Visão Geral'},{k:'dashboard',l:'Dashboard',i:'⬡'},{k:'pipeline',l:'Pipeline',i:'◐'},
+  {s:'Projetos'},{k:'ma',l:'Projetos M&A',i:'◈'},{k:'dcm',l:'Projetos DCM',i:'◈'},{k:'encerrados',l:'Encerrados e Congelados',i:'◌'},
+  {s:'Pessoas'},{k:'equipe',l:'Equipe',i:'◎'},{k:'tarefas',l:'Tarefas',i:'◉'},
+  {s:'Financeiro'},{k:'receita',l:'Receita',i:'◆'},{k:'horas',l:'Gestão de Horas',i:'◷'},
 ];
-const TITLES={dashboard:'Dashboard',pipeline:'Pipeline',ma:'Projetos M&A',dcm:'Projetos DCM',encerrados:'Encerrados',receita:'Receita',horas:'Gestão de Horas',equipe:'Equipe'};
-const SUBS={dashboard:'Visão executiva da carteira',pipeline:'Funil de deals por fase',ma:'Mandatos M&A ativos',dcm:'Mandatos DCM ativos',encerrados:'Projetos concluídos e congelados',receita:'Retainers e success fees',horas:'Controle de horas trabalhadas',equipe:'Gestão do time de IB'};
+const TITLES={dashboard:'Dashboard',pipeline:'Pipeline',ma:'Projetos M&A',dcm:'Projetos DCM',encerrados:'Encerrados e Congelados',receita:'Receita',horas:'Gestão de Horas',equipe:'Equipe',tarefas:'Tarefas'};
+const SUBS={dashboard:'Visão executiva da carteira',pipeline:'Funil de deals por fase',ma:'Mandatos M&A ativos',dcm:'Mandatos DCM ativos',encerrados:'Projetos concluídos, ganhos, perdidos e congelados',receita:'Retainers e success fees',horas:'Controle de horas trabalhadas',equipe:'Gestão do time de IB',tarefas:'Gestão de atividades e prazos'};
 
 const fmt=v=>{if(!v&&v!==0)return'—';const n=parseFloat(v);if(isNaN(n))return'—';if(n>=1e9)return`R$ ${(n/1e9).toFixed(1)}B`;if(n>=1e6)return`R$ ${(n/1e6).toFixed(1)}M`;if(n>=1e3)return`R$ ${(n/1e3).toFixed(0)}K`;return`R$ ${n.toLocaleString('pt-BR')}`;};
 const ini=n=>n?n.trim().split(' ').filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join(''):'?';
-const badge=(t,c)=>`<span class="badge" style="background:${c||'#888'}22;color:${c||'#888'}">${t||''}</span>`;
-const ptag=p=>`<span class="polo-tag polo-${p||'ES'}">${p||'ES'}</span>`;
-const parseN=v=>{if(!v&&v!==0)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))||0;};
-const fmtDate=v=>{if(!v)return'—';return String(v);};
+const bdg=(t,c)=>`<span class="badge" style="background:${c||'#888'}22;color:${c||'#888'}">${t||''}</span>`;
+const pt=p=>`<span class="ptag p${p||'ES'}">${p||'ES'}</span>`;
+const pN=v=>{if(!v&&v!==0)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))||0;};
+const fmtTS=ts=>{if(!ts)return'—';const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});};
 const LS=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}};
 const SS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 
+// Período helpers
+function periodoFiltro(data,periodo,tipo){
+  if(!data)return true;
+  const d=new Date(data);const now=new Date();
+  if(tipo==='mensal'){return d.getMonth()===parseInt(periodo?.split('-')[1]-1)&&d.getFullYear()===parseInt(periodo?.split('-')[0]);}
+  if(tipo==='trimestral'){const q=Math.floor(d.getMonth()/3);const qf=Math.floor(parseInt(periodo?.split('Q')[1]-1)/1);const yf=parseInt(periodo?.split('Q')[0]);return q===qf&&d.getFullYear()===yf;}
+  return true;
+}
+function getMeses(){const r=[];const now=new Date();for(let i=0;i<12;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);r.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}return r;}
+function getTrims(){const r=[];const now=new Date();for(let i=0;i<8;i++){const m=now.getMonth()-i*3;const y=now.getFullYear()+Math.floor(m/12);const q=Math.floor(((m%12)+12)%12/3);r.push(`${y}Q${q+1}`);}return r;}
+
 let S={
   page:'dashboard',seg:'geral',
+  loggedIn:LS('apex_li',false),currentUser:LS('apex_cu',null),
   theme:LS('apex_theme','dark'),
   modal:null,editForm:null,
-  deals:[],usuarios:[],horas:[],
-  detail:null,loading:true,saving:false,
-  lastSync:null,charts:{},
-  currentUser:{nome:'Apex Partners',cargo:'Administrador',polo:'Ambos'},
+  deals:[],usuarios:[],horas:[],comentarios:[],historico:[],recReal:[],tarefas:[],
+  detail:null,detailType:null,
+  loading:true,saving:false,lastSync:null,charts:{},
+  filtroColab:'',filtroPeriodo:'',filtroPeriodoTipo:'mensal',
+  novoComt:{},loginEmail:'',loginSenha:'',loginErr:'',
 };
 document.documentElement.setAttribute('data-theme',S.theme);
 
-// ═══ SUPABASE CRUD ═══
+// ═══ AUTH ═══
+async function tentarLogin(){
+  const{data,error}=await sb.from('usuarios').select('*').eq('email',S.loginEmail).eq('senha',S.loginSenha).eq('ativo',true).single();
+  if(data&&!error){S.loggedIn=true;S.currentUser=data;SS('apex_li',true);SS('apex_cu',data);S.loginErr='';await loadAll();}
+  else{S.loginErr='E-mail ou senha incorretos.';render();}
+}
+function logout(){S.loggedIn=false;S.currentUser=null;SS('apex_li',false);SS('apex_cu',null);render();}
+function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';SS('apex_theme',S.theme);document.documentElement.setAttribute('data-theme',S.theme);render();}
+
+// ═══ LOAD ═══
 async function loadAll(){
   S.loading=true;render();
   try{
-    const[{data:deals},{data:usuarios},{data:horas}]=await Promise.all([
+    const[{data:deals},{data:usuarios},{data:horas},{data:comts},{data:hist},{data:rec},{data:tarefas}]=await Promise.all([
       sb.from('deals').select('*').order('created_at',{ascending:false}),
       sb.from('usuarios').select('*').order('nome'),
       sb.from('horas').select('*').order('created_at',{ascending:false}),
+      sb.from('comentarios').select('*').order('created_at',{ascending:true}),
+      sb.from('historico').select('*').order('created_at',{ascending:false}),
+      sb.from('receita_realizada').select('*').order('data_pagamento',{ascending:false}),
+      sb.from('tarefas').select('*').order('prazo',{ascending:true}),
     ]);
-    S.deals=deals||[];
-    S.usuarios=usuarios||[];
-    S.horas=horas||[];
+    S.deals=deals||[];S.usuarios=usuarios||[];S.horas=horas||[];
+    S.comentarios=comts||[];S.historico=hist||[];S.recReal=rec||[];S.tarefas=tarefas||[];
     S.lastSync=new Date();
-  }catch(e){console.error('Erro ao carregar:',e);}
+    await importSheets();
+  }catch(e){console.error(e);}
   S.loading=false;render();
 }
 
-async function saveDeal(data){
-  S.saving=true;
+// ═══ SUPABASE CRUD ═══
+const uf=(k,v)=>{if(S.editForm)S.editForm[k]=v;};
+async function saveDeal(d){
+  const isN=!d.id||d.id.startsWith('new_');
+  if(isN){const t={...d};delete t.id;const{data:nd}=await sb.from('deals').insert(t).select().single();if(nd){S.deals.unshift(nd);await addH(nd.id,'Criação','—','Projeto criado');}}
+  else{const old=S.deals.find(x=>x.id===d.id);await sb.from('deals').update({...d,updated_at:new Date()}).eq('id',d.id);const i=S.deals.findIndex(x=>x.id===d.id);if(i>=0){const flds=['cliente','status','prob','mandato','deal_value','success_fee','retainer_f2','diretor','gerente','analista','resultado'];for(const f of flds){if(old&&String(old[f])!==String(d[f]))await addH(d.id,f,old[f],d[f]);}S.deals[i]={...S.deals[i],...d};}}
+}
+async function delDeal(id){await sb.from('deals').delete().eq('id',id);S.deals=S.deals.filter(x=>x.id!==id);}
+async function saveUser(d){
+  const isN=!d.id||d.id.startsWith('new_');
+  if(isN){const t={...d};delete t.id;const{data:nd}=await sb.from('usuarios').insert(t).select().single();if(nd)S.usuarios.push(nd);}
+  else{await sb.from('usuarios').update(d).eq('id',d.id);const i=S.usuarios.findIndex(x=>x.id===d.id);if(i>=0)S.usuarios[i]={...S.usuarios[i],...d};}
+}
+async function delUser(id){await sb.from('usuarios').delete().eq('id',id);S.usuarios=S.usuarios.filter(x=>x.id!==id);}
+async function saveHora(d){
+  const isN=!d.id||d.id.startsWith('new_');
+  if(isN){const t={...d,horas:parseFloat(d.horas)||0};delete t.id;const{data:nd}=await sb.from('horas').insert(t).select().single();if(nd)S.horas.unshift(nd);}
+  else{await sb.from('horas').update(d).eq('id',d.id);}
+}
+async function delHora(id){await sb.from('horas').delete().eq('id',id);S.horas=S.horas.filter(x=>x.id!==id);}
+async function updEtapas(id,et,fa){await sb.from('deals').update({etapas:et,fase_atual:fa,updated_at:new Date()}).eq('id',id);const i=S.deals.findIndex(x=>x.id===id);if(i>=0){S.deals[i].etapas=et;S.deals[i].fase_atual=fa;}}
+async function addComt(dealId,idx,txt){const u=S.currentUser;const{data:c}=await sb.from('comentarios').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Usuário',etapa_idx:idx,etapa_nome:FASES[idx]?.n,texto:txt}).select().single();if(c)S.comentarios.push(c);}
+async function addH(dealId,campo,ant,nov){const u=S.currentUser;const{data:h}=await sb.from('historico').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Sistema',campo,valor_anterior:String(ant||''),valor_novo:String(nov||''),descricao:`${campo}: ${ant} → ${nov}`}).select().single();if(h)S.historico.unshift(h);}
+async function saveRecReal(d){const isN=!d.id||d.id.startsWith('new_');if(isN){const t={...d,valor:parseFloat(d.valor)||0};delete t.id;const{data:nd}=await sb.from('receita_realizada').insert(t).select().single();if(nd)S.recReal.unshift(nd);}else{await sb.from('receita_realizada').update(d).eq('id',d.id);}}
+async function delRecReal(id){await sb.from('receita_realizada').delete().eq('id',id);S.recReal=S.recReal.filter(x=>x.id!==id);}
+async function saveTarefa(d){
+  const isN=!d.id||d.id.startsWith('new_');
+  if(isN){const t={...d};delete t.id;const{data:nd}=await sb.from('tarefas').insert(t).select().single();if(nd)S.tarefas.push(nd);}
+  else{await sb.from('tarefas').update({...d,updated_at:new Date()}).eq('id',d.id);const i=S.tarefas.findIndex(x=>x.id===d.id);if(i>=0)S.tarefas[i]={...S.tarefas[i],...d};}
+}
+async function delTarefa(id){await sb.from('tarefas').delete().eq('id',id);S.tarefas=S.tarefas.filter(x=>x.id!==id);}
+
+// ═══ SHEETS ═══
+async function importSheets(){
   try{
-    if(data.id&&!data.id.startsWith('new_')){
-      const{error}=await sb.from('deals').update({...data,updated_at:new Date()}).eq('id',data.id);
-      if(!error){const i=S.deals.findIndex(x=>x.id===data.id);if(i>=0)S.deals[i]={...S.deals[i],...data};}
-    }else{
-      const toInsert={...data};delete toInsert.id;
-      const{data:nd,error}=await sb.from('deals').insert(toInsert).select().single();
-      if(!error&&nd)S.deals.unshift(nd);
-    }
-  }catch(e){console.error(e);}
-  S.saving=false;
-}
-
-async function deleteDeal(id){
-  await sb.from('deals').delete().eq('id',id);
-  S.deals=S.deals.filter(x=>x.id!==id);
-}
-
-async function saveUsuario(data){
-  S.saving=true;
-  try{
-    if(data.id&&!data.id.startsWith('new_')){
-      const{error}=await sb.from('usuarios').update(data).eq('id',data.id);
-      if(!error){const i=S.usuarios.findIndex(x=>x.id===data.id);if(i>=0)S.usuarios[i]={...S.usuarios[i],...data};}
-    }else{
-      const toInsert={...data};delete toInsert.id;
-      const{data:nd,error}=await sb.from('usuarios').insert(toInsert).select().single();
-      if(!error&&nd)S.usuarios.push(nd);
-    }
-  }catch(e){console.error(e);}
-  S.saving=false;
-}
-
-async function deleteUsuario(id){
-  await sb.from('usuarios').delete().eq('id',id);
-  S.usuarios=S.usuarios.filter(x=>x.id!==id);
-}
-
-async function saveHora(data){
-  S.saving=true;
-  try{
-    if(data.id&&!data.id.startsWith('new_')){
-      await sb.from('horas').update(data).eq('id',data.id);
-    }else{
-      const toInsert={...data,horas:parseFloat(data.horas)||0};delete toInsert.id;
-      const{data:nd}=await sb.from('horas').insert(toInsert).select().single();
-      if(nd)S.horas.unshift(nd);
-    }
-  }catch(e){console.error(e);}
-  S.saving=false;
-}
-
-async function deleteHora(id){
-  await sb.from('horas').delete().eq('id',id);
-  S.horas=S.horas.filter(x=>x.id!==id);
-}
-
-async function updateEtapas(dealId,etapas,faseAtual){
-  await sb.from('deals').update({etapas,fase_atual:faseAtual,updated_at:new Date()}).eq('id',dealId);
-  const i=S.deals.findIndex(x=>x.id===dealId);
-  if(i>=0){S.deals[i].etapas=etapas;S.deals[i].fase_atual=faseAtual;}
-}
-
-// ═══ SHEETS IMPORT ═══
-async function importFromSheets(){
-  try{
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=Contratos`;
-    const res=await fetch(url);const csv=await res.text();
-    const rows=parseCSV(csv);if(rows.length<2)return;
-    const existing=new Set(S.deals.map(d=>d.arquivo).filter(Boolean));
-    const toInsert=[];
-    rows.slice(1).forEach((row,idx)=>{
+    const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=Contratos`);
+    const csv=await res.text();const rows=parseCSV(csv);if(rows.length<2)return;
+    const ex=new Set(S.deals.map(d=>d.arquivo).filter(Boolean));const toI=[];
+    rows.slice(1).forEach(row=>{
       const g=i=>i<row.length?String(row[i]||'').trim():'';
-      const arq=g(0);if(!arq||existing.has(arq))return;
-      const status=g(29)||'Ativo';if(status==='ERRO NA EXTRACAO')return;
-      const ret=parseN(g(13));
-      toInsert.push({
-        source:'sheets',arquivo:arq,data_extracao:g(1),
-        cliente:g(2)||arq,cnpj:g(3),contato:g(4),email:g(5),
-        projeto:g(6)||arq,mandato:g(7)||'outro',descricao:g(8),
-        data_assinatura:g(9),data_inicio:g(10),
-        retainer_f1:15000,retainer_f2:ret||7000,
-        success_fee:parseN(g(16)),success_fee_min:parseN(g(17)),
-        success_fee_base:g(18),deal_value:parseN(g(19)),
-        obs:g(23),diretor:g(24),gerente:g(25),analista:g(26),
-        setor:g(27),status,status_fat:g(30)||'Pendente',
-        tipo:'M&A',polo:'ES',prob:'Alta',etapas:{},fase_atual:0,parcelas:[],
-      });
+      const arq=g(0);if(!arq||ex.has(arq))return;
+      const st=g(29)||'Ativo';if(st==='ERRO NA EXTRACAO')return;
+      const ret=pN(g(13));
+      toI.push({source:'sheets',arquivo:arq,data_extracao:g(1),cliente:g(2)||arq,cnpj:g(3),contato:g(4),email:g(5),projeto:g(6)||arq,mandato:g(7)||'outro',descricao:g(8),data_assinatura:g(9),data_inicio:g(10),retainer_f1:15000,retainer_f2:ret||7000,success_fee:pN(g(16)),success_fee_min:pN(g(17)),success_fee_base:g(18),deal_value:pN(g(19)),obs:g(23),diretor:g(24),gerente:g(25),analista:g(26),setor:g(27),status:st,status_fat:g(30)||'Pendente',tipo:'M&A',polo:'ES',prob:'Alta',etapas:{},fase_atual:0,parcelas:[]});
     });
-    if(toInsert.length>0){
-      const{data:inserted}=await sb.from('deals').insert(toInsert).select();
-      if(inserted)S.deals=[...inserted,...S.deals];
-    }
-  }catch(e){console.error('Sheets import:',e);}
+    if(toI.length){const{data:ins}=await sb.from('deals').insert(toI).select();if(ins)S.deals=[...ins,...S.deals];}
+  }catch(e){console.error(e);}
 }
-
-function parseCSV(text){
-  const rows=[];
-  for(const line of text.split('\n')){
-    if(!line.trim())continue;
-    const row=[];let cell='',inQ=false;
-    for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c==='"'){if(inQ&&line[i+1]==='"'){cell+='"';i++;}else inQ=!inQ;}
-      else if(c===','&&!inQ){row.push(cell.trim());cell='';}
-      else cell+=c;
-    }
-    row.push(cell.trim());rows.push(row);
-  }
-  return rows;
-}
+function parseCSV(t){const r=[];for(const l of t.split('\n')){if(!l.trim())continue;const row=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){if(q&&l[i+1]==='"'){c+='"';i++;}else q=!q;}else if(ch===','&&!q){row.push(c.trim());c='';}else c+=ch;}row.push(c.trim());r.push(row);}return r;}
 
 // ═══ ACTIONS ═══
-function uf(k,v){if(S.editForm)S.editForm[k]=v;}
-function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';SS('apex_theme',S.theme);document.documentElement.setAttribute('data-theme',S.theme);render();}
+function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',prob:'Alta',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0,resultado:null};S.modal='deal';render();}
+function openEditDeal(id){const d=S.deals.find(x=>x.id===id);if(!d)return;S.editForm={...d,deal_value:String(d.deal_value||''),retainer_f1:String(d.retainer_f1||15000),retainer_f2:String(d.retainer_f2||7000),success_fee:String(d.success_fee||'')};S.modal='deal';render();}
+async function hSaveDeal(){const f=S.editForm;if(!f.cliente.trim())return;const r={...f,deal_value:pN(f.deal_value),retainer_f1:pN(f.retainer_f1)||15000,retainer_f2:pN(f.retainer_f2)||7000,success_fee:pN(f.success_fee)||0};S.modal=null;S.editForm=null;await saveDeal(r);render();}
+async function hDelDeal(id){if(!confirm('Excluir permanentemente?'))return;S.detail=null;S.detailType=null;await delDeal(id);render();}
+async function hSetEtapa(dealId,idx){const d=S.deals.find(x=>x.id===dealId);if(!d)return;const et={...(d.etapas||{})};et[idx]=et[idx]==='done'?'pending':'done';const fa=Object.values(et).filter(v=>v==='done').length;await updEtapas(dealId,et,fa);await addH(dealId,'Etapa',FASES[idx]?.n,et[idx]==='done'?'Concluída':'Reaberta');render();}
+async function hAddComt(dealId,idx){const k=`${dealId}_${idx}`;const txt=(S.novoComt[k]||'').trim();if(!txt)return;await addComt(dealId,idx,txt);S.novoComt[k]='';render();}
+function togComt(k){S.novoComt[`sh_${k}`]=!S.novoComt[`sh_${k}`];render();}
 
-function openAddDeal(){
-  S.editForm={id:'new_deal',source:'local',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',prob:'Alta',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0};
-  S.modal='deal';render();
-}
-function openEditDeal(id){
-  const d=S.deals.find(x=>x.id===id);if(!d)return;
-  S.editForm={...d,deal_value:String(d.deal_value||''),retainer_f1:String(d.retainer_f1||15000),retainer_f2:String(d.retainer_f2||7000),success_fee:String(d.success_fee||'')};
-  S.modal='deal';render();
-}
-async function handleSaveDeal(){
-  const f=S.editForm;if(!f.cliente.trim())return;
-  const rec={...f,deal_value:parseN(f.deal_value),retainer_f1:parseN(f.retainer_f1)||15000,retainer_f2:parseN(f.retainer_f2)||7000,success_fee:parseN(f.success_fee)||0};
-  S.modal=null;S.editForm=null;
-  await saveDeal(rec);render();
-}
-async function handleDelDeal(id){
-  if(!confirm('Excluir este projeto permanentemente?'))return;
-  S.detail=null;await deleteDeal(id);render();
-}
-async function handleSetEtapa(dealId,idx){
-  const d=S.deals.find(x=>x.id===dealId);if(!d)return;
-  const et={...(d.etapas||{})};
-  et[idx]=et[idx]==='done'?'pending':'done';
-  const fa=Object.values(et).filter(v=>v==='done').length;
-  await updateEtapas(dealId,et,fa);render();
-}
-
-function openAddUser(){S.editForm={id:'new_user',nome:'',email:'',senha:'',cargo:'Analista',polo:'ES',area:'M&A',gestor:'',ativo:true};S.modal='user';render();}
+function openAddUser(){S.editForm={id:'new_',nome:'',email:'',senha:'',cargo:'Analista',polo:'ES',area:'M&A',gestor:'',ativo:true};S.modal='user';render();}
 function openEditUser(id){const u=S.usuarios.find(x=>x.id===id);if(!u)return;S.editForm={...u};S.modal='user';render();}
-async function handleSaveUser(){
-  const f=S.editForm;if(!f.nome.trim()||!f.email.trim())return;
-  S.modal=null;S.editForm=null;await saveUsuario(f);render();
-}
-async function handleDelUser(id){if(!confirm('Remover usuário?'))return;await deleteUsuario(id);render();}
+async function hSaveUser(){const f=S.editForm;if(!f.nome.trim()||!f.email.trim())return;S.modal=null;S.editForm=null;await saveUser(f);render();}
+async function hDelUser(id){if(!confirm('Remover?'))return;await delUser(id);render();}
 
-function openAddHora(){S.editForm={id:'new_hora',usuario_id:'',deal_id:'',fase:'',etapa:'',horas:'',descricao:'',data:new Date().toISOString().split('T')[0]};S.modal='hora';render();}
-async function handleSaveHora(){
-  const f=S.editForm;if(!f.horas||!f.deal_id)return;
-  S.modal=null;S.editForm=null;await saveHora(f);render();
+function openAddHora(){S.editForm={id:'new_',usuario_id:S.currentUser?.id||'',deal_id:'',fase:'',etapa:'',horas:'',descricao:'',data:new Date().toISOString().split('T')[0]};S.modal='hora';render();}
+async function hSaveHora(){const f=S.editForm;if(!f.horas||!f.deal_id)return;S.modal=null;S.editForm=null;await saveHora(f);render();}
+async function hDelHora(id){await delHora(id);render();}
+
+function openAddRecReal(){S.editForm={id:'new_',deal_id:'',tipo:'retainer',valor:'',periodo:'',data_pagamento:'',descricao:''};S.modal='recreal';render();}
+async function hSaveRecReal(){const f=S.editForm;if(!f.valor)return;S.modal=null;S.editForm=null;await saveRecReal(f);render();}
+
+function openAddTarefa(){S.editForm={id:'new_',titulo:'',descricao:'',deal_id:'',fase:'',criado_por_id:S.currentUser?.id||'',criado_por_nome:S.currentUser?.nome||'',responsavel_id:'',responsavel_nome:'',prazo:'',status:'Aberta',prioridade:'Normal'};S.modal='tarefa';render();}
+function openEditTarefa(id){const t=S.tarefas.find(x=>x.id===id);if(!t)return;S.editForm={...t};S.modal='tarefa';render();}
+async function hSaveTarefa(){const f=S.editForm;if(!f.titulo.trim())return;const u=S.usuarios.find(x=>x.id===f.responsavel_id);if(u)f.responsavel_nome=u.nome;S.modal=null;S.editForm=null;await saveTarefa(f);render();}
+async function hDelTarefa(id){await delTarefa(id);render();}
+async function toggleTarefa(id){const t=S.tarefas.find(x=>x.id===id);if(!t)return;const ns=t.status==='Concluída'?'Aberta':'Concluída';t.status=ns;await sb.from('tarefas').update({status:ns,updated_at:new Date()}).eq('id',id);render();}
+
+// ═══ PDF ═══
+function exportPDF(id){
+  const d=S.deals.find(x=>x.id===id);if(!d)return;
+  const w=window.open('','_blank');const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);const sf=(d.deal_value||0)*((d.success_fee||0)/100);const hist=S.historico.filter(h=>h.deal_id===d.id);const comts=S.comentarios.filter(c=>c.deal_id===d.id);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${d.cliente}</title><style>body{font-family:'Segoe UI',sans-serif;padding:40px;color:#0A1628;font-size:13px}h1{font-size:22px;font-weight:700;margin-bottom:4px}h2{font-size:13px;font-weight:700;color:#0078D4;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;border-bottom:2px solid #E8EEF8;padding-bottom:6px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.kpi{background:#F0F4FA;border-radius:10px;padding:14px;border:1px solid #D8E4F0}.kl{font-size:10px;color:#4A6080;text-transform:uppercase;margin-bottom:4px}.kv{font-size:18px;font-weight:700}table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;padding:8px;background:#F0F4FA;border-bottom:1px solid #D8E4F0}td{padding:8px;border-bottom:1px solid #E8EEF8}.done{color:#16A34A}.pending{color:#D97706}</style></head><body>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px"><div style="width:32px;height:32px;background:#0078D4;border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:11px;height:11px;background:white;transform:rotate(45deg)"></div></div><div style="font-size:11px;color:#4A6080;letter-spacing:2px;text-transform:uppercase">APEX PARTNERS — Investment Banking</div></div>
+  <h1>${d.projeto||d.cliente}</h1><div style="color:#4A6080;margin-bottom:16px">${d.cliente}${d.cnpj?' · '+d.cnpj:''}${d.setor?' · '+d.setor:''} · Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>
+  <div class="kpis"><div class="kpi"><div class="kl">Deal Value</div><div class="kv">${fmt(d.deal_value)}</div></div><div class="kpi"><div class="kl">Retainer/mês</div><div class="kv">${fmt(d.retainer_f2)}</div></div><div class="kpi"><div class="kl">Success Fee</div><div class="kv">${d.success_fee||0}% (${fmt(sf)})</div></div><div class="kpi"><div class="kl">Progresso</div><div class="kv">${pct}%</div></div></div>
+  <h2>Fases M&A</h2><table><thead><tr><th>Etapa</th><th>Fase</th><th>Status</th></tr></thead><tbody>${FASES.map((e,i)=>`<tr><td>${e.n}</td><td>Fase ${e.f}</td><td class="${et[i]==='done'?'done':'pending'}">${et[i]==='done'?'✓ Concluído':'Pendente'}</td></tr>`).join('')}</tbody></table>
+  <h2>Equipe</h2><table><thead><tr><th>Cargo</th><th>Nome</th></tr></thead><tbody>${[['Diretor',d.diretor],['Gerente',d.gerente],['Analista',d.analista]].filter(([,n])=>n).map(([c,n])=>`<tr><td>${c}</td><td>${n}</td></tr>`).join('')||'<tr><td colspan="2">Não informada</td></tr>'}</tbody></table>
+  ${hist.length?`<h2>Histórico</h2><table><thead><tr><th>Data</th><th>Usuário</th><th>Campo</th><th>Alteração</th></tr></thead><tbody>${hist.slice(0,15).map(h=>`<tr><td>${fmtTS(h.created_at)}</td><td>${h.usuario_nome||'—'}</td><td>${h.campo}</td><td>${h.valor_anterior} → ${h.valor_novo}</td></tr>`).join('')}</tbody></table>`:''}
+  ${comts.length?`<h2>Comentários</h2><table><thead><tr><th>Data</th><th>Usuário</th><th>Etapa</th><th>Comentário</th></tr></thead><tbody>${comts.map(c=>`<tr><td>${fmtTS(c.created_at)}</td><td>${c.usuario_nome||'—'}</td><td>${c.etapa_nome||'—'}</td><td>${c.texto}</td></tr>`).join('')}</tbody></table>`:''}
+  <div style="margin-top:30px;padding-top:14px;border-top:1px solid #D8E4F0;font-size:10px;color:#4A6080;text-align:center">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div>
+  <script>window.print();<\/script></body></html>`);w.document.close();
 }
-async function handleDelHora(id){await deleteHora(id);render();}
 
 // ═══ MODAIS ═══
-function renderDealModal(){
+function mDeal(){
   const f=S.editForm;
-  const sel=(k,opts,lbl)=>`<div class="fg"><label>${lbl}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  const sl=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  const slU=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)"><option value="">— Selecione —</option>${opts.map(n=>`<option value="${n}"${f[k]===n?' selected':''}>${n}</option>`).join('')}</select></div>`;
   const setores=['Saúde','Agronegócio','Tecnologia','Logística','Educação','Energia','Indústria','Construção','Financeiro','Outro'];
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}">
-  <div class="modal"><h3>${f.id&&!f.id.startsWith('new_')?'Editar projeto':'Novo projeto'}</h3>
-    <div class="form-grid">${sel('tipo',['M&A','DCM'],'Tipo')}${sel('mandato',['Sell-side','Buy-side','Captação','Reestruturação','Outro'],'Mandato')}</div>
-    <div class="form-grid"><div class="fg"><label>Cliente</label><input value="${f.cliente||''}" oninput="uf('cliente',this.value)" placeholder="Nome da empresa"/></div><div class="fg"><label>Projeto / ID</label><input value="${f.projeto||''}" oninput="uf('projeto',this.value)" placeholder="Ex: 24SS054"/></div></div>
-    <div class="form-grid">${sel('status',Object.keys(STATUS_C),'Status')}${sel('prob',['Alta','Média','Baixa'],'Probabilidade')}</div>
-    <div class="form-grid">${sel('polo',POLOS,'Polo')}${sel('setor',setores,'Setor')}</div>
-    <div class="sec-div">Financeiro</div>
-    <div class="form-grid"><div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.deal_value||''}" oninput="uf('deal_value',this.value)"/></div><div class="fg"><label>Success fee (%)</label><input type="number" step="0.1" value="${f.success_fee||''}" oninput="uf('success_fee',this.value)"/></div></div>
-    <div class="form-grid"><div class="fg"><label>Retainer Fase 1 / parcela (R$)</label><input type="number" value="${f.retainer_f1||15000}" oninput="uf('retainer_f1',this.value)"/></div><div class="fg"><label>Retainer Fase 2 / mês (R$)</label><input type="number" value="${f.retainer_f2||7000}" oninput="uf('retainer_f2',this.value)"/></div></div>
-    <div class="sec-div">Equipe & Datas</div>
-    <div class="form-grid"><div class="fg"><label>Diretor</label><input value="${f.diretor||''}" oninput="uf('diretor',this.value)"/></div><div class="fg"><label>Gerente</label><input value="${f.gerente||''}" oninput="uf('gerente',this.value)"/></div></div>
-    <div class="form-grid"><div class="fg"><label>Analista</label><input value="${f.analista||''}" oninput="uf('analista',this.value)"/></div><div class="fg"><label>Data de assinatura</label><input type="date" value="${f.data_assinatura||''}" oninput="uf('data_assinatura',this.value)"/></div></div>
-    <div class="form-grid form-full"><div class="fg"><label>Observações</label><textarea oninput="uf('obs',this.value)">${f.obs||''}</textarea></div></div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="handleSaveDeal()">${S.saving?'Salvando...':'Salvar'}</button></div>
+  const isE=f.id&&!f.id.startsWith('new_');
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar projeto':'Novo projeto'}</h3>
+    <div class="fgrid">${sl('tipo',['M&A','DCM'],'Tipo')}${sl('mandato',['Sell-side','Buy-side','Captação','Reestruturação','Outro'],'Mandato')}</div>
+    <div class="fgrid"><div class="fg"><label>Cliente</label><input value="${f.cliente||''}" oninput="uf('cliente',this.value)"/></div><div class="fg"><label>Projeto / ID</label><input value="${f.projeto||''}" oninput="uf('projeto',this.value)"/></div></div>
+    <div class="fgrid">${sl('status',Object.keys(SC),'Status')}${sl('prob',['Alta','Média','Baixa'],'Probabilidade')}</div>
+    <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('setor',setores,'Setor')}</div>
+    ${isE?`<div class="fgrid">${sl('resultado',['','Fechado e Ganho','Fechado e Perdido','Congelado'],'Resultado final')}<div></div></div>`:''}
+    <div class="sdiv">Financeiro</div>
+    <div class="fgrid"><div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.deal_value||''}" oninput="uf('deal_value',this.value)"/></div><div class="fg"><label>Success fee (%)</label><input type="number" step="0.1" value="${f.success_fee||''}" oninput="uf('success_fee',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Retainer Fase 1 / parcela</label><input type="number" value="${f.retainer_f1||15000}" oninput="uf('retainer_f1',this.value)"/></div><div class="fg"><label>Retainer Fase 2 / mês</label><input type="number" value="${f.retainer_f2||7000}" oninput="uf('retainer_f2',this.value)"/></div></div>
+    <div class="sdiv">Equipe</div>
+    <div class="fgrid">${slU('diretor',S.usuarios.filter(u=>u.cargo==='Sócio / Diretor').map(u=>u.nome),'Diretor')}${slU('gerente',S.usuarios.filter(u=>['Gerente','Analista Sênior'].includes(u.cargo)).map(u=>u.nome),'Gerente')}</div>
+    <div class="fgrid">${slU('analista',S.usuarios.filter(u=>['Analista Sênior','Analista','Assistente','Estagiário'].includes(u.cargo)).map(u=>u.nome),'Analista')}<div class="fg"><label>Data de assinatura</label><input type="date" value="${f.data_assinatura||''}" oninput="uf('data_assinatura',this.value)"/></div></div>
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Observações</label><textarea oninput="uf('obs',this.value)">${f.obs||''}</textarea></div></div>
+    <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveDeal()">Salvar</button></div>
   </div></div>`;
 }
-
-function renderUserModal(){
+function mUser(){
   const f=S.editForm;
-  const sel=(k,opts,lbl)=>`<div class="fg"><label>${lbl}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${String(f[k])===String(o)?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  const sl=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${String(f[k])===String(o)?' selected':''}>${o}</option>`).join('')}</select></div>`;
   const dirs=S.usuarios.filter(u=>u.cargo==='Sócio / Diretor'||u.cargo==='Gerente').map(u=>u.nome);
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}">
-  <div class="modal"><h3>${f.id&&!f.id.startsWith('new_')?'Editar usuário':'Novo usuário'}</h3>
-    <div class="form-grid"><div class="fg"><label>Nome completo</label><input value="${f.nome||''}" oninput="uf('nome',this.value)"/></div><div class="fg"><label>E-mail</label><input type="email" value="${f.email||''}" oninput="uf('email',this.value)"/></div></div>
-    <div class="form-grid"><div class="fg"><label>Senha</label><input type="password" value="${f.senha||''}" oninput="uf('senha',this.value)" placeholder="Senha de acesso"/></div>${sel('cargo',CARGOS,'Cargo')}</div>
-    <div class="form-grid">${sel('polo',POLOS,'Polo de atuação')}${sel('area',AREAS,'Área')}</div>
-    <div class="form-grid"><div class="fg"><label>Gestor / Supervisor</label><select onchange="uf('gestor',this.value)"><option value="">— Nenhum —</option>${dirs.map(n=>`<option value="${n}"${f.gestor===n?' selected':''}>${n}</option>`).join('')}</select></div>${sel('ativo',[true,false],'Status')}</div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="handleSaveUser()">Salvar</button></div>
+  const isE=f.id&&!f.id.startsWith('new_');
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar usuário':'Novo usuário'}</h3>
+    <div class="fgrid"><div class="fg"><label>Nome completo</label><input value="${f.nome||''}" oninput="uf('nome',this.value)"/></div><div class="fg"><label>E-mail</label><input type="email" value="${f.email||''}" oninput="uf('email',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Senha</label><input type="password" value="${f.senha||''}" oninput="uf('senha',this.value)" placeholder="Senha"/></div>${sl('cargo',CARGOS,'Cargo')}</div>
+    <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('area',AREAS,'Área')}</div>
+    <div class="fgrid"><div class="fg"><label>Gestor</label><select onchange="uf('gestor',this.value)"><option value="">— Nenhum —</option>${dirs.map(n=>`<option value="${n}"${f.gestor===n?' selected':''}>${n}</option>`).join('')}</select></div>${sl('ativo',[true,false],'Status')}</div>
+    <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveUser()">Salvar</button></div>
+  </div></div>`;
+}
+function mHora(){
+  const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lançar horas</h3>
+    <div class="fgrid"><div class="fg"><label>Colaborador</label><select onchange="uf('usuario_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${f.usuario_id===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
+    <div class="fgrid"><div class="fg"><label>Fase</label><select onchange="uf('fase',this.value)"><option value="">—</option><option>Fase 1 — Preparation</option><option>Fase 2 — Execution</option><option>Geral</option></select></div><div class="fg"><label>Etapa</label><input value="${f.etapa||''}" oninput="uf('etapa',this.value)" placeholder="Ex: Valuation"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Horas</label><input type="number" step="0.5" value="${f.horas||''}" oninput="uf('horas',this.value)"/></div><div class="fg"><label>Data</label><input type="date" value="${f.data||''}" oninput="uf('data',this.value)"/></div></div>
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Descrição</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
+    <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveHora()">Salvar</button></div>
+  </div></div>`;
+}
+function mRecReal(){
+  const f=S.editForm;
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Registrar receita realizada</h3>
+    <div class="fgrid"><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${S.deals.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div><div class="fg"><label>Tipo</label><select onchange="uf('tipo',this.value)"><option value="retainer"${f.tipo==='retainer'?' selected':''}>Retainer</option><option value="success_fee"${f.tipo==='success_fee'?' selected':''}>Success Fee</option></select></div></div>
+    <div class="fgrid"><div class="fg"><label>Valor (R$)</label><input type="number" value="${f.valor||''}" oninput="uf('valor',this.value)"/></div><div class="fg"><label>Período (MM/AAAA)</label><input value="${f.periodo||''}" oninput="uf('periodo',this.value)" placeholder="Ex: 03/2026"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Data pagamento</label><input type="date" value="${f.data_pagamento||''}" oninput="uf('data_pagamento',this.value)"/></div><div class="fg"><label>Descrição</label><input value="${f.descricao||''}" oninput="uf('descricao',this.value)"/></div></div>
+    <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveRecReal()">Salvar</button></div>
+  </div></div>`;
+}
+function mTarefa(){
+  const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  const sl=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Nova tarefa</h3>
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Título</label><input value="${f.titulo||''}" oninput="uf('titulo',this.value)" placeholder="Descreva a tarefa"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Responsável</label><select onchange="uf('responsavel_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${f.responsavel_id===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Nenhum —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
+    <div class="fgrid">${sl('prioridade',['Alta','Normal','Baixa'],'Prioridade')}${sl('status',['Aberta','Em andamento','Concluída'],'Status')}</div>
+    <div class="fgrid"><div class="fg"><label>Fase do projeto</label><input value="${f.fase||''}" oninput="uf('fase',this.value)" placeholder="Ex: Due Diligence"/></div><div class="fg"><label>Prazo</label><input type="date" value="${f.prazo||''}" oninput="uf('prazo',this.value)"/></div></div>
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Detalhamento</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
+    <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveTarefa()">Salvar</button></div>
   </div></div>`;
 }
 
-function renderHoraModal(){
-  const f=S.editForm;
-  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}">
-  <div class="modal"><h3>Lançar horas</h3>
-    <div class="form-grid">
-      <div class="fg"><label>Colaborador</label><select onchange="uf('usuario_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${f.usuario_id===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div>
-      <div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente} — ${d.projeto}</option>`).join('')}</select></div>
-    </div>
-    <div class="form-grid">
-      <div class="fg"><label>Fase</label><select onchange="uf('fase',this.value)"><option value="">—</option><option value="Fase 1 — Preparation">Fase 1 — Preparation</option><option value="Fase 2 — Execution">Fase 2 — Execution</option><option value="Geral">Geral</option></select></div>
-      <div class="fg"><label>Etapa</label><input value="${f.etapa||''}" oninput="uf('etapa',this.value)" placeholder="Ex: Valuation"/></div>
-    </div>
-    <div class="form-grid">
-      <div class="fg"><label>Horas</label><input type="number" step="0.5" value="${f.horas||''}" oninput="uf('horas',this.value)" placeholder="Ex: 2.5"/></div>
-      <div class="fg"><label>Data</label><input type="date" value="${f.data||''}" oninput="uf('data',this.value)"/></div>
-    </div>
-    <div class="form-grid form-full"><div class="fg"><label>Descrição</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
-    <div class="modal-footer"><button class="btn-ghost" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="handleSaveHora()">Salvar</button></div>
-  </div></div>`;
+// ═══ STEPPER SALESFORCE ═══
+function sfStepper(d){
+  const et=d.etapas||{};
+  const feitas=Object.values(et).filter(v=>v==='done').length;
+  const pct=Math.round(feitas/FASES.length*100);
+  const f1=FASES.filter(f=>f.f===1);const f2=FASES.filter(f=>f.f===2);
+  const renderFase=(fases,offset)=>fases.map((e,i)=>{
+    const idx=offset+i;const done=et[idx]==='done';const isActive=!done&&idx===feitas;
+    return`<div class="sf-step ${done?'done':isActive?'active':''}" onclick="hSetEtapa('${d.id}',${idx})" title="${done?'Clique para reabrir':'Clique para marcar como concluído'}">
+      <div class="sf-circle">${done?'✓':idx+1}</div>
+      <div class="sf-label">${e.n}</div>
+    </div>`;}).join('');
+  return`<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:600;color:var(--text)">Progresso: <span style="color:var(--blue)">${pct}%</span> — ${feitas} de ${FASES.length} etapas concluídas</div>
+  </div>
+  <div style="height:6px;background:var(--bg3);border-radius:3px;margin-bottom:16px;overflow:hidden"><div style="height:6px;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:3px;width:${pct}%;transition:width .4s"></div></div>
+  <div class="sf-fase-header">Fase 1 — Preparation & Marketing</div>
+  <div class="sf-wrap"><div class="sf-track">${renderFase(f1,0)}</div></div>
+  <div class="sf-fase-header" style="color:var(--cyan)">Fase 2 — Execution & Closing</div>
+  <div class="sf-wrap"><div class="sf-track">${renderFase(f2,6)}</div></div>
+  </div>`;
 }
 
 // ═══ DETALHE PROJETO ═══
 function renderDetalhe(d){
-  const total=FASES_MA.length;
-  const et=d.etapas||{};
-  const feitas=Object.values(et).filter(v=>v==='done').length;
-  const pct=Math.round(feitas/total*100);
-  const horasD=S.horas.filter(h=>h.deal_id===d.id);
-  const totalH=horasD.reduce((s,h)=>s+(h.horas||0),0);
-  const equipe=[{r:'Diretor',n:d.diretor},{r:'Gerente',n:d.gerente},{r:'Analista',n:d.analista}].filter(p=>p.n);
+  const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);
+  const horasD=S.horas.filter(h=>h.deal_id===d.id);const totalH=horasD.reduce((s,h)=>s+(h.horas||0),0);
+  const eq=[{r:'Diretor',n:d.diretor},{r:'Gerente',n:d.gerente},{r:'Analista',n:d.analista}].filter(p=>p.n);
   const sf=(d.deal_value||0)*((d.success_fee||0)/100);
+  const histD=S.historico.filter(h=>h.deal_id===d.id);
+  const comtsD=S.comentarios.filter(c=>c.deal_id===d.id);
   return`
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-        ${badge(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}${badge(d.mandato,MAND_C[d.mandato]||'#888')}${badge(d.status,STATUS_C[d.status]||'#888')}${badge(d.prob||'Alta',PROB_C[d.prob]||'#888')}${ptag(d.polo)}
+        ${bdg(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}${bdg(d.mandato,MC[d.mandato]||'#888')}${bdg(d.status,SC[d.status]||'#888')}${bdg(d.prob||'Alta',PC[d.prob]||'#888')}${pt(d.polo)}
+        ${d.resultado==='Fechado e Ganho'?'<span class="tg">🏆 Fechado e Ganho</span>':d.resultado==='Fechado e Perdido'?'<span class="tp">✗ Fechado e Perdido</span>':d.resultado==='Congelado'?'<span class="tc">❄ Congelado</span>':''}
       </div>
       <h2 style="font-size:19px;font-weight:700">${d.projeto||d.cliente}</h2>
       <div style="font-size:12px;color:var(--text2);margin-top:3px">${d.cliente}${d.cnpj?' · CNPJ '+d.cnpj:''}${d.setor?' · '+d.setor:''}</div>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn-ghost" onclick="openEditDeal('${d.id}')">Editar</button>
-      <button class="btn-ghost" onclick="S.detail=null;render()">← Voltar</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="bgh bsm" onclick="exportPDF('${d.id}')">📄 PDF</button>
+      <button class="bgh" onclick="openEditDeal('${d.id}')">Editar</button>
+      <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">← Voltar</button>
     </div>
   </div>
-  <div class="kpis">
-    <div class="kpi accent"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(d.deal_value)}</div></div>
-    <div class="kpi"><div class="kpi-label">Retainer Fase 2</div><div class="kpi-value">${fmt(d.retainer_f2||d.retainer_f1)}<span style="font-size:11px;font-weight:400">/mês</span></div><div class="kpi-sub">F1: ${fmt(d.retainer_f1||15000)} × 2</div></div>
-    <div class="kpi"><div class="kpi-label">Success fee</div><div class="kpi-value">${d.success_fee||0}%</div><div class="kpi-sub">${fmt(sf)} potencial</div></div>
-    <div class="kpi"><div class="kpi-label">Horas registradas</div><div class="kpi-value">${totalH.toFixed(1)}h</div><div class="kpi-sub">${horasD.length} lançamentos</div></div>
+  <div class="kpis k4">
+    <div class="kpi ac"><div class="kl">Deal value</div><div class="kv">${fmt(d.deal_value)}</div></div>
+    <div class="kpi"><div class="kl">Retainer F2/mês</div><div class="kv">${fmt(d.retainer_f2)}</div><div class="ks">F1: ${fmt(d.retainer_f1||15000)} × 2</div></div>
+    <div class="kpi"><div class="kl">Success fee</div><div class="kv">${d.success_fee||0}%</div><div class="ks">${fmt(sf)} potencial</div></div>
+    <div class="kpi"><div class="kl">Horas</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks">${horasD.length} lançamentos</div></div>
   </div>
   <div class="card">
-    <div class="card-title">Progresso M&A — ${pct}% (${feitas}/${total} etapas)</div>
-    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
-      <span style="font-size:10px;font-weight:700;color:var(--blue);background:rgba(0,120,212,.12);padding:3px 10px;border-radius:10px">Fase 1 — Preparation & Marketing</span>
-      <span style="font-size:10px;font-weight:700;color:var(--cyan);background:rgba(0,180,216,.12);padding:3px 10px;border-radius:10px">Fase 2 — Execution & Closing</span>
+    <div class="ct">Progresso das Fases M&A</div>
+    ${sfStepper(d)}
+    <div style="margin-top:16px">
+      ${FASES.map((e,i)=>{
+        const done=et[i]==='done';const k=`${d.id}_${i}`;const sh=S.novoComt[`sh_${k}`];const comtsEt=comtsD.filter(c=>c.etapa_idx===i);
+        return`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:11px;font-weight:${done?600:400};color:${done?'var(--green)':'var(--text2)'}">${done?'✓':''} ${e.n} <span style="opacity:.5">Fase ${e.f}</span></span>
+            <div style="display:flex;align-items:center;gap:6px">
+              ${comtsEt.length?`<span style="font-size:10px;color:var(--text2)">${comtsEt.length}💬</span>`:''}
+              <button class="bgh bsm" onclick="togComt('${k}')">Comentar</button>
+            </div>
+          </div>
+          ${sh?`<div style="padding:8px 0 4px 0">
+            ${comtsEt.map(c=>`<div class="cmt-box"><div class="cmt-meta"><strong>${c.usuario_nome||'—'}</strong> · ${fmtTS(c.created_at)}</div>${c.texto}</div>`).join('')}
+            <div class="cmt-inp"><input placeholder="Adicionar comentário..." value="${S.novoComt[k]||''}" oninput="S.novoComt['${k}']=this.value" onkeydown="if(event.key==='Enter')hAddComt('${d.id}',${i})"/><button class="btn bsm" onclick="hAddComt('${d.id}',${i})">Enviar</button></div>
+          </div>`:''}
+        </div>`;}).join('')}
     </div>
-    ${FASES_MA.map((e,i)=>{
-      const done=et[i]==='done';
-      const cor=e.f===1?'var(--blue)':'var(--cyan)';
-      return`<div class="etapa-item">
-        <div class="etapa-check ${done?'done':''}" onclick="handleSetEtapa('${d.id}',${i})" style="${!done?`border-color:${cor}`:''}">${done?'✓':''}</div>
-        <div style="flex:1"><span style="font-size:12px;font-weight:${done?600:400};color:${done?'var(--green)':'var(--text)'}">${e.n}</span><span style="font-size:10px;color:var(--text2);margin-left:8px">Fase ${e.f}</span></div>
-        <span class="badge" style="font-size:9px;background:${done?'rgba(34,197,94,.12)':'var(--bg3)'};color:${done?'var(--green)':'var(--text2)'}">${done?'Concluído':'Pendente'}</span>
-      </div>`;
-    }).join('')}
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-title">Dados do contrato</div>
-      ${[['Assinatura',fmtDate(d.data_assinatura)],['Início',fmtDate(d.data_inicio)],['Polo',d.polo],['CNPJ',d.cnpj],['Dia fat.',d.dia_fat?'Dia '+d.dia_fat:'—']].filter(([,v])=>v&&v!=='—').map(([k,v],i,a)=>`
-      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
-        <span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span>
-      </div>`).join('')}
+  <div class="g2">
+    <div class="card"><div class="ct">Dados do contrato</div>
+      ${[['Assinatura',d.data_assinatura],['Início',d.data_inicio],['Polo',d.polo],['CNPJ',d.cnpj],['Dia fat.',d.dia_fat?'Dia '+d.dia_fat:'—']].filter(([,v])=>v&&v!=='—').map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span></div>`).join('')}
       ${d.obs?`<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.7">${d.obs}</div>`:''}
     </div>
-    <div class="card">
-      <div class="card-title">Equipe alocada</div>
-      ${equipe.length===0?`<div style="color:var(--text2);font-size:12px;margin-bottom:10px">Nenhuma equipe cadastrada.</div>`:
-      equipe.map((p,i,a)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
-        <div class="av">${ini(p.n)}</div>
-        <div><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--text2)">${p.r}</div></div>
-      </div>`).join('')}
-      <button class="btn btn-sm" style="margin-top:10px" onclick="openEditDeal('${d.id}')">Editar equipe</button>
+    <div class="card"><div class="ct">Equipe alocada</div>
+      ${eq.length===0?`<div style="color:var(--text2);font-size:12px">Nenhuma equipe cadastrada.</div>`:eq.map((p,i,a)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><div class="av">${ini(p.n)}</div><div><div style="font-size:12px;font-weight:600">${p.n}</div><div style="font-size:10px;color:var(--text2)">${p.r}</div></div></div>`).join('')}
     </div>
   </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div class="card-title" style="margin:0">Horas por colaborador</div>
-      <button class="btn btn-sm" onclick="openAddHora()">+ Lançar horas</button>
+  ${histD.length?`<div class="card"><div class="ct">Histórico de alterações</div>${histD.slice(0,15).map(h=>`<div class="hist-item"><div class="av" style="width:26px;height:26px;font-size:9px;flex-shrink:0">${ini(h.usuario_nome||'S')}</div><div><div style="font-weight:600">${h.usuario_nome||'Sistema'} <span style="font-weight:400;color:var(--text2)">alterou <strong>${h.campo}</strong></span></div><div style="color:var(--text2);margin-top:2px">${h.valor_anterior?h.valor_anterior+' → ':''}<span style="color:var(--text)">${h.valor_novo}</span></div><div style="font-size:10px;color:var(--text2)">${fmtTS(h.created_at)}</div></div></div>`).join('')}</div>`:''}
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button class="bdg" onclick="hDelDeal('${d.id}')">Excluir projeto</button></div>`;
+}
+
+// ═══ PERFIL ANALISTA ═══
+function renderPerfilAnalista(uid){
+  const u=S.usuarios.find(x=>x.id===uid);if(!u)return'';
+  const deals=S.deals.filter(d=>d.diretor===u.nome||d.gerente===u.nome||d.analista===u.nome);
+  const horasU=S.horas.filter(h=>h.usuario_id===uid);
+  const totalH=horasU.reduce((s,h)=>s+(h.horas||0),0);
+  const byDeal={};horasU.forEach(h=>{byDeal[h.deal_id]=(byDeal[h.deal_id]||0)+(h.horas||0);});
+  const byFase={};horasU.forEach(h=>{if(h.fase)byFase[h.fase]=(byFase[h.fase]||0)+(h.horas||0);});
+  const totalRet=deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado').reduce((s,d)=>s+(d.retainer_f2||0),0);
+  const totalSF=deals.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+  const ganhos=deals.filter(d=>d.resultado==='Fechado e Ganho').length;
+  return`
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+    <div class="ap-header">
+      <div class="ap-av">${ini(u.nome)}</div>
+      <div>
+        <h2 style="font-size:18px;font-weight:700">${u.nome}</h2>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">${u.cargo} · ${pt(u.polo)} · ${u.area||'—'}</div>
+        ${u.gestor?`<div style="font-size:11px;color:var(--text2);margin-top:3px">Gestor: ${u.gestor}</div>`:''}
+      </div>
     </div>
-    ${horasD.length===0?`<div class="empty">Nenhuma hora registrada.</div>`:`
-    <table><thead><tr><th>Colaborador</th><th>Fase</th><th>Etapa</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead>
-    <tbody>${horasD.map(h=>{
-      const u=S.usuarios.find(x=>x.id===h.usuario_id);
-      return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="color:var(--text2)">${h.etapa||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="btn-danger btn-sm" onclick="handleDelHora('${h.id}')">✕</button></td></tr>`;
-    }).join('')}</tbody></table>`}
+    <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">← Voltar</button>
   </div>
-  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
-    <button class="btn-danger" onclick="handleDelDeal('${d.id}')">Excluir projeto</button>
+  <div class="kpis k5">
+    <div class="kpi ac"><div class="kl">Projetos</div><div class="kv">${deals.length}</div><div class="ks">${ganhos} fechados e ganhos</div></div>
+    <div class="kpi"><div class="kl">Horas totais</div><div class="kv">${totalH.toFixed(1)}h</div></div>
+    <div class="kpi"><div class="kl">Retainer mensal</div><div class="kv">${fmt(totalRet)}</div><div class="ks">Projetos ativos</div></div>
+    <div class="kpi ac2"><div class="kl">SF potencial</div><div class="kv">${fmt(totalSF)}</div></div>
+    <div class="kpi"><div class="kl">Deal value total</div><div class="kv">${fmt(deals.reduce((s,d)=>s+(d.deal_value||0),0))}</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Horas por projeto</div>
+      ${Object.entries(byDeal).length===0?`<div class="empty" style="padding:16px">Sem horas registradas</div>`:
+      Object.entries(byDeal).map(([did,h])=>{const d=S.deals.find(x=>x.id===did);const mx=Math.max(...Object.values(byDeal),1);const pct=Math.round(h/mx*100);return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${d?d.cliente:did}</span><span style="color:var(--blue)">${h.toFixed(1)}h</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:var(--blue);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
+    </div>
+    <div class="card"><div class="ct">Horas por fase</div>
+      ${Object.entries(byFase).length===0?`<div class="empty" style="padding:16px">Sem horas por fase</div>`:
+      Object.entries(byFase).map(([fase,h])=>{const mx=Math.max(...Object.values(byFase),1);const pct=Math.round(h/mx*100);return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${fase}</span><span style="color:var(--cyan)">${h.toFixed(1)}h</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:var(--cyan);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
+    </div>
+  </div>
+  <div class="card"><div class="ct">Projetos do colaborador</div>
+    ${deals.length===0?`<div class="empty">Nenhum projeto</div>`:`
+    <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Papel</th><th>Status</th><th>Deal value</th><th>SF potencial</th><th>Progresso</th><th></th></tr></thead>
+    <tbody>${deals.map(d=>{const papel=d.diretor===u.nome?'Diretor':d.gerente===u.nome?'Gerente':'Analista';const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);const sf=(d.deal_value||0)*((d.success_fee||0)/100);return`<tr><td style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';render()">${d.cliente}</td><td style="color:var(--text2)">${d.projeto||'—'}</td><td>${bdg(papel,'#0078D4')}</td><td>${bdg(d.status,SC[d.status]||'#888')}</td><td style="font-weight:600">${fmt(d.deal_value)}</td><td style="color:var(--cyan)">${fmt(sf)}</td><td><div style="min-width:70px"><div style="font-size:10px;color:var(--text2);margin-bottom:2px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td><td><button class="btn bsm" onclick="S.detail='${d.id}';S.detailType='deal';render()">Ver</button></td></tr>`;}).join('')}</tbody></table>`}
   </div>`;
 }
 
 // ═══ PÁGINAS ═══
-function renderDashboard(){
-  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
-  const filtr=S.seg==='ma'?ativos.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?ativos.filter(d=>d.tipo==='DCM'):ativos;
-  const totalDV=filtr.reduce((s,d)=>s+(d.deal_value||0),0);
-  const totalRet=filtr.reduce((s,d)=>s+(d.retainer_f2||0),0);
-  const totalSF=filtr.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
-  const recPond=filtr.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100)*({Alta:.8,Média:.5,Baixa:.2}[d.prob]||.5),0);
-  const totalH=S.horas.reduce((s,h)=>s+(h.horas||0),0);
-  const byMandato={};filtr.forEach(d=>{byMandato[d.mandato]=(byMandato[d.mandato]||0)+(d.deal_value||0);});
-  const byStatus={};S.deals.forEach(d=>{byStatus[d.status]=(byStatus[d.status]||0)+1;});
-  const byPolo={ES:0,SC:0,Ambos:0};filtr.forEach(d=>{if(byPolo[d.polo]!==undefined)byPolo[d.polo]++;});
+function filtrados(){let l=S.deals;if(S.filtroColab)l=l.filter(d=>d.diretor===S.filtroColab||d.gerente===S.filtroColab||d.analista===S.filtroColab);return l;}
+function ativos(l){return(l||S.deals).filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');}
+
+function renderDash(){
+  const all=filtrados();const at=ativos(all);
+  const fl=S.seg==='ma'?at.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
+  const tDV=fl.reduce((s,d)=>s+(d.deal_value||0),0);
+  const tRet=fl.reduce((s,d)=>s+(d.retainer_f2||0),0);
+  const tSF=fl.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+  const rPond=fl.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100)*({Alta:.8,Média:.5,Baixa:.2}[d.prob]||.5),0);
+  const tH=S.horas.reduce((s,h)=>s+(h.horas||0),0);
+  const byM={};fl.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
+  const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
+  const byPolo={ES:0,SC:0,Ambos:0};fl.forEach(d=>{if(byPolo[d.polo]!==undefined)byPolo[d.polo]++;});
+  // fases kanban
+  const faseNomes=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt','IO/NBO','Negoc.','LOI','Due Dilig.','Contratos','Closing'];
+  const byFase={};faseNomes.forEach((f,i)=>byFase[i]=[]);
+  fl.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const idx=Math.min(n,11);byFase[idx]=(byFase[idx]||[]);byFase[idx].push(d);});
+  // analistas
+  const analistas=S.usuarios.filter(u=>['Analista Sênior','Analista','Assistente','Estagiário'].includes(u.cargo));
+  const byA=analistas.map(u=>{const n=S.deals.filter(d=>d.analista===u.nome||d.gerente===u.nome).length;return{nome:u.nome,n,id:u.id};}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  const maxA=Math.max(...byA.map(x=>x.n),1);
   return`
-  <div class="kpis kpis-5">
-    <div class="kpi accent"><div class="kpi-label">Projetos ativos</div><div class="kpi-value">${filtr.length}</div><div class="kpi-sub">${S.deals.filter(d=>d.status==='Concluído').length} concluído(s)</div></div>
-    <div class="kpi"><div class="kpi-label">Deal value</div><div class="kpi-value">${fmt(totalDV)}</div></div>
-    <div class="kpi"><div class="kpi-label">SF potencial</div><div class="kpi-value">${fmt(totalSF)}</div></div>
-    <div class="kpi accent2"><div class="kpi-label">Receita ponderada</div><div class="kpi-value">${fmt(recPond)}</div><div class="kpi-sub">Por probabilidade</div></div>
-    <div class="kpi"><div class="kpi-label">MRR retainers</div><div class="kpi-value">${fmt(totalRet)}</div><div class="kpi-sub">${totalH.toFixed(0)}h registradas</div></div>
+  <div class="kpis k5">
+    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${S.deals.filter(d=>d.resultado==='Fechado e Ganho').length} fechados e ganhos</div></div>
+    <div class="kpi"><div class="kl">Deal value</div><div class="kv">${fmt(tDV)}</div></div>
+    <div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div></div>
+    <div class="kpi ac2"><div class="kl">Receita ponderada</div><div class="kv">${fmt(rPond)}</div><div class="ks">Por probabilidade</div></div>
+    <div class="kpi"><div class="kl">MRR retainers</div><div class="kv">${fmt(tRet)}</div><div class="ks">${tH.toFixed(0)}h registradas</div></div>
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-title">Deal value por mandato</div><div class="chart-wrap"><canvas id="cMandato"></canvas></div></div>
-    <div class="card"><div class="card-title">Status dos projetos</div><div class="chart-wrap"><canvas id="cStatus"></canvas></div></div>
+  <div class="g2">
+    <div class="card"><div class="ct">Deal value por mandato</div><div class="cw"><canvas id="cM"></canvas></div></div>
+    <div class="card"><div class="ct">Status dos projetos</div><div class="cw"><canvas id="cS"></canvas></div></div>
   </div>
-  <div class="grid3">
-    <div class="card"><div class="card-title">Por polo</div>${Object.entries(byPolo).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">${ptag(k)}<span style="font-weight:600">${v}</span></div>`).join('')}</div>
-    <div class="card"><div class="card-title">Projetos recentes</div>${filtr.slice(0,4).map(d=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.mandato}</div></div>${badge(d.status,STATUS_C[d.status]||'#888')}</div>`).join('')||`<div class="empty" style="padding:16px">Sem projetos</div>`}</div>
-    <div class="card"><div class="card-title">Por probabilidade</div>${['Alta','Média','Baixa'].map(p=>{const n=filtr.filter(d=>d.prob===p).length;const pct=filtr.length?Math.round(n/filtr.length*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${PROB_C[p]}">${p}</span><span>${n} (${pct}%)</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PROB_C[p]};border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}</div>
+  <div class="card"><div class="ct">Projetos por fase atual</div>
+    <div class="fase-kanban">
+      ${faseNomes.map((fn,i)=>{const deals=byFase[i]||[];if(!deals.length&&i>0&&!byFase[i-1]?.length)return'';const cor=i<6?'var(--blue)':'var(--cyan)';return`<div class="fk-col">
+        <div class="fk-head" style="background:${cor}22;color:${cor}">${fn}<br><span style="font-size:11px;font-weight:700">${deals.length}</span></div>
+        <div class="fk-body">${deals.map(d=>`<div class="fk-chip" onclick="S.detail='${d.id}';S.detailType='deal';render()" title="${d.cliente}">${d.cliente.split(' ')[0]}</div>`).join('')||'<div style="font-size:10px;color:var(--text2);text-align:center;padding:6px">—</div>'}</div>
+      </div>`;}).join('')}
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Projetos por analista</div>
+      ${byA.length===0?`<div class="empty" style="padding:16px">Cadastre analistas na aba Equipe</div>`:
+      byA.map((x,i)=>{const pct=Math.round(x.n/maxA*100);return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="av" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,${PAL[i%PAL.length]},${PAL[(i+1)%PAL.length]})">${ini(x.nome)}</div>
+        <div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${x.id}';S.detailType='analista';render()">${x.nome}</span><span style="font-weight:700;color:var(--blue)">${x.n}</span></div>
+        <div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PAL[i%PAL.length]};border-radius:3px;width:${pct}%"></div></div></div>
+      </div>`;}).join('')}
+    </div>
+    <div class="card"><div class="ct">Por probabilidade & polo</div>
+      ${['Alta','Média','Baixa'].map(p=>{const n=fl.filter(d=>d.prob===p).length;const pct=fl.length?Math.round(n/fl.length*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${PC[p]};font-weight:600">${p}</span><span>${n} (${pct}%)</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PC[p]};border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        ${Object.entries(byPolo).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0">${pt(k)}<span style="font-weight:600">${v}</span></div>`).join('')}
+      </div>
+    </div>
   </div>`;
 }
 
 function renderPipeline(){
-  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  const at=ativos(filtrados());
   const fases=['Preparação','Abordagem','Negociação','Due Diligence','Contratos','Closing'];
   const mapa={};fases.forEach(f=>mapa[f]=[]);
-  ativos.forEach(d=>{
-    const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;
-    let fase=fases[0];
-    if(n>=10)fase=fases[5];else if(n>=8)fase=fases[4];else if(n>=6)fase=fases[3];else if(n>=4)fase=fases[2];else if(n>=2)fase=fases[1];
-    mapa[fase].push(d);
-  });
-  const totalDV=ativos.reduce((s,d)=>s+(d.deal_value||0),0);
-  const totalSF=ativos.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+  at.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;let f=fases[0];if(n>=10)f=fases[5];else if(n>=8)f=fases[4];else if(n>=6)f=fases[3];else if(n>=4)f=fases[2];else if(n>=2)f=fases[1];mapa[f].push(d);});
+  const tDV=at.reduce((s,d)=>s+(d.deal_value||0),0);const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   return`
-  <div class="kpis kpis-3">
-    <div class="kpi accent"><div class="kpi-label">Pipeline total</div><div class="kpi-value">${fmt(totalDV)}</div></div>
-    <div class="kpi"><div class="kpi-label">SF potencial</div><div class="kpi-value">${fmt(totalSF)}</div></div>
-    <div class="kpi"><div class="kpi-label">Deals ativos</div><div class="kpi-value">${ativos.length}</div></div>
-  </div>
+  <div class="kpis k3"><div class="kpi ac"><div class="kl">Pipeline total</div><div class="kv">${fmt(tDV)}</div></div><div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div></div><div class="kpi"><div class="kl">Deals ativos</div><div class="kv">${at.length}</div></div></div>
   <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
-    ${fases.map(f=>`<div class="pipe-col">
-      <div class="pipe-header">${f} <span style="margin-left:4px;font-size:9px;opacity:.7">${mapa[f].length}</span></div>
-      <div class="pipe-body">
-        ${mapa[f].length===0?`<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>`:
-        mapa[f].map(d=>`<div class="pipe-card" onclick="S.detail='${d.id}';render()">
-          <div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div>
-          <div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}%</div>
-          <div style="margin-top:5px">${badge(d.prob||'—',PROB_C[d.prob]||'#888')}</div>
-        </div>`).join('')}
-      </div>
-    </div>`).join('')}
+    ${fases.map(f=>`<div class="pipe-col"><div class="pipe-header">${f} <span style="font-size:9px;opacity:.7">${mapa[f].length}</span></div><div class="pipe-body">
+      ${mapa[f].length===0?`<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>`:mapa[f].map(d=>`<div class="pipe-card" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}%</div><div style="margin-top:5px">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`).join('')}
+    </div></div>`).join('')}
   </div>`;
 }
 
 function renderProjetos(){
   const tipo=S.page==='ma'?'M&A':S.page==='dcm'?'DCM':null;
-  const list=S.page==='encerrados'?S.deals.filter(d=>d.status==='Concluído'||d.status==='Congelado'):tipo?S.deals.filter(d=>d.tipo===tipo&&d.status!=='Concluído'&&d.status!=='Congelado'):S.deals;
+  const list=S.page==='encerrados'?S.deals.filter(d=>d.status==='Concluído'||d.status==='Congelado'||d.resultado):tipo?S.deals.filter(d=>d.tipo===tipo&&d.status!=='Concluído'&&d.status!=='Congelado'&&!d.resultado):S.deals.filter(d=>d.tipo===tipo&&!d.resultado);
+  const finalList=tipo?list:S.page==='encerrados'?S.deals.filter(d=>d.status==='Concluído'||d.status==='Congelado'||['Fechado e Ganho','Fechado e Perdido','Congelado'].includes(d.resultado)):S.deals.filter(d=>!['Fechado e Ganho','Fechado e Perdido'].includes(d.resultado)&&d.status!=='Concluído'&&d.status!=='Congelado');
+  const used=tipo?(S.page==='encerrados'?S.deals.filter(d=>(d.status==='Concluído'||d.status==='Congelado')&&d.tipo===tipo):S.deals.filter(d=>d.tipo===tipo&&d.status!=='Concluído'&&d.status!=='Congelado'&&!['Fechado e Ganho','Fechado e Perdido'].includes(d.resultado))):S.page==='encerrados'?S.deals.filter(d=>d.status==='Concluído'||d.status==='Congelado'||['Fechado e Ganho','Fechado e Perdido','Congelado'].includes(d.resultado)):S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado'&&!['Fechado e Ganho','Fechado e Perdido'].includes(d.resultado));
   return`
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px">${S.page!=='encerrados'?`<button class="btn" onclick="openAddDeal()">+ Novo projeto</button>`:''}</div>
-  <div class="card" style="margin-bottom:0">
-    ${list.length===0?`<div class="empty">Nenhum projeto encontrado.</div>`:`
-    <div style="overflow-x:auto"><table>
-      <thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th><th>Status</th><th>Prob.</th><th>Polo</th><th>Deal value</th><th>Retainer</th><th>Progresso</th><th>Equipe</th><th></th></tr></thead>
-      <tbody>${list.map(d=>{
-        const total=FASES_MA.length;
-        const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;
-        const pct=Math.round(feitas/total*100);
-        return`<tr>
-          <td><div style="font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.setor||''}</div></td>
-          <td style="color:var(--text2)">${d.projeto||'—'}</td>
-          <td>${badge(d.mandato,MAND_C[d.mandato]||'#888')}</td>
-          <td>${badge(d.status,STATUS_C[d.status]||'#888')}</td>
-          <td>${badge(d.prob||'—',PROB_C[d.prob]||'#888')}</td>
-          <td>${ptag(d.polo)}</td>
-          <td style="font-weight:600">${fmt(d.deal_value)}</td>
-          <td>${fmt(d.retainer_f2)}/mês</td>
-          <td><div style="min-width:80px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td>
-          <td style="font-size:11px;color:${d.diretor?'var(--text)':'var(--red)'}">${d.diretor||'Não definida'}</td>
-          <td style="white-space:nowrap">
-            <button class="btn btn-sm" onclick="S.detail='${d.id}';render()" style="margin-right:4px">Ver</button>
-            <button class="btn-ghost btn-sm" onclick="openEditDeal('${d.id}')" style="margin-right:4px">Editar</button>
-            <button class="btn-danger btn-sm" onclick="handleDelDeal('${d.id}')">✕</button>
-          </td>
-        </tr>`;}).join('')}
-      </tbody>
-    </table></div>`}
-  </div>`;
+  <div class="card" style="margin-bottom:0"><div style="overflow-x:auto">
+    ${used.length===0?`<div class="empty">Nenhum projeto.</div>`:`
+    <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th><th>Status</th>${S.page==='encerrados'?'<th>Resultado</th>':''}<th>Prob.</th><th>Polo</th><th>Deal value</th><th>Retainer</th><th>Progresso</th><th>Equipe</th><th></th></tr></thead>
+    <tbody>${used.map(d=>{const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);return`<tr>
+      <td><div style="font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.setor||''}</div></td>
+      <td style="color:var(--text2)">${d.projeto||'—'}</td>
+      <td>${bdg(d.mandato,MC[d.mandato]||'#888')}</td>
+      <td>${bdg(d.status,SC[d.status]||'#888')}</td>
+      ${S.page==='encerrados'?`<td>${d.resultado==='Fechado e Ganho'?'<span class="tg">🏆 Ganho</span>':d.resultado==='Fechado e Perdido'?'<span class="tp">✗ Perdido</span>':d.resultado==='Congelado'?'<span class="tc">❄ Congelado</span>':'<span style="color:var(--text2)">—</span>'}</td>`:''}
+      <td>${bdg(d.prob||'—',PC[d.prob]||'#888')}</td><td>${pt(d.polo)}</td>
+      <td style="font-weight:600">${fmt(d.deal_value)}</td><td>${fmt(d.retainer_f2)}/mês</td>
+      <td><div style="min-width:80px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td>
+      <td style="font-size:11px;color:${d.diretor?'var(--text)':'var(--red)'}">${d.diretor||'Não definida'}</td>
+      <td style="white-space:nowrap"><button class="btn bsm" onclick="S.detail='${d.id}';S.detailType='deal';render()" style="margin-right:4px">Ver</button><button class="bgh bsm" onclick="openEditDeal('${d.id}')" style="margin-right:4px">Editar</button><button class="bdg bsm" onclick="hDelDeal('${d.id}')">✕</button></td>
+    </tr>`;}).join('')}</tbody></table>`}
+  </div></div>`;
 }
 
 function renderEquipe(){
   return`
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddUser()">+ Novo usuário</button></div>
-  <div class="card">
-    ${S.usuarios.length===0?`<div class="empty">Nenhum usuário cadastrado.</div>`:`
-    <table><thead><tr><th>Nome</th><th>Cargo</th><th>Polo</th><th>Área</th><th>Gestor</th><th>Projetos</th><th>Horas</th><th>Status</th><th></th></tr></thead>
-    <tbody>${S.usuarios.map(u=>{
-      const proj=S.deals.filter(d=>d.diretor===u.nome||d.gerente===u.nome||d.analista===u.nome).length;
-      const hrs=S.horas.filter(h=>h.usuario_id===u.id).reduce((s,h)=>s+(h.horas||0),0);
-      return`<tr>
-        <td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:28px;height:28px;font-size:10px">${ini(u.nome)}</div><span style="font-weight:600">${u.nome}</span></div></td>
-        <td style="color:var(--text2)">${u.cargo}</td>
-        <td>${ptag(u.polo)}</td>
-        <td style="color:var(--text2)">${u.area||'—'}</td>
-        <td style="color:var(--text2)">${u.gestor||'—'}</td>
-        <td style="font-weight:600">${proj}</td>
-        <td style="font-weight:600;color:var(--blue)">${hrs.toFixed(1)}h</td>
-        <td>${badge(u.ativo!==false?'Ativo':'Inativo',u.ativo!==false?'#22C55E':'#EF4444')}</td>
-        <td style="white-space:nowrap">
-          <button class="btn-ghost btn-sm" onclick="openEditUser('${u.id}')" style="margin-right:4px">Editar</button>
-          <button class="btn-danger btn-sm" onclick="handleDelUser('${u.id}')">✕</button>
-        </td>
-      </tr>`;}).join('')}
-    </tbody></table>`}
-  </div>`;
+  <div class="card">${S.usuarios.length===0?`<div class="empty">Nenhum usuário.</div>`:`
+  <table><thead><tr><th>Nome</th><th>Cargo</th><th>Polo</th><th>Área</th><th>Gestor</th><th>Projetos</th><th>Horas</th><th>Status</th><th></th></tr></thead>
+  <tbody>${S.usuarios.map(u=>{const proj=S.deals.filter(d=>d.diretor===u.nome||d.gerente===u.nome||d.analista===u.nome).length;const hrs=S.horas.filter(h=>h.usuario_id===u.id).reduce((s,h)=>s+(h.horas||0),0);
+  return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:28px;height:28px;font-size:10px;cursor:pointer" onclick="S.detail='${u.id}';S.detailType='analista';render()">${ini(u.nome)}</div><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${u.id}';S.detailType='analista';render()">${u.nome}</span></div></td>
+  <td style="color:var(--text2)">${u.cargo}</td><td>${pt(u.polo)}</td><td style="color:var(--text2)">${u.area||'—'}</td><td style="color:var(--text2)">${u.gestor||'—'}</td>
+  <td style="font-weight:600">${proj}</td><td style="font-weight:600;color:var(--blue)">${hrs.toFixed(1)}h</td>
+  <td>${bdg(u.ativo!==false?'Ativo':'Inativo',u.ativo!==false?'#22C55E':'#EF4444')}</td>
+  <td style="white-space:nowrap"><button class="bgh bsm" onclick="openEditUser('${u.id}')" style="margin-right:4px">Editar</button><button class="bdg bsm" onclick="hDelUser('${u.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}</div>`;
+}
+
+function renderTarefas(){
+  const cu=S.currentUser;
+  const isMgr=cu&&(cu.cargo==='Sócio / Diretor'||cu.cargo==='Gerente');
+  const minhas=S.tarefas.filter(t=>t.responsavel_id===cu?.id);
+  const abertas=minhas.filter(t=>t.status!=='Concluída');const conc=minhas.filter(t=>t.status==='Concluída');
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const vencidas=abertas.filter(t=>{if(!t.prazo)return false;const p=new Date(t.prazo);p.setHours(0,0,0,0);return p<hoje;});
+  const corPrior={'Alta':'var(--red)','Normal':'var(--blue)','Baixa':'var(--green)'};
+  const renderCard=t=>{const d=S.deals.find(x=>x.id===t.deal_id);const vencida=t.prazo&&new Date(t.prazo)<hoje&&t.status!=='Concluída';return`<div class="tarefa-card ${t.prioridade?.toLowerCase()||''} ${t.status==='Concluída'?'Concluída':''}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <input type="checkbox" ${t.status==='Concluída'?'checked':''} onchange="toggleTarefa('${t.id}')" style="cursor:pointer;width:14px;height:14px"/>
+          <span style="font-size:12px;font-weight:600;color:${t.status==='Concluída'?'var(--text2)':'var(--text)'};text-decoration:${t.status==='Concluída'?'line-through':'none'}">${t.titulo}</span>
+          <span style="font-size:10px;font-weight:700;color:${corPrior[t.prioridade||'Normal']}">${t.prioridade||'Normal'}</span>
+        </div>
+        ${t.descricao?`<div style="font-size:11px;color:var(--text2);margin-bottom:4px">${t.descricao}</div>`:''}
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${d?`<span style="font-size:10px;color:var(--text2)">📁 ${d.cliente}</span>`:''}
+          ${t.fase?`<span style="font-size:10px;color:var(--text2)">📌 ${t.fase}</span>`:''}
+          ${t.prazo?`<span style="font-size:10px;color:${vencida?'var(--red)':'var(--text2)'};font-weight:${vencida?700:400}">📅 ${t.prazo}${vencida?' ⚠ Vencida':''}</span>`:''}
+          <span style="font-size:10px;color:var(--text2)">Por: ${t.criado_por_nome||'—'}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="bgh bsm" onclick="openEditTarefa('${t.id}')">Editar</button>
+        <button class="bdg bsm" onclick="hDelTarefa('${t.id}')">✕</button>
+      </div>
+    </div>
+  </div>`;};
+  return`
+  <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddTarefa()">+ Nova tarefa</button></div>
+  <div class="kpis k3">
+    <div class="kpi ac"><div class="kl">Minhas tarefas</div><div class="kv">${abertas.length}</div><div class="ks">${conc.length} concluídas</div></div>
+    <div class="kpi"><div class="kl">Vencidas</div><div class="kv" style="color:${vencidas.length?'var(--red)':'var(--text)'}">${vencidas.length}</div></div>
+    <div class="kpi"><div class="kl">Total</div><div class="kv">${minhas.length}</div></div>
+  </div>
+  ${vencidas.length?`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px;margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">⚠ ${vencidas.length} tarefa${vencidas.length!==1?'s':''} vencida${vencidas.length!==1?'s':''}</div>${vencidas.map(renderCard).join('')}</div>`:''}
+  <div class="card"><div class="ct">Tarefas abertas (${abertas.length})</div>${abertas.length===0?`<div class="empty">Nenhuma tarefa aberta 🎉</div>`:abertas.filter(t=>!vencidas.find(v=>v.id===t.id)).map(renderCard).join('')}</div>
+  ${conc.length?`<div class="card"><div class="ct">Concluídas (${conc.length})</div>${conc.slice(0,10).map(renderCard).join('')}</div>`:''} `;
 }
 
 function renderReceita(){
-  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
-  const totalRet=ativos.reduce((s,d)=>s+(d.retainer_f2||0),0);
-  const totalSF=ativos.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
-  const sorted=[...ativos].sort((a,b)=>(b.retainer_f2||0)-(a.retainer_f2||0));
+  const at=ativos();
+  const periodoOpts=S.filtroPeriodoTipo==='mensal'?getMeses():getTrims();
+  const filtrarPor=(data)=>{if(!S.filtroPeriodo)return true;if(S.filtroPeriodoTipo==='mensal'){const[y,m]=S.filtroPeriodo.split('-');if(!y||!m)return true;const d=new Date(data);return d.getFullYear()===parseInt(y)&&d.getMonth()+1===parseInt(m);}return true;};
+  const recFilt=S.recReal.filter(r=>filtrarPor(r.data_pagamento));
+  const tRet=at.reduce((s,d)=>s+(d.retainer_f2||0),0);
+  const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+  const tReal=recFilt.reduce((s,r)=>s+(r.valor||0),0);
+  const tRetReal=recFilt.filter(r=>r.tipo==='retainer').reduce((s,r)=>s+(r.valor||0),0);
+  const tSFReal=recFilt.filter(r=>r.tipo==='success_fee').reduce((s,r)=>s+(r.valor||0),0);
+  // success fees de projetos fechados e ganhos
+  const ganhos=S.deals.filter(d=>d.resultado==='Fechado e Ganho');
+  const sfGanhos=ganhos.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   return`
-  <div class="kpis">
-    <div class="kpi accent"><div class="kpi-label">MRR retainers</div><div class="kpi-value">${fmt(totalRet)}</div><div class="kpi-sub">Recorrente mensal</div></div>
-    <div class="kpi"><div class="kpi-label">ARR projetado</div><div class="kpi-value">${fmt(totalRet*12)}</div></div>
-    <div class="kpi"><div class="kpi-label">SF potencial</div><div class="kpi-value">${fmt(totalSF)}</div></div>
-    <div class="kpi"><div class="kpi-label">Fee médio</div><div class="kpi-value">${ativos.length?(ativos.reduce((s,d)=>s+(d.success_fee||0),0)/ativos.length).toFixed(1)+'%':'—'}</div></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <div class="seg"><button class="seg-btn ${S.filtroPeriodoTipo==='mensal'?'active':''}" onclick="S.filtroPeriodoTipo='mensal';S.filtroPeriodo='';render()">Mensal</button><button class="seg-btn ${S.filtroPeriodoTipo==='trimestral'?'active':''}" onclick="S.filtroPeriodoTipo='trimestral';S.filtroPeriodo='';render()">Trimestral</button></div>
+    <select class="fsel" onchange="S.filtroPeriodo=this.value;render()"><option value="">Todos os períodos</option>${periodoOpts.map(p=>`<option value="${p}"${S.filtroPeriodo===p?' selected':''}>${p}</option>`).join('')}</select>
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-title">Retainer por cliente</div><div class="chart-wrap"><canvas id="cRet"></canvas></div></div>
-    <div class="card"><div class="card-title">Success fee potencial</div>
-      ${[...S.deals].sort((a,b)=>(b.deal_value||0)*(b.success_fee||0)/100-(a.deal_value||0)*(a.success_fee||0)/100).slice(0,8).map((d,i,a)=>{
-        const sf=(d.deal_value||0)*((d.success_fee||0)/100);
-        return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}">
-          <div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.success_fee||0}% · ${d.mandato}</div></div>
-          <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(sf)}</div>${badge(d.prob||'—',PROB_C[d.prob]||'#888')}</div>
-        </div>`;}).join('')||`<div class="empty">Sem dados</div>`}
+  <div class="kpis k5">
+    <div class="kpi ac"><div class="kl">MRR retainers</div><div class="kv">${fmt(tRet)}</div><div class="ks">Recorrente mensal</div></div>
+    <div class="kpi"><div class="kl">ARR projetado</div><div class="kv">${fmt(tRet*12)}</div></div>
+    <div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div></div>
+    <div class="kpi ac3"><div class="kl">SF realizado (ganhos)</div><div class="kv">${fmt(sfGanhos)}</div><div class="ks">${ganhos.length} projeto${ganhos.length!==1?'s':''} fechados</div></div>
+    <div class="kpi ac2"><div class="kl">Realizado no período</div><div class="kv">${fmt(tReal)}</div><div class="ks">Ret: ${fmt(tRetReal)} · SF: ${fmt(tSFReal)}</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Projeção vs Realizado</div>
+      ${[...at].sort((a,b)=>(b.retainer_f2||0)-(a.retainer_f2||0)).map((d,i,a)=>{const sf=(d.deal_value||0)*((d.success_fee||0)/100);return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.success_fee||0}% SF · ${fmt(d.retainer_f2)}/mês</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(sf)}</div>${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`;}).join('')||`<div class="empty">Sem dados</div>`}
+    </div>
+    <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:14px"><div class="ct" style="margin:0">Receita realizada</div><button class="btn bsm" onclick="openAddRecReal()">+ Registrar</button></div>
+      <div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px"><span>Retainer: <strong style="color:var(--blue)">${fmt(tRetReal)}</strong></span><span>SF: <strong style="color:var(--green)">${fmt(tSFReal)}</strong></span></div>
+      ${recFilt.length===0?`<div class="empty" style="padding:16px">Nenhuma receita no período.</div>`:`
+      <table><thead><tr><th>Projeto</th><th>Tipo</th><th>Valor</th><th>Período</th><th>Data pgto</th><th></th></tr></thead>
+      <tbody>${recFilt.map(r=>{const d=S.deals.find(x=>x.id===r.deal_id);return`<tr><td style="font-weight:600">${d?d.cliente:'—'}</td><td>${bdg(r.tipo==='retainer'?'Retainer':'Success Fee',r.tipo==='retainer'?'#0078D4':'#22C55E')}</td><td style="font-weight:700;color:var(--green)">${fmt(r.valor)}</td><td style="color:var(--text2)">${r.periodo||'—'}</td><td style="color:var(--text2)">${r.data_pagamento||'—'}</td><td><button class="bdg bsm" onclick="delRecReal('${r.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}
+      ${ganhos.length?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🏆 Fechados e Ganhos</div>${ganhos.map(d=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-weight:600">${d.cliente}</span><span style="font-weight:700;color:var(--green)">${fmt((d.deal_value||0)*((d.success_fee||0)/100))}</span></div>`).join('')}</div>`:''}
     </div>
   </div>`;
 }
 
 function renderHoras(){
-  const totalH=S.horas.reduce((s,h)=>s+(h.horas||0),0);
-  const byUser={};S.horas.forEach(h=>{byUser[h.usuario_id]=(byUser[h.usuario_id]||0)+(h.horas||0);});
-  const byDeal={};S.horas.forEach(h=>{byDeal[h.deal_id]=(byDeal[h.deal_id]||0)+(h.horas||0);});
+  const tH=S.horas.reduce((s,h)=>s+(h.horas||0),0);
+  const bU={};S.horas.forEach(h=>{bU[h.usuario_id]=(bU[h.usuario_id]||0)+(h.horas||0);});
+  const bD={};S.horas.forEach(h=>{bD[h.deal_id]=(bD[h.deal_id]||0)+(h.horas||0);});
   return`
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddHora()">+ Lançar horas</button></div>
-  <div class="kpis kpis-3">
-    <div class="kpi accent"><div class="kpi-label">Total de horas</div><div class="kpi-value">${totalH.toFixed(1)}h</div></div>
-    <div class="kpi"><div class="kpi-label">Colaboradores</div><div class="kpi-value">${Object.keys(byUser).length}</div></div>
-    <div class="kpi"><div class="kpi-label">Projetos com horas</div><div class="kpi-value">${Object.keys(byDeal).length}</div></div>
+  <div class="kpis k3"><div class="kpi ac"><div class="kl">Total horas</div><div class="kv">${tH.toFixed(1)}h</div></div><div class="kpi"><div class="kl">Colaboradores</div><div class="kv">${Object.keys(bU).length}</div></div><div class="kpi"><div class="kl">Projetos</div><div class="kv">${Object.keys(bD).length}</div></div></div>
+  <div class="g2">
+    <div class="card"><div class="ct">Por colaborador</div>${Object.entries(bU).map(([uid,h])=>{const u=S.usuarios.find(x=>x.id===uid);const pct=tH?Math.round(h/tH*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${u?u.nome:uid}</span><span style="color:var(--blue)">${h.toFixed(1)}h</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:var(--blue);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')||`<div class="empty">Sem registros</div>`}</div>
+    <div class="card"><div class="ct">Por projeto</div>${Object.entries(bD).map(([did,h])=>{const d=S.deals.find(x=>x.id===did);const pct=tH?Math.round(h/tH*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${d?d.cliente:did}</span><span style="color:var(--blue)">${h.toFixed(1)}h</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:var(--cyan);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')||`<div class="empty">Sem registros</div>`}</div>
   </div>
-  <div class="grid2">
-    <div class="card"><div class="card-title">Horas por colaborador</div>
-      ${Object.entries(byUser).map(([uid,h])=>{const u=S.usuarios.find(x=>x.id===uid);const pct=totalH?Math.round(h/totalH*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${u?u.nome:uid}</span><span style="color:var(--blue)">${h.toFixed(1)}h</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:var(--blue);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')||`<div class="empty">Sem registros</div>`}
-    </div>
-    <div class="card"><div class="card-title">Horas por projeto</div>
-      ${Object.entries(byDeal).map(([did,h])=>{const d=S.deals.find(x=>x.id===did);const pct=totalH?Math.round(h/totalH*100):0;return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${d?d.cliente:did}</span><span style="color:var(--blue)">${h.toFixed(1)}h</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:var(--cyan);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')||`<div class="empty">Sem registros</div>`}
-    </div>
-  </div>
-  <div class="card"><div class="card-title">Lançamentos recentes</div>
-    ${S.horas.length===0?`<div class="empty">Nenhuma hora lançada.</div>`:`
-    <table><thead><tr><th>Colaborador</th><th>Projeto</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead>
-    <tbody>${S.horas.slice(0,20).map(h=>{
-      const u=S.usuarios.find(x=>x.id===h.usuario_id);
-      const d=S.deals.find(x=>x.id===h.deal_id);
-      return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td style="color:var(--text2)">${d?d.cliente:'—'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="btn-danger btn-sm" onclick="handleDelHora('${h.id}')">✕</button></td></tr>`;
-    }).join('')}</tbody></table>`}
-  </div>`;
+  <div class="card"><div class="ct">Lançamentos recentes</div>${S.horas.length===0?`<div class="empty">Nenhuma hora.</div>`:`
+  <table><thead><tr><th>Colaborador</th><th>Projeto</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead>
+  <tbody>${S.horas.slice(0,20).map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);const d=S.deals.find(x=>x.id===h.deal_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td style="color:var(--text2)">${d?d.cliente:'—'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}</div>`;
 }
+
+async function delRecReal(id){await delRecReal_fn(id);}
+async function delRecReal_fn(id){await sb.from('receita_realizada').delete().eq('id',id);S.recReal=S.recReal.filter(x=>x.id!==id);render();}
 
 // ═══ CHARTS ═══
 function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch{}});S.charts={};}
 function mkChart(id,cfg){const el=document.getElementById(id);if(!el)return;try{S.charts[id]=new Chart(el,cfg);}catch{}}
 function initCharts(){
   destroyCharts();
-  const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
-  const filtr=S.seg==='ma'?ativos.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?ativos.filter(d=>d.tipo==='DCM'):ativos;
-  const lbl={color:'#8899B0',font:{size:10},boxWidth:10};
-  const grid={color:'rgba(255,255,255,0.04)'};
+  const at=ativos(filtrados());const fl=S.seg==='ma'?at.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
+  const lbl={color:'#8899B0',font:{size:10},boxWidth:10};const grid={color:'rgba(255,255,255,0.04)'};
   if(S.page==='dashboard'){
-    const byM={};filtr.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
-    if(Object.keys(byM).length)mkChart('cMandato',{type:'doughnut',data:{labels:Object.keys(byM),datasets:[{data:Object.values(byM),backgroundColor:PALETTE,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
-    const byS={};S.deals.forEach(d=>{byS[d.status]=(byS[d.status]||0)+1;});
-    if(Object.keys(byS).length)mkChart('cStatus',{type:'doughnut',data:{labels:Object.keys(byS),datasets:[{data:Object.values(byS),backgroundColor:Object.keys(byS).map(k=>STATUS_C[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
-  }
-  if(S.page==='receita'){
-    const sorted=[...ativos].sort((a,b)=>(b.retainer_f2||0)-(a.retainer_f2||0));
-    if(sorted.length)mkChart('cRet',{type:'bar',data:{labels:sorted.map(d=>d.cliente.split(' ')[0]),datasets:[{data:sorted.map(d=>d.retainer_f2||0),backgroundColor:'#0078D4',borderRadius:5,borderWidth:0,label:'Retainer/mês'}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:10}},grid},y:{ticks:{color:'#8899B0',font:{size:10},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid}},responsive:true,maintainAspectRatio:false}});
+    const byM={};fl.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
+    if(Object.keys(byM).length)mkChart('cM',{type:'doughnut',data:{labels:Object.keys(byM),datasets:[{data:Object.values(byM),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
+    const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
+    if(Object.keys(bySt).length)mkChart('cS',{type:'doughnut',data:{labels:Object.keys(bySt),datasets:[{data:Object.values(bySt),backgroundColor:Object.keys(bySt).map(k=>SC[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
   }
 }
 
 // ═══ RENDER ═══
 function render(){
   const app=document.getElementById('app');
-  const syncTime=S.lastSync?S.lastSync.toLocaleTimeString('pt-BR'):'—';
-
+  if(!S.loggedIn){
+    app.innerHTML=`<div class="login-wrap"><div class="login-card">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:flex;justify-content:center;margin-bottom:10px"><div style="width:40px;height:40px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center"><div style="width:14px;height:14px;background:var(--bg2);transform:rotate(45deg)"></div></div></div>
+        <div style="font-size:22px;font-weight:700;letter-spacing:3px">APEX</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;letter-spacing:.5px">Investment Banking Platform</div>
+      </div>
+      <div class="lf"><label>E-mail</label><input type="email" value="${S.loginEmail}" oninput="S.loginEmail=this.value" placeholder="seu@apexpartners.com.br" onkeydown="if(event.key==='Enter')tentarLogin()"/></div>
+      <div class="lf"><label>Senha</label><input type="password" value="${S.loginSenha}" oninput="S.loginSenha=this.value" placeholder="••••••••" onkeydown="if(event.key==='Enter')tentarLogin()"/></div>
+      <button class="login-btn" onclick="tentarLogin()">Entrar</button>
+      ${S.loginErr?`<div class="login-err">${S.loginErr}</div>`:''}
+    </div></div>`;return;
+  }
+  const syncTime=S.lastSync?S.lastSync.toLocaleTimeString('pt-BR'):'—';const u=S.currentUser;
   let content='';
-  if(S.loading){
-    content=`<div style="display:flex;align-items:center;justify-content:center;padding:80px;gap:12px;color:var(--text2)"><div class="spinner"></div>Carregando dados do Supabase...</div>`;
-  } else if(S.detail){
+  if(S.loading){content=`<div style="display:flex;align-items:center;justify-content:center;padding:80px;gap:12px;color:var(--text2)"><div class="spinner"></div>Carregando...</div>`;}
+  else if(S.detail&&S.detailType==='analista'){
+    content=`<div class="topbar"><div><div class="page-title">Perfil do colaborador</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div></div>${renderPerfilAnalista(S.detail)}`;
+  } else if(S.detail&&S.detailType==='deal'){
     const d=S.deals.find(x=>x.id===S.detail);
-    content=`<div class="topbar"><div><div class="page-title">Detalhes do projeto</div><div class="page-sub">${d?.cliente||''}</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>Supabase conectado</div></div>${d?renderDetalhe(d):`<div class="empty">Não encontrado.</div>`}`;
+    content=`<div class="topbar"><div><div class="page-title">Detalhes do projeto</div><div class="page-sub">${d?.cliente||''}</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div></div>${d?renderDetalhe(d):`<div class="empty">Não encontrado.</div>`}`;
   } else {
     const hasSeg=['dashboard','pipeline'].includes(S.page);
-    const topbar=`<div class="topbar">
-      <div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div>
-        ${hasSeg?`<div class="seg"><button class="seg-btn ${S.seg==='geral'?'active':''}" onclick="S.seg='geral';render()">Geral</button><button class="seg-btn ${S.seg==='ma'?'active':''}" onclick="S.seg='ma';render()">M&A</button><button class="seg-btn ${S.seg==='dcm'?'active':''}" onclick="S.seg='dcm';render()">DCM</button></div>`:''}
-      </div>
-    </div>`;
+    const topbar=`<div class="topbar"><div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div>
+    <div class="topbar-right">
+      <span style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</span>
+      ${hasSeg?`<div class="seg"><button class="seg-btn ${S.seg==='geral'?'active':''}" onclick="S.seg='geral';render()">Geral</button><button class="seg-btn ${S.seg==='ma'?'active':''}" onclick="S.seg='ma';render()">M&A</button><button class="seg-btn ${S.seg==='dcm'?'active':''}" onclick="S.seg='dcm';render()">DCM</button></div>`:''}
+      ${hasSeg?`<select class="fsel" onchange="S.filtroColab=this.value;render()"><option value="">Todos os colaboradores</option>${S.usuarios.map(uu=>`<option value="${uu.nome}"${S.filtroColab===uu.nome?' selected':''}>${uu.nome}</option>`).join('')}</select>`:''}
+    </div></div>`;
     switch(S.page){
-      case'dashboard':content=topbar+renderDashboard();break;
+      case'dashboard':content=topbar+renderDash();break;
       case'pipeline':content=topbar+renderPipeline();break;
       case'ma':case'dcm':case'encerrados':content=topbar+renderProjetos();break;
       case'receita':content=topbar+renderReceita();break;
       case'horas':content=topbar+renderHoras();break;
       case'equipe':content=topbar+renderEquipe();break;
+      case'tarefas':content=topbar+renderTarefas();break;
     }
   }
-
-  const u=S.currentUser;
   const sidebar=`<div class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div>
-    </div>
-    ${NAV.map(n=>n.sec?`<div class="nav-section">${n.sec}</div>`:
-    `<div class="nav-item ${S.page===n.key&&!S.detail?'active':''}" onclick="S.page='${n.key}';S.detail=null;render()"><span class="nav-icon">${n.icon}</span>${n.label}</div>`).join('')}
+    <div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>
+    ${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:
+    `<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;render()"><span class="nav-icon">${n.i}</span>${n.l}</div>`).join('')}
     <div style="flex:1"></div>
     <div class="sidebar-footer">
-      <div class="user-chip"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''}</div></div></div>
+      <div class="user-chip"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''} · ${u?.polo||''}</div></div></div>
       <button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button>
+      <button class="logout-btn" onclick="logout()">↗ Sair</button>
     </div>
   </div>`;
-
-  const modal=S.modal==='deal'?renderDealModal():S.modal==='user'?renderUserModal():S.modal==='hora'?renderHoraModal():'';
+  const modal=S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():'';
   app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
   if(!S.loading&&!S.detail)setTimeout(initCharts,80);
 }
 
-// ═══ INIT ═══
 async function init(){
-  await loadAll();
-  await importFromSheets();
-  render();
-  setInterval(loadAll,SYNC_MS);
+  if(S.loggedIn){await loadAll();}else{render();}
+  setInterval(()=>{if(S.loggedIn)loadAll();},60000);
 }
 init();
 </script>
