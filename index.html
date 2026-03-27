@@ -994,8 +994,6 @@ function renderDash(){
         ${(()=>{const lista=fl.filter(d=>d.prob==='Alta');return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal alta prob.</div>':lista.slice(0,4).map(d=>`<div style="padding:6px 8px;background:rgba(34,197,94,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--green)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}% SF</div></div>`).join('');})()}
       </div>
     </div>
-  </div>
-  <div class="g2">
   </div>`;
 }
 
