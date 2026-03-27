@@ -204,6 +204,32 @@ function resTag(r){
   return'<span style="color:var(--text2)">—</span>';
 }
 
+function classBdg(c){
+  if(c==='Em risco')return'<span style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">⚠ Em risco</span>';
+  if(c==='Congelado')return'<span style="background:rgba(100,116,139,.15);color:#94A3B8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">❄ Congelado</span>';
+  return'';
+}
+
+function dealScore(d){
+  // 0-100: fase (40%) + prob (40%) + atividade recente (20%)
+  const totalFases=d.tipo==='DCM'?FASES_DCM.length:FASES.length;
+  const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;
+  const faseScore=(feitas/totalFases)*40;
+  const probScore=({Alta:40,Média:24,Baixa:8}[d.prob]||16);
+  // aging penalty: -2 per week after 4 weeks
+  const criado=d.created_at?new Date(d.created_at):new Date();
+  const semanas=Math.max(0,(new Date()-criado)/(1000*60*60*24*7)-4);
+  const agingPenalty=Math.min(20,semanas*2);
+  const score=Math.round(Math.max(0,Math.min(100,faseScore+probScore+20-agingPenalty)));
+  const cor=score>=70?'var(--green)':score>=40?'var(--amber)':'var(--red)';
+  return{score,cor};
+}
+
+function agingDias(d){
+  if(!d.created_at)return 0;
+  return Math.round((new Date()-new Date(d.created_at))/(1000*60*60*24));
+}
+
 // Período
 function getMeses(){const r=[];const now=new Date();for(let i=0;i<18;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);r.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}return r;}
 function getAnos(){const r=[];const y=new Date().getFullYear();for(let i=0;i<5;i++)r.push(String(y-i));return r;}
@@ -335,7 +361,7 @@ async function importSheets(){
 function parseCSV(t){const r=[];for(const l of t.split('\n')){if(!l.trim())continue;const row=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){if(q&&l[i+1]==='"'){c+='"';i++;}else q=!q;}else if(ch===','&&!q){row.push(c.trim());c='';}else c+=ch;}row.push(c.trim());r.push(row);}return r;}
 
 // ═══ ACTIONS ═══
-function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',prob:'Alta',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0,resultado:null,motivo_encerramento:''};S.modal='deal';render();}
+function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',prob:'Alta',classificacao:'Ativo',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0,resultado:null,motivo_encerramento:'',volume_emitido:null,taxa_media:null};S.modal='deal';render();}
 function openEditDeal(id){const d=S.deals.find(x=>x.id===id);if(!d)return;S.editForm={...d,deal_value:String(d.deal_value||''),retainer_f1:String(d.retainer_f1||15000),retainer_f2:String(d.retainer_f2||7000),success_fee:String(d.success_fee||'')};S.modal='deal';render();}
 async function hSaveDeal(){const f=S.editForm;if(!f.cliente.trim())return;const r={...f,deal_value:pN(f.deal_value),retainer_f1:pN(f.retainer_f1)||15000,retainer_f2:pN(f.retainer_f2)||7000,success_fee:pN(f.success_fee)||0};S.modal=null;S.editForm=null;await saveDeal(r);render();}
 async function hDelDeal(id){if(!confirm('Excluir permanentemente?'))return;S.detail=null;S.detailType=null;await delDeal(id);render();}
@@ -404,6 +430,7 @@ function mDeal(){
     <div class="fgrid"><div class="fg"><label>Cliente</label><input value="${f.cliente||''}" oninput="uf('cliente',this.value)"/></div><div class="fg"><label>Projeto / ID</label><input value="${f.projeto||''}" oninput="uf('projeto',this.value)"/></div></div>
     <div class="fgrid">${sl('status',Object.keys(SC),'Status')}${sl('prob',['Alta','Média','Baixa'],'Probabilidade')}</div>
     <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('setor',setores,'Setor')}</div>
+    <div class="fgrid">${sl('classificacao',['Ativo','Em risco','Congelado'],'Classificação de risco')}<div></div></div>
     <div class="fgrid">${sl('resultado',['','Ativo','Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'],'Status / Resultado')}<div></div></div>
     ${f.resultado&&f.resultado!=='Fechado e Ganho'&&f.resultado!=='Ativo'?`<div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Motivo de encerramento</label><textarea oninput="uf('motivo_encerramento',this.value)" style="min-height:50px">${f.motivo_encerramento||''}</textarea></div></div>`:''}
     <div class="sdiv">Financeiro</div>
@@ -412,6 +439,7 @@ function mDeal(){
     <div class="sdiv">Equipe</div>
     <div class="fgrid">${slU('diretor',S.usuarios.filter(u=>u.cargo==='Sócio / Diretor').map(u=>u.nome),'Diretor')}${slU('gerente',S.usuarios.filter(u=>['Gerente','Analista Sênior'].includes(u.cargo)).map(u=>u.nome),'Gerente')}</div>
     <div class="fgrid">${slU('analista',S.usuarios.filter(u=>['Analista Sênior','Analista','Assistente','Estagiário'].includes(u.cargo)).map(u=>u.nome),'Analista')}<div class="fg"><label>Data de assinatura</label><input type="date" value="${f.data_assinatura||''}" oninput="uf('data_assinatura',this.value)"/></div></div>
+    ${f.tipo==='DCM'?`<div class="fgrid"><div class="fg"><label>Volume emitido (R$)</label><input type="number" value="${f.volume_emitido||''}" oninput="uf('volume_emitido',this.value)" placeholder="Ex: 50000000"/></div><div class="fg"><label>Taxa média (%)</label><input type="number" step="0.01" value="${f.taxa_media||''}" oninput="uf('taxa_media',this.value)" placeholder="Ex: 12.5"/></div></div>`:''}
     <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Observações</label><textarea oninput="uf('obs',this.value)">${f.obs||''}</textarea></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveDeal()">Salvar</button></div>
   </div></div>`;
@@ -554,6 +582,8 @@ function renderDetalhe(d){
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
         ${bdg(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}${bdg(d.mandato,MC[d.mandato]||'#888')}${bdg(d.status,SC[d.status]||'#888')}${bdg(d.prob||'Alta',PC[d.prob]||'#888')}${pt(d.polo)}
         ${d.resultado?resTag(d.resultado):''}
+      ${classBdg(d.classificacao)}
+      ${(()=>{const{score,cor}=dealScore(d);return score?`<span style="background:${cor}22;color:${cor};font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">Score ${score}</span>`:''})()}
       </div>
       <h2 style="font-size:19px;font-weight:700">${d.projeto||d.cliente}</h2>
       <div style="font-size:12px;color:var(--text2);margin-top:3px">${d.cliente}${d.cnpj?' · CNPJ '+d.cnpj:''}${d.setor?' · '+d.setor:''}</div>
@@ -570,6 +600,7 @@ function renderDetalhe(d){
     <div class="kpi"><div class="kl">Retainer F2/mês</div><div class="kv">${fmt(d.retainer_f2)}</div><div class="ks">F1: ${fmt(d.retainer_f1||15000)} × 2</div></div>
     <div class="kpi"><div class="kl">Success fee</div><div class="kv">${d.success_fee||0}%</div><div class="ks">${fmt(sf)} potencial</div></div>
     <div class="kpi"><div class="kl">Horas</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks"><span class="bib-tag">BIB ${bib.toFixed(1)}h</span> <span class="nib-tag">NIB ${nib.toFixed(1)}h</span></div></div>
+    <div class="kpi" style="${agingDias(d)>60?'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)':agingDias(d)>30?'background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)':''}"><div class="kl">Aging</div><div class="kv" style="font-size:18px;color:${agingDias(d)>60?'var(--red)':agingDias(d)>30?'var(--amber)':'var(--text)'}">${agingDias(d)}d</div><div class="ks">Dias desde abertura</div></div>
   </div>
   <div class="card">
     <div class="ct">Progresso das Fases ${d.tipo==='DCM'?'DCM':'M&A'}</div>
@@ -591,7 +622,7 @@ function renderDetalhe(d){
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Dados do contrato</div>
-      ${[['Assinatura',d.data_assinatura],['Início',d.data_inicio],['Polo',d.polo],['CNPJ',d.cnpj],['Dia fat.',d.dia_fat?'Dia '+d.dia_fat:'—']].filter(([,v])=>v&&v!=='—').map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span></div>`).join('')}
+      ${[['Assinatura',d.data_assinatura],['Início',d.data_inicio],['Polo',d.polo],['CNPJ',d.cnpj],['Dia fat.',d.dia_fat?'Dia '+d.dia_fat:'—'],...(d.tipo==='DCM'&&d.volume_emitido?[['Volume emitido',fmt(d.volume_emitido)]]:[]),(d.tipo==='DCM'&&d.taxa_media?[['Taxa média',d.taxa_media+'%']]:[])[0]?[['Taxa média',d.taxa_media+'%']]:[]].filter(([,v])=>v&&v!=='—').map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span></div>`).join('')}
       ${d.obs?`<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.7">${d.obs}</div>`:''}
     </div>
     <div class="card"><div class="ct">Equipe alocada</div>
@@ -607,7 +638,12 @@ function renderDetalhe(d){
     <table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead>
     <tbody>${horasD.map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td>${h.tipo_hora==='BIB'?'<span class="bib-tag">BIB</span>':'<span class="nib-tag">NIB</span>'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}
   </div>
-  ${histD.length?`<div class="card"><div class="ct">Histórico de alterações</div>${histD.slice(0,15).map(h=>`<div class="hist-item"><div class="av" style="width:26px;height:26px;font-size:9px;flex-shrink:0">${ini(h.usuario_nome||'S')}</div><div><div style="font-weight:600">${h.usuario_nome||'Sistema'} <span style="font-weight:400;color:var(--text2)">alterou <strong>${h.campo}</strong></span></div><div style="color:var(--text2);margin-top:2px">${h.valor_anterior?h.valor_anterior+' → ':''}<span style="color:var(--text)">${h.valor_novo}</span></div><div style="font-size:10px;color:var(--text2)">${fmtTS(h.created_at)}</div></div></div>`).join('')}</div>`:''}
+  ${(()=>{
+    const CAMPOS_REL=['Criação','Etapa','Etapa DCM','status','resultado','deal_value','success_fee','retainer_f2','mandato','cliente','diretor','gerente','analista','classificacao'];
+    const histFilt=histD.filter(h=>CAMPOS_REL.includes(h.campo));
+    if(!histFilt.length)return'';
+    return`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="ct" style="margin:0">Histórico de alterações</div><span style="font-size:10px;color:var(--text2)">${histFilt.length} evento${histFilt.length!==1?'s':''} relevante${histFilt.length!==1?'s':''}</span></div>${histFilt.slice(0,15).map(h=>`<div class="hist-item"><div class="av" style="width:26px;height:26px;font-size:9px;flex-shrink:0">${ini(h.usuario_nome||'S')}</div><div><div style="font-weight:600">${h.usuario_nome||'Sistema'} <span style="font-weight:400;color:var(--text2)">→ <strong>${h.campo}</strong></span></div><div style="color:var(--text2);margin-top:2px">${h.valor_anterior&&h.valor_anterior!=='undefined'?'<span style="text-decoration:line-through;opacity:.5">'+h.valor_anterior+'</span> → ':''}<span style="color:var(--text);font-weight:600">${h.valor_novo}</span></div><div style="font-size:10px;color:var(--text2);margin-top:2px">${fmtTS(h.created_at)}</div></div></div>`).join('')}</div>`;
+  })()}
   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="bdg" onclick="hDelDeal('${d.id}')">Excluir</button></div>`;
 }
 
@@ -698,6 +734,19 @@ function renderDash(){
     <div class="kpi ac2"><div class="kl">Receita ponderada</div><div class="kv">${fmt(rPond)}</div><div class="ks">Por probabilidade</div></div>
     <div class="kpi"><div class="kl">MRR retainers</div><div class="kv">${fmt(tRet)}</div><div class="ks">${tH.toFixed(0)}h registradas</div></div>
   </div>
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="ct" style="margin:0">📊 Pipeline → Receita Esperada</div>
+      <span style="font-size:10px;color:var(--text2)">Baseado em deal value × success fee × probabilidade</span>
+    </div>
+    <div class="kpis k5" style="margin-bottom:0">
+      <div class="kpi" style="background:var(--bg3)"><div class="kl">Pipeline ponderado</div><div class="kv" style="font-size:18px">${fmt(rPond)}</div><div class="ks">Alta×0.8 / Média×0.5 / Baixa×0.2</div></div>
+      <div class="kpi" style="background:var(--bg3)"><div class="kl">SF esperado total</div><div class="kv" style="font-size:18px">${fmt(fl.filter(d=>d.prob==='Alta').reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0))}</div><div class="ks">${fl.filter(d=>d.prob==='Alta').length} deals alta prob.</div></div>
+      <div class="kpi" style="background:var(--bg3)"><div class="kl">Retainers ativos/mês</div><div class="kv" style="font-size:18px">${fmt(tRet)}</div><div class="ks">ARR: ${fmt(tRet*12)}</div></div>
+      <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl" style="color:var(--green)">Win rate</div><div class="kv" style="font-size:18px;color:var(--green)">${(()=>{const g=S.deals.filter(d=>d.resultado==='Fechado e Ganho').length;const p=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)).length;return p?Math.round(g/p*100)+'%':'—';})()}</div><div class="ks">Ganhos vs encerrados</div></div>
+      <div class="kpi" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)"><div class="kl" style="color:var(--amber)">Aging médio</div><div class="kv" style="font-size:18px;color:var(--amber)">${(()=>{if(!fl.length)return'—';const avg=fl.reduce((s,d)=>s+agingDias(d),0)/fl.length;return Math.round(avg)+'d';})()}</div><div class="ks">Dias médio aberto</div></div>
+    </div>
+  </div>
   <div class="g2">
     <div class="card"><div class="ct">Deal value por mandato</div><div class="cw"><canvas id="cM"></canvas></div></div>
     <div class="card"><div class="ct">Status dos projetos</div><div class="cw"><canvas id="cS"></canvas></div></div>
@@ -728,9 +777,37 @@ function renderDash(){
         <div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PAL[i%PAL.length]};border-radius:3px;width:${pct}%"></div></div></div>
       </div>`;}).join('')}
     </div>
+    <div class="card"><div class="ct">Aging dos deals ativos</div>
+      ${(()=>{
+        const buckets=[{l:'0-15d',min:0,max:15,c:'var(--green)'},{l:'16-30d',min:16,max:30,c:'var(--blue)'},{l:'31-60d',min:31,max:60,c:'var(--amber)'},{l:'+60d',min:61,max:9999,c:'var(--red)'}];
+        const total=fl.length||1;
+        return buckets.map(b=>{const n=fl.filter(d=>{const ag=agingDias(d);return ag>=b.min&&ag<=b.max;}).length;const pct=Math.round(n/total*100);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${b.c};font-weight:600">${b.l}</span><span>${n} deal${n!==1?'s':''} (${pct}%)</span></div><div style="height:8px;background:var(--bg3);border-radius:4px"><div style="height:8px;background:${b.c};border-radius:4px;width:${pct}%"></div></div></div>`;}).join('');
+      })()}
+    </div>
     <div class="card"><div class="ct">Por probabilidade</div>
       ${['Alta','Média','Baixa'].map(p=>{const n=fl.filter(d=>d.prob===p).length;const pct=fl.length?Math.round(n/fl.length*100):0;return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${PC[p]};font-weight:600">${p}</span><span>${n} deal${n!==1?'s':''} (${pct}%)</span></div><div style="height:8px;background:var(--bg3);border-radius:4px"><div style="height:8px;background:${PC[p]};border-radius:4px;width:${pct}%;transition:width .4s"></div></div></div>`;}).join('')}
     </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="ct" style="margin:0">🎯 Radar de Oportunidades</div>
+    </div>
+    <div class="g3" style="margin-bottom:0">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🔴 Em risco / Parados +30d</div>
+        ${(()=>{const lista=fl.filter(d=>d.classificacao==='Em risco'||agingDias(d)>30);return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal em risco</div>':lista.slice(0,4).map(d=>`<div style="padding:6px 8px;background:rgba(239,68,68,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--red)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${agingDias(d)}d aberto · ${d.prob}</div></div>`).join('');})()}
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🟡 Próximos de fechar</div>
+        ${(()=>{const lista=fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const total=d.tipo==='DCM'?FASES_DCM.length:FASES.length;return n/total>=0.7;});return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal em fase final</div>':lista.slice(0,4).map(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const total=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(n/total*100);return`<div style="padding:6px 8px;background:rgba(245,158,11,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--amber)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${pct}% concluído · SF: ${fmt((d.deal_value||0)*((d.success_fee||0)/100))}</div></div>`;}).join('');})()}
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🟢 Alta probabilidade</div>
+        ${(()=>{const lista=fl.filter(d=>d.prob==='Alta');return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal alta prob.</div>':lista.slice(0,4).map(d=>`<div style="padding:6px 8px;background:rgba(34,197,94,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--green)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}% SF</div></div>`).join('');})()}
+      </div>
+    </div>
+  </div>
+  <div class="g2">
   </div>`;
 }
 
@@ -770,13 +847,15 @@ function renderProjetos(){
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px">${!enc?`<button class="btn" onclick="openAddDeal()">+ Novo projeto</button>`:''}</div>
   <div class="card" style="margin-bottom:0"><div style="overflow-x:auto">
     ${list.length===0?`<div class="empty">Nenhum projeto.</div>`:`
-    <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th><th>Status</th>${enc?'<th>Resultado</th>':''}<th>Prob.</th><th>Polo</th><th>Deal value</th><th>Retainer</th><th>Progresso</th><th>Equipe</th><th></th></tr></thead>
+    <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th><th>Status</th>${enc?'<th>Resultado</th>':''}<th>Score</th><th>Risco</th><th>Prob.</th><th>Polo</th><th>Deal value</th><th>Retainer</th><th>Progresso</th><th>Equipe</th><th></th></tr></thead>
     <tbody>${list.map(d=>{const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const fasesTotal=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(feitas/fasesTotal*100);return`<tr>
-      <td><div style="font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.setor||''}</div></td>
+      <td><div style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';render()">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.setor||''}</div></td>
       <td style="color:var(--text2)">${d.projeto||'—'}</td>
       <td>${bdg(d.mandato,MC[d.mandato]||'#888')}</td>
       <td>${bdg(d.status,SC[d.status]||'#888')}</td>
       ${enc?`<td>${resTag(d.resultado)}</td>`:''}
+      <td><span style="font-size:12px;font-weight:700;color:${dealScore(d).cor}">${dealScore(d).score}</span></td>
+      <td>${classBdg(d.classificacao)}</td>
       <td>${bdg(d.prob||'—',PC[d.prob]||'#888')}</td><td>${pt(d.polo)}</td>
       <td style="font-weight:600">${fmt(d.deal_value)}</td><td>${fmt(d.retainer_f2)}/mês</td>
       <td><div style="min-width:80px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td>
@@ -846,7 +925,12 @@ function renderReceita(){
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Projeção por projeto</div>
-      ${[...at].sort((a,b)=>(b.retainer_f2||0)-(a.retainer_f2||0)).map((d,i,a)=>{const sf=(d.deal_value||0)*((d.success_fee||0)/100);return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><div><div style="font-size:12px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.retainer_f2)}/mês · ${d.success_fee||0}% SF</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(sf)}</div>${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`;}).join('')||`<div class="empty">Sem dados</div>`}
+      <div class="kpis k3" style="margin-bottom:14px">
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Recorrente (Ret.)</div><div class="kv" style="font-size:16px">${fmt(at.reduce((s,d)=>s+(d.retainer_f2||0),0))}</div><div class="ks">${Math.round(at.reduce((s,d)=>s+(d.retainer_f2||0),0)/Math.max(at.reduce((s,d)=>s+(d.retainer_f2||0)+(d.deal_value||0)*((d.success_fee||0)/100),0),1)*100)}% do total</div></div>
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Variável (SF)</div><div class="kv" style="font-size:16px">${fmt(at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0))}</div></div>
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Ticket médio SF</div><div class="kv" style="font-size:16px">${at.length?fmt(at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0)/at.length):'—'}</div></div>
+      </div>
+      ${[...at].sort((a,b)=>(b.deal_value||0)*(b.success_fee||0)/100-(a.deal_value||0)*(a.success_fee||0)/100).map((d,i,a)=>{const sf=(d.deal_value||0)*((d.success_fee||0)/100);const{score,cor}=dealScore(d);return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><div><div style="font-size:12px;font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';render()">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${bdg(d.tipo,d.tipo==='DCM'?'#00B4D8':'#0078D4')} ${fmt(d.retainer_f2)}/mês · ${d.success_fee||0}% SF</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(sf)}</div><span style="font-size:10px;font-weight:700;color:${cor}">●${score}</span></div></div>`;}).join('')||`<div class="empty">Sem dados</div>`}
     </div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;margin-bottom:14px"><div class="ct" style="margin:0">Receita realizada</div><button class="btn bsm" onclick="openAddRecReal()">+ Registrar</button></div>
