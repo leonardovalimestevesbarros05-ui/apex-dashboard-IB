@@ -396,6 +396,27 @@ function parseCSV(t){const r=[];for(const l of t.split('\n')){if(!l.trim())conti
 // ═══ ACTIONS ═══
 function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',prob:'Alta',classificacao:'Ativo',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0,resultado:null,motivo_encerramento:'',volume_emitido:null,taxa_media:null};S.modal='deal';render();}
 function openEditDeal(id){const d=S.deals.find(x=>x.id===id);if(!d)return;S.editForm={...d,deal_value:String(d.deal_value||''),retainer_f1:String(d.retainer_f1||15000),retainer_f2:String(d.retainer_f2||7000),success_fee:String(d.success_fee||'')};S.modal='deal';render();}
+async function hSetClassif(dealId, classif){
+  const d=S.deals.find(x=>x.id===dealId);if(!d)return;
+  const res=classif==='Ativo'?null:classif;
+  const motivo=res&&res!=='Fechado e Ganho'?d.motivo_encerramento:null;
+  // Se encerrar, pede motivo
+  if(res&&res!=='Fechado e Ganho'&&res!=='Ativo'){
+    const m=prompt(`Motivo de encerramento (opcional):`,'');
+    if(m!==null){
+      await sb.from('deals').update({resultado:res,motivo_encerramento:m,updated_at:new Date()}).eq('id',dealId);
+      const i=S.deals.findIndex(x=>x.id===dealId);
+      if(i>=0){S.deals[i].resultado=res;S.deals[i].motivo_encerramento=m;}
+      await addH(dealId,'resultado',d.resultado||'Ativo',res);
+    }
+  } else {
+    await sb.from('deals').update({resultado:res,updated_at:new Date()}).eq('id',dealId);
+    const i=S.deals.findIndex(x=>x.id===dealId);
+    if(i>=0)S.deals[i].resultado=res;
+    await addH(dealId,'resultado',d.resultado||'Ativo',res||'Ativo');
+  }
+  render();
+}
 async function hSaveDeal(){const f=S.editForm;if(!f.cliente.trim())return;const r={...f,deal_value:pN(f.deal_value),retainer_f1:pN(f.retainer_f1)||15000,retainer_f2:pN(f.retainer_f2)||7000,success_fee:pN(f.success_fee)||0};S.modal=null;S.editForm=null;await saveDeal(r);render();}
 async function hDelDeal(id){if(!confirm('Excluir permanentemente?'))return;S.detail=null;S.detailType=null;await delDeal(id);render();}
 async function hSetEtapaDCM(dealId,idx){
@@ -642,13 +663,15 @@ function renderDetalhe(d){
     <div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
         ${bdg(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}${bdg(d.mandato,MC[d.mandato]||'#888')}${bdg(d.status,SC[d.status]||'#888')}${bdg(d.prob||'Alta',PC[d.prob]||'#888')}${pt(d.polo)}
-        ${d.resultado?resTag(d.resultado):''}
-      ${classBdg(d.classificacao)}
-      ${(()=>{const{score,cor}=dealScore(d);return score?`<span style="background:${cor}22;color:${cor};font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">Score ${score}</span>`:''})()}
-      </div>
+        </div>
       <h2 style="font-size:19px;font-weight:700">${d.projeto||d.cliente}</h2>
       <div style="font-size:12px;color:var(--text2);margin-top:3px">${d.cliente}${d.cnpj?' · CNPJ '+d.cnpj:''}${d.setor?' · '+d.setor:''}</div>
-      ${d.motivo_encerramento?`<div style="margin-top:6px;font-size:11px;color:var(--amber)">Motivo: ${d.motivo_encerramento}</div>`:''}
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
+        ${bdg(d.tipo,d.tipo==='M&A'?'#0078D4':'#00B4D8')}${bdg(d.mandato,MC[d.mandato]||'#888')}${bdg(d.status,SC[d.status]||'#888')}${bdg(d.prob||'Alta',PC[d.prob]||'#888')}${pt(d.polo)}
+        ${classBdg(d.classificacao)}
+        ${(()=>{const{score,cor}=dealScore(d);return`<span style="background:${cor}22;color:${cor};font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">Score ${score}</span>`;})()}
+      </div>
+      ${d.motivo_encerramento?`<div style="margin-top:6px;font-size:11px;color:var(--amber)">📌 Motivo: ${d.motivo_encerramento}</div>`:''}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="bgh bsm" onclick="exportPDF('${d.id}')">📄 PDF</button>
@@ -664,7 +687,21 @@ function renderDetalhe(d){
     <div class="kpi" style="${agingDias(d)>60?'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)':agingDias(d)>30?'background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)':''}"><div class="kl">Aging</div><div class="kv" style="font-size:18px;color:${agingDias(d)>60?'var(--red)':agingDias(d)>30?'var(--amber)':'var(--text)'}">${agingDias(d)}d</div><div class="ks">Dias desde abertura</div></div>
   </div>
   <div class="card">
-    <div class="ct">Progresso das Fases ${d.tipo==='DCM'?'DCM':'M&A'}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="ct" style="margin:0">Progresso das Fases ${d.tipo==='DCM'?'DCM':'M&A'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${[
+          {k:'Ativo',label:'Ativo',cor:'#22C55E'},
+          {k:'Fechado e Ganho',label:'🏆 Fechado e Ganho',cor:'#22C55E'},
+          {k:'Fechado e Perdido',label:'✗ Fechado e Perdido',cor:'#EF4444'},
+          {k:'Congelado',label:'❄ Congelado',cor:'#F59E0B'},
+          {k:'Cancelado',label:'⊘ Cancelado',cor:'#64748B'},
+        ].map(op=>{
+          const isActive=(d.resultado||'Ativo')===op.k||(op.k==='Ativo'&&!d.resultado);
+          return`<button onclick="hSetClassif('${d.id}','${op.k}')" style="padding:5px 12px;font-size:11px;font-weight:${isActive?700:500};border-radius:20px;border:2px solid ${isActive?op.cor:'var(--border2)'};background:${isActive?op.cor+'22':'transparent'};color:${isActive?op.cor:'var(--text2)'};cursor:pointer;font-family:inherit;transition:all .15s">${op.label}</button>`;
+        }).join('')}
+      </div>
+    </div>
     ${d.tipo==='DCM'?dcmStepper(d):sfStepper(d)}
     <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">
       ${(d.tipo==='DCM'?FASES_DCM:FASES).map((e,i)=>{
