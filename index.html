@@ -886,6 +886,12 @@ function ativos(l){return(l||S.deals).filter(d=>d.status!=='Concluído'&&!['Fech
 function renderDash(){
   const all=filtrados();const at=ativos(all);
   const fl=S.seg==='ma'?at.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
+  const maAtivos=ativos(S.deals).filter(d=>d.tipo!=='DCM');
+  const dcmAtivos=ativos(S.deals).filter(d=>d.tipo==='DCM');
+  const ganhos=S.deals.filter(d=>d.resultado==='Fechado e Ganho');
+  const encerrados=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado));
+  const winRate=encerrados.length?Math.round(ganhos.length/encerrados.length*100):0;
+  const filtFL=S.filtroColab?fl.filter(d=>d.diretor===S.filtroColab||d.gerente===S.filtroColab||d.analista===S.filtroColab):fl;
   const tDV=fl.reduce((s,d)=>s+(d.deal_value||0),0);
   const tRet=fl.reduce((s,d)=>s+(d.retainer_f2||0),0);
   const tSF=fl.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
