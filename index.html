@@ -231,6 +231,12 @@ function agingDias(d){
 }
 
 // Período
+function getMRRHistorico(){
+  const m={};
+  S.retParcelas.filter(p=>p.status==='Recebido').forEach(p=>{m[p.mes]=(m[p.mes]||0)+(p.valor||0);});
+  S.recReal.filter(r=>r.tipo==='retainer'&&r.periodo).forEach(r=>{m[r.periodo]=(m[r.periodo]||0)+(r.valor||0);});
+  return Object.entries(m).sort((a,b)=>{const[ma,ya]=a[0].split('/');const[mb,yb]=b[0].split('/');return new Date(ya,ma-1)-new Date(yb,mb-1);});
+}
 function getMeses(){const r=[];const now=new Date();for(let i=0;i<18;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);r.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}return r;}
 function getAnos(){const r=[];const y=new Date().getFullYear();for(let i=0;i<5;i++)r.push(String(y-i));return r;}
 function dentroDoFiltro(dataStr){
@@ -247,7 +253,7 @@ let S={
   loggedIn:LS('apex_li',false),currentUser:LS('apex_cu',null),
   theme:LS('apex_theme','dark'),
   modal:null,editForm:null,
-  deals:[],usuarios:[],horas:[],comentarios:[],historico:[],recReal:[],tarefas:[],
+  deals:[],usuarios:[],horas:[],comentarios:[],historico:[],recReal:[],tarefas:[],retParcelas:[],
   detail:null,detailType:null,
   loading:true,lastSync:null,charts:{},
   filtroColab:'',filtroColabReceita:'',
@@ -271,7 +277,7 @@ function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';SS('apex_theme',S
 async function loadAll(){
   S.loading=true;render();
   try{
-    const[{data:deals},{data:usuarios},{data:horas},{data:comts},{data:hist},{data:rec},{data:tar}]=await Promise.all([
+    const[{data:deals},{data:usuarios},{data:horas},{data:comts},{data:hist},{data:rec},{data:tar},{data:retP}]=await Promise.all([
       sb.from('deals').select('*').order('created_at',{ascending:false}),
       sb.from('usuarios').select('*').order('nome'),
       sb.from('horas').select('*').order('created_at',{ascending:false}),
@@ -279,9 +285,10 @@ async function loadAll(){
       sb.from('historico').select('*').order('created_at',{ascending:false}),
       sb.from('receita_realizada').select('*').order('data_pagamento',{ascending:false}),
       sb.from('tarefas').select('*').order('prazo',{ascending:true}),
+      sb.from('retainer_parcelas').select('*').order('mes',{ascending:true}),
     ]);
     S.deals=deals||[];S.usuarios=usuarios||[];S.horas=horas||[];
-    S.comentarios=comts||[];S.historico=hist||[];S.recReal=rec||[];S.tarefas=tar||[];
+    S.comentarios=comts||[];S.historico=hist||[];S.recReal=rec||[];S.tarefas=tar||[];S.retParcelas=retP||[];
     S.lastSync=new Date();
     await importSheets();
   }catch(e){console.error(e);}
@@ -329,6 +336,66 @@ async function addH(dealId,campo,ant,nov){
   const{data:h}=await sb.from('historico').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Sistema',campo,valor_anterior:String(ant||''),valor_novo:String(nov||''),descricao:`${campo}: ${ant} → ${nov}`}).select().single();
   if(h)S.historico.unshift(h);
 }
+
+// ── RETAINER PARCELAS ──
+async function updRetStatus(id,status,extra){
+  const upd={status,...extra};
+  await sb.from('retainer_parcelas').update(upd).eq('id',id);
+  const i=S.retParcelas.findIndex(x=>x.id===id);
+  if(i>=0)S.retParcelas[i]={...S.retParcelas[i],...upd};
+  render();
+}
+async function delRetParcela(id){
+  await sb.from('retainer_parcelas').delete().eq('id',id);
+  S.retParcelas=S.retParcelas.filter(x=>x.id!==id);
+  render();
+}
+function openAddRetParcela(dealId){
+  const d=S.deals.find(x=>x.id===dealId);
+  const hoje=new Date();
+  const mes=String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+  S.editForm={id:'new_',deal_id:dealId,mes,valor:String(d?.retainer_f2||7000),tipo:'Fase 2',status:'Pendente',data_envio:'',data_recebimento:'',observacao:''};
+  S.modal='retparcela';render();
+}
+async function hSaveRetParcela(){
+  const f=S.editForm;if(!f.mes||!f.valor)return;
+  S.modal=null;S.editForm=null;
+  const t={deal_id:f.deal_id,mes:f.mes,valor:parseFloat(f.valor)||0,tipo:f.tipo,status:f.status,data_envio:f.data_envio||null,data_recebimento:f.data_recebimento||null,observacao:f.observacao||''};
+  const{data:nd}=await sb.from('retainer_parcelas').insert(t).select().single();
+  if(nd)S.retParcelas.push(nd);
+  render();
+}
+async function gerarCronogramaRetainer(dealId){
+  const d=S.deals.find(x=>x.id===dealId);
+  if(!d||!d.data_assinatura){alert('Cadastre a data de assinatura do contrato primeiro.');return;}
+  const parts=d.data_assinatura.split('/');
+  const base=parts.length===3?new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0])):new Date(d.data_assinatura);
+  if(isNaN(base)){alert('Data de assinatura inválida.');return;}
+  const r1=d.retainer_f1||15000,r2=d.retainer_f2||7000;
+  const existentes=new Set(S.retParcelas.filter(p=>p.deal_id===dealId).map(p=>p.mes));
+  const novas=[];
+  // F1 parcela 1
+  const m1=String(base.getMonth()+1).padStart(2,'0')+'/'+base.getFullYear();
+  if(!existentes.has(m1))novas.push({deal_id:dealId,mes:m1,valor:r1,tipo:'Fase 1 — Parcela 1',status:'Pendente',observacao:'Na assinatura'});
+  // F1 parcela 2 (+30 dias)
+  const d2=new Date(base);d2.setDate(d2.getDate()+30);
+  const m2=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
+  if(!existentes.has(m2))novas.push({deal_id:dealId,mes:m2,valor:r1,tipo:'Fase 1 — Parcela 2',status:'Pendente',observacao:'Final Fase 1'});
+  // F2 mensais (+60 dias em diante, 6 meses)
+  const ini=new Date(base);ini.setDate(ini.getDate()+60);
+  const limite=new Date();limite.setMonth(limite.getMonth()+6);
+  for(let i=0;i<24;i++){
+    const dt=new Date(ini.getFullYear(),ini.getMonth()+i,1);
+    if(dt>limite)break;
+    const m=String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+    if(!existentes.has(m))novas.push({deal_id:dealId,mes:m,valor:r2,tipo:'Fase 2',status:'Pendente',observacao:'Retainer mensal'});
+  }
+  if(!novas.length){alert('Todas as parcelas já foram geradas.');return;}
+  const{data:ins}=await sb.from('retainer_parcelas').insert(novas).select();
+  if(ins)S.retParcelas=[...S.retParcelas,...ins];
+  render();
+}
+
 async function saveRecReal(d){
   const isN=!d.id||d.id.startsWith('new_');
   if(isN){const t={...d,valor:parseFloat(d.valor)||0};delete t.id;const{data:nd}=await sb.from('receita_realizada').insert(t).select().single();if(nd)S.recReal.unshift(nd);}
@@ -466,6 +533,17 @@ function mHora(){
     <div class="fgrid"><div class="fg"><label>Data</label><input type="date" value="${f.data||''}" oninput="uf('data',this.value)"/></div><div></div></div>
     <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Descrição</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveHora()">Salvar</button></div>
+  </div></div>`;
+}
+function mRetParcela(){
+  const f=S.editForm;
+  const opts=(k,arr)=>`<select style="background:var(--input);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:var(--text);font-size:12px;font-family:inherit;outline:none;width:100%" onchange="uf('${k}',this.value)">${arr.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lançar parcela de retainer</h3>
+    <div class="fgrid"><div class="fg"><label>Mês (MM/AAAA)</label><input value="${f.mes||''}" placeholder="03/2026" oninput="uf('mes',this.value)"/></div><div class="fg"><label>Tipo</label>${opts('tipo',['Fase 1 — Parcela 1','Fase 1 — Parcela 2','Fase 2'])}</div></div>
+    <div class="fgrid"><div class="fg"><label>Valor (R$)</label><input type="number" value="${f.valor||''}" oninput="uf('valor',this.value)"/></div><div class="fg"><label>Status</label>${opts('status',['Pendente','E-mail enviado','Recebido','Atrasado'])}</div></div>
+    <div class="fgrid"><div class="fg"><label>Data e-mail</label><input type="date" value="${f.data_envio||''}" oninput="uf('data_envio',this.value)"/></div><div class="fg"><label>Data recebimento</label><input type="date" value="${f.data_recebimento||''}" oninput="uf('data_recebimento',this.value)"/></div></div>
+    <div class="fg"><label>Observação</label><input value="${f.observacao||''}" oninput="uf('observacao',this.value)"/></div>
+    <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveRetParcela()">Salvar</button></div>
   </div></div>`;
 }
 function mRecReal(){
@@ -639,10 +717,50 @@ function renderDetalhe(d){
     <tbody>${horasD.map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td>${h.tipo_hora==='BIB'?'<span class="bib-tag">BIB</span>':'<span class="nib-tag">NIB</span>'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}
   </div>
   ${(()=>{
-    const CAMPOS_REL=['Criação','Etapa','Etapa DCM','status','resultado','deal_value','success_fee','retainer_f2','mandato','cliente','diretor','gerente','analista','classificacao'];
-    const histFilt=histD.filter(h=>CAMPOS_REL.includes(h.campo));
-    if(!histFilt.length)return'';
-    return`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="ct" style="margin:0">Histórico de alterações</div><span style="font-size:10px;color:var(--text2)">${histFilt.length} evento${histFilt.length!==1?'s':''} relevante${histFilt.length!==1?'s':''}</span></div>${histFilt.slice(0,15).map(h=>`<div class="hist-item"><div class="av" style="width:26px;height:26px;font-size:9px;flex-shrink:0">${ini(h.usuario_nome||'S')}</div><div><div style="font-weight:600">${h.usuario_nome||'Sistema'} <span style="font-weight:400;color:var(--text2)">→ <strong>${h.campo}</strong></span></div><div style="color:var(--text2);margin-top:2px">${h.valor_anterior&&h.valor_anterior!=='undefined'?'<span style="text-decoration:line-through;opacity:.5">'+h.valor_anterior+'</span> → ':''}<span style="color:var(--text);font-weight:600">${h.valor_novo}</span></div><div style="font-size:10px;color:var(--text2);margin-top:2px">${fmtTS(h.created_at)}</div></div></div>`).join('')}</div>`;
+    const parc=[...S.retParcelas.filter(p=>p.deal_id===d.id)].sort((a,b)=>{
+      const[ma,ya]=a.mes.split('/');const[mb,yb]=b.mes.split('/');
+      return new Date(ya,ma-1)-new Date(yb,mb-1);
+    });
+    const recebido=parc.filter(p=>p.status==='Recebido').reduce((s,p)=>s+(p.valor||0),0);
+    const pendente=parc.filter(p=>p.status!=='Recebido').reduce((s,p)=>s+(p.valor||0),0);
+    const atrasado=parc.filter(p=>p.status==='Atrasado').length;
+    const total=recebido+pendente;
+    const prog=total?Math.round(recebido/total*100):0;
+    const COR={Recebido:'var(--green)',Pendente:'var(--text2)','E-mail enviado':'var(--blue)',Atrasado:'var(--red)'};
+    const BG={Recebido:'rgba(34,197,94,.15)',Pendente:'var(--bg3)','E-mail enviado':'rgba(0,120,212,.15)',Atrasado:'rgba(239,68,68,.15)'};
+    return`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="ct" style="margin:0">Acompanhamento de Retainer</div>
+        <div style="display:flex;gap:6px">
+          ${d.data_assinatura?`<button class="bgh bsm" onclick="gerarCronogramaRetainer('${d.id}')">⟳ Gerar cronograma</button>`:''}
+          <button class="btn bsm" onclick="openAddRetParcela('${d.id}')">+ Lançar</button>
+        </div>
+      </div>
+      <div class="kpis k4" style="margin-bottom:12px">
+        <div class="kpi ac3"><div class="kl">Recebido</div><div class="kv" style="font-size:18px">${fmt(recebido)}</div><div class="ks">${parc.filter(p=>p.status==='Recebido').length} parcelas</div></div>
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Pendente</div><div class="kv" style="font-size:18px">${fmt(pendente)}</div></div>
+        <div class="kpi" style="${atrasado?'background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25)':'background:var(--bg3)'}"><div class="kl">Atrasados</div><div class="kv" style="color:${atrasado?'var(--red)':'var(--text)'};">${atrasado}</div></div>
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Total contrato</div><div class="kv" style="font-size:18px">${fmt(total)}</div><div class="ks">${parc.length} parcelas</div></div>
+      </div>
+      ${total?`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span style="color:var(--text2)">Progresso de recebimento</span><span style="font-weight:700;color:var(--green)">${prog}%</span></div><div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:8px;background:linear-gradient(90deg,var(--green),#16A34A);border-radius:4px;width:${prog}%"></div></div></div>`:''}
+      ${parc.length===0?`<div class="empty" style="padding:20px">Clique em "⟳ Gerar cronograma" para criar automaticamente com base no contrato, ou "+ Lançar" para adicionar manualmente.</div>`:`
+      <div style="overflow-x:auto"><table><thead><tr><th>Mês</th><th>Tipo</th><th>Valor</th><th>Status</th><th>E-mail enviado</th><th>Recebido em</th><th>Obs</th><th></th></tr></thead>
+      <tbody>${parc.map(p=>{const pid=p.id;return`<tr>
+        <td style="font-weight:600">${p.mes}</td>
+        <td style="font-size:11px;color:var(--text2)">${p.tipo||'Fase 2'}</td>
+        <td style="font-weight:700">${fmt(p.valor)}</td>
+        <td><select style="background:${BG[p.status]||'var(--bg3)'};color:${COR[p.status]||'var(--text2)'};border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;outline:none" onchange="updRetStatus('${pid}',this.value,{})">
+          <option value="Pendente" ${p.status==='Pendente'?'selected':''}>Pendente</option>
+          <option value="E-mail enviado" ${p.status==='E-mail enviado'?'selected':''}>E-mail enviado</option>
+          <option value="Recebido" ${p.status==='Recebido'?'selected':''}>Recebido</option>
+          <option value="Atrasado" ${p.status==='Atrasado'?'selected':''}>Atrasado</option>
+        </select></td>
+        <td><input type="date" value="${p.data_envio||''}" style="background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-size:11px;font-family:inherit" onchange="(async()=>{S.retParcelas.find(x=>x.id==='${pid}')&&await updRetStatus('${pid}',S.retParcelas.find(x=>x.id==='${pid}').status,{data_envio:this.value||null});})()"/></td>
+        <td><input type="date" value="${p.data_recebimento||''}" style="background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-size:11px;font-family:inherit" onchange="(async()=>{S.retParcelas.find(x=>x.id==='${pid}')&&await updRetStatus('${pid}',S.retParcelas.find(x=>x.id==='${pid}').status,{data_recebimento:this.value||null});})()"/></td>
+        <td style="font-size:11px;color:var(--text2)">${p.observacao||''}</td>
+        <td><button class="bdg bsm" onclick="delRetParcela('${pid}')">✕</button></td>
+      </tr>`;}).join('')}</tbody></table></div>`}
+    </div>`;
   })()}
   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="bdg" onclick="hDelDeal('${d.id}')">Excluir</button></div>`;
 }
@@ -766,6 +884,17 @@ function renderDash(){
         <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--cyan)"></div><span style="font-size:11px;color:var(--text2)">Deals por etapa</span></div>
       </div>
       <div class="cw-lg"><canvas id="cFasesDCM"></canvas></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Evolução MRR recebido</div>
+      <div class="cw-lg"><canvas id="cMRR"></canvas></div>
+      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:6px">Retainers marcados como Recebido · tracejado = projeção</div>
+    </div>
+    <div class="card">
+      <div class="ct">Pipeline M&A vs DCM por probabilidade</div>
+      <div class="cw-lg"><canvas id="cMADCM"></canvas></div>
     </div>
   </div>
   <div class="g2">
@@ -1023,26 +1152,42 @@ function initCharts(){
   const at=ativos(filtrados());const fl=S.seg==='ma'?at.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
   const lbl={color:'#8899B0',font:{size:10},boxWidth:10};const grid={color:'rgba(255,255,255,0.04)'};
   if(S.page==='dashboard'){
-    const byM={};fl.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
-    if(Object.keys(byM).length)mkChart('cM',{type:'doughnut',data:{labels:Object.keys(byM),datasets:[{data:Object.values(byM),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
-    const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
-    if(Object.keys(bySt).length)mkChart('cS',{type:'doughnut',data:{labels:Object.keys(bySt),datasets:[{data:Object.values(bySt),backgroundColor:Object.keys(bySt).map(k=>SC[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
-    // gráfico de fases separado F1 / F2
-    // M&A chart
     const flMA=fl.filter(d=>d.tipo!=='DCM');
     const flDCM=fl.filter(d=>d.tipo==='DCM');
-    const f1Names=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt'];
-    const f2Names=['IO/NBO','Negoc.','LOI/MOU','Due Dilig.','Contratos','Closing'];
-    const allNames=[...f1Names,...f2Names];
-    const f1Counts=f1Names.map((_,i)=>flMA.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===i;}).length);
-    const f2Counts=f2Names.map((_,i)=>flMA.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===6+i;}).length);
-    const allCounts=[...f1Counts,...f2Counts];
-    const bgColors=[...f1Names.map(()=>'#0078D4'),...f2Names.map(()=>'#00B4D8')];
-    if(flMA.length)mkChart('cFases',{type:'bar',data:{labels:allNames,datasets:[{data:allCounts,backgroundColor:bgColors,borderRadius:6,borderWidth:0,label:'M&A'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} projeto${c.raw!==1?'s':''}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid},y:{ticks:{color:'#8899B0',font:{size:10},stepSize:1},grid}},responsive:true,maintainAspectRatio:false}});
-    // DCM chart
-    const dcmNames=FASES_DCM.map(f=>f.n);
-    const dcmCounts=FASES_DCM.map((_,i)=>flDCM.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===i;}).length);
-    if(flDCM.length)mkChart('cFasesDCM',{type:'bar',data:{labels:dcmNames,datasets:[{data:dcmCounts,backgroundColor:'#00B4D8',borderRadius:6,borderWidth:0,label:'DCM'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} deal${c.raw!==1?'s':''}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid},y:{ticks:{color:'#8899B0',font:{size:10},stepSize:1},grid}},responsive:true,maintainAspectRatio:false}});
+    // Donut mandato M&A
+    const byM={};fl.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
+    if(Object.keys(byM).length)mkChart('cM',{type:'doughnut',data:{labels:Object.keys(byM),datasets:[{data:Object.values(byM),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
+    // Donut status
+    const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
+    if(Object.keys(bySt).length)mkChart('cS',{type:'doughnut',data:{labels:Object.keys(bySt),datasets:[{data:Object.values(bySt),backgroundColor:Object.keys(bySt).map(k=>SC[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
+    // Fases M&A horizontal
+    const f1N=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt'];
+    const f2N=['IO/NBO','Negoc.','LOI/MOU','Due Dilig.','Contratos','Closing'];
+    const maN=[...f1N,...f2N];
+    const maC=[...f1N.map((_,i)=>flMA.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===i).length),...f2N.map((_,i)=>flMA.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===6+i).length)];
+    const maBg=[...f1N.map(()=>'#0078D4'),...f2N.map(()=>'#00B4D8')];
+    if(document.getElementById('cFases'))mkChart('cFases',{type:'bar',data:{labels:maN,datasets:[{data:maC,backgroundColor:maBg,borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+    // Fases DCM horizontal
+    const dcmN=FASES_DCM.map(f=>f.n);
+    const dcmC=FASES_DCM.map((_,i)=>flDCM.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===i).length);
+    if(document.getElementById('cFasesDCM'))mkChart('cFasesDCM',{type:'bar',data:{labels:dcmN,datasets:[{data:dcmC,backgroundColor:'#00B4D8',borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+    // MRR linha
+    const mrrH=getMRRHistorico();
+    if(document.getElementById('cMRR')){
+      if(mrrH.length){
+        mkChart('cMRR',{type:'line',data:{labels:mrrH.map(x=>x[0]),datasets:[{data:mrrH.map(x=>x[1]),borderColor:'#22C55E',backgroundColor:'rgba(34,197,94,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#22C55E',borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+      } else {
+        const mp=getMeses().slice(0,6).reverse();
+        const pj=ativos(S.deals).reduce((s,d)=>s+(d.retainer_f2||0),0);
+        mkChart('cMRR',{type:'line',data:{labels:mp,datasets:[{data:mp.map(()=>pj),borderColor:'#0078D4',backgroundColor:'rgba(0,120,212,.06)',tension:.4,fill:true,borderDash:[5,5],pointRadius:3,borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+      }
+    }
+    // Pipeline M&A vs DCM barras
+    const grps=['Alta','Média','Baixa'];
+    const allAt=ativos(S.deals);
+    const maDV=grps.map(p=>allAt.filter(d=>d.tipo!=='DCM'&&d.prob===p).reduce((s,d)=>s+(d.deal_value||0),0));
+    const dcmDV=grps.map(p=>allAt.filter(d=>d.tipo==='DCM'&&d.prob===p).reduce((s,d)=>s+(d.deal_value||0),0));
+    if(document.getElementById('cMADCM'))mkChart('cMADCM',{type:'bar',data:{labels:grps,datasets:[{label:'M&A',data:maDV,backgroundColor:'#0078D4',borderRadius:5,borderWidth:0},{label:'DCM',data:dcmDV,backgroundColor:'#00B4D8',borderRadius:5,borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},scales:{x:{ticks:{color:'#8899B0'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e6?`${(v/1e6).toFixed(0)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
   }
 }
 
@@ -1096,7 +1241,7 @@ function render(){
       <button class="logout-btn" onclick="logout()">↗ Sair</button>
     </div>
   </div>`;
-  const modal=S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():'';
+  const modal=S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():S.modal==='retparcela'?mRetParcela():'';
   app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
   if(!S.loading&&!S.detail)setTimeout(initCharts,80);
 }
