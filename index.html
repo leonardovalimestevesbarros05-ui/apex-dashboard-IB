@@ -832,13 +832,35 @@ function renderPerfilAnalista(uid){
       <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">← Voltar</button>
     </div>
   </div>
-  <div class="kpis k6">
-    <div class="kpi ac"><div class="kl">Projetos</div><div class="kv">${deals.length}</div><div class="ks">${ganhos.length} ganhos</div></div>
-    <div class="kpi"><div class="kl">Horas totais</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks"><span class="bib-tag">BIB ${bib.toFixed(1)}h</span></div></div>
-    <div class="kpi"><div class="kl">Horas NIB</div><div class="kv">${nib.toFixed(1)}h</div></div>
-    <div class="kpi ac2"><div class="kl">Retainer mensal</div><div class="kv">${fmt(totalRet)}</div></div>
-    <div class="kpi"><div class="kl">Fee potencial</div><div class="kv">${fmt(totalSF)}</div></div>
-    <div class="kpi ac3"><div class="kl">Fee realizado</div><div class="kv">${fmt(sfRealizado)}</div><div class="ks">Receita: ${fmt(recRealU)}</div></div>
+  <div class="kpis k4">
+    <div class="kpi ac"><div class="kl">Projetos</div><div class="kv">${deals.length}</div><div class="ks">${ganhos.length} ganho${ganhos.length!==1?'s':''} · ${deals.filter(d=>['Fechado e Perdido','Cancelado'].includes(d.resultado)).length} perdido${deals.filter(d=>['Fechado e Perdido','Cancelado'].includes(d.resultado)).length!==1?'s':''}</div></div>
+    <div class="kpi"><div class="kl">Retainer em execução/mês</div><div class="kv">${fmt(totalRet)}</div><div class="ks">Anualizado: ${fmt(totalRet*12)}</div></div>
+    <div class="kpi ac2"><div class="kl">Success fee potencial</div><div class="kv">${fmt(totalSF)}</div><div class="ks">Fee realizado: ${fmt(sfRealizado)}</div></div>
+    <div class="kpi ac3"><div class="kl">Receita realizada</div><div class="kv">${fmt(recRealU)}</div></div>
+  </div>
+  <div class="kpis k3" style="margin-bottom:14px">
+    <div class="kpi">
+      <div class="kl">Horas totais</div>
+      <div class="kv">${totalH.toFixed(1)}h</div>
+      <div style="margin-top:6px;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;display:flex">
+        <div style="height:6px;background:var(--green);width:${totalH?(bib/totalH*100).toFixed(0):0}%"></div>
+        <div style="height:6px;background:var(--amber);width:${totalH?(nib/totalH*100).toFixed(0):0}%"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px;font-size:10px;color:var(--text2)">
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:3px"></span>BIB ${bib.toFixed(1)}h (${totalH?Math.round(bib/totalH*100):0}%)</span>
+        <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);margin-right:3px"></span>NIB ${nib.toFixed(1)}h (${totalH?Math.round(nib/totalH*100):0}%)</span>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="kl">BIB — Billable</div>
+      <div class="kv" style="color:var(--green)">${bib.toFixed(1)}h</div>
+      <div class="ks">Horas faturáveis ao cliente</div>
+    </div>
+    <div class="kpi">
+      <div class="kl">NIB — Non-billable</div>
+      <div class="kv" style="color:var(--amber)">${nib.toFixed(1)}h</div>
+      <div class="ks">Horas internas / administrativo</div>
+    </div>
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Horas por projeto</div>
@@ -883,21 +905,21 @@ function renderDash(){
   const maxA=Math.max(...byA.map(x=>x.n),1);
   return`
   <div class="kpis k5">
-    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${S.deals.filter(d=>d.resultado==='Fechado e Ganho').length} fechados e ganhos</div></div>
-    <div class="kpi"><div class="kl">Deal value</div><div class="kv">${fmt(tDV)}</div></div>
-    <div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div></div>
-    <div class="kpi ac2"><div class="kl">Receita ponderada</div><div class="kv">${fmt(rPond)}</div><div class="ks">Por probabilidade</div></div>
-    <div class="kpi"><div class="kl">MRR retainers</div><div class="kv">${fmt(tRet)}</div><div class="ks">${tH.toFixed(0)}h registradas</div></div>
+    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${S.seg==='geral'?maAtivos.length+' M&A · '+dcmAtivos.length+' DCM':S.deals.filter(d=>d.resultado==='Fechado e Ganho').length+' ganhos'}</div></div>
+    <div class="kpi"><div class="kl">Deal value total</div><div class="kv">${fmt(tDV)}</div><div class="ks">Valor agregado dos mandatos</div></div>
+    <div class="kpi ac2"><div class="kl">Success fee potencial</div><div class="kv">${fmt(tSF)}</div><div class="ks">Se todos os deals fecharem</div></div>
+    <div class="kpi"><div class="kl">Retainer em execução/mês</div><div class="kv">${fmt(tRet)}</div><div class="ks">Anualizado: ${fmt(tRet*12)}</div></div>
+    <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Win rate</div><div class="kv" style="color:var(--green)">${(()=>{const g=S.deals.filter(d=>d.resultado==='Fechado e Ganho').length;const e=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)).length;return e?Math.round(g/e*100)+'%':'—';})()}</div><div class="ks">Ganhos / total encerrados</div></div>
   </div>
   <div class="card" style="margin-bottom:14px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="ct" style="margin:0">📊 Pipeline → Receita Esperada</div>
-      <span style="font-size:10px;color:var(--text2)">Baseado em deal value × success fee × probabilidade</span>
+      <div class="ct" style="margin:0">📊 Visão de Pipeline</div>
+      <span style="font-size:10px;color:var(--text2)">Ferramenta de planejamento — não representa receita contabilizada</span>
     </div>
     <div class="kpis k5" style="margin-bottom:0">
-      <div class="kpi" style="background:var(--bg3)"><div class="kl">Pipeline ponderado</div><div class="kv" style="font-size:18px">${fmt(rPond)}</div><div class="ks">Alta×0.8 / Média×0.5 / Baixa×0.2</div></div>
+      <div class="kpi" style="background:var(--bg3)"><div class="kl">Expectativa de fechamento</div><div class="kv" style="font-size:18px">${fmt(rPond)}</div><div class="ks">Ponderado por probabilidade de fechamento</div></div>
       <div class="kpi" style="background:var(--bg3)"><div class="kl">SF esperado total</div><div class="kv" style="font-size:18px">${fmt(fl.filter(d=>d.prob==='Alta').reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0))}</div><div class="ks">${fl.filter(d=>d.prob==='Alta').length} deals alta prob.</div></div>
-      <div class="kpi" style="background:var(--bg3)"><div class="kl">Retainers ativos/mês</div><div class="kv" style="font-size:18px">${fmt(tRet)}</div><div class="ks">ARR: ${fmt(tRet*12)}</div></div>
+      <div class="kpi" style="background:var(--bg3)"><div class="kl">Retainers ativos/mês</div><div class="kv" style="font-size:18px">${fmt(tRet)}</div><div class="ks">Anualizado: ${fmt(tRet*12)}</div></div>
       <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl" style="color:var(--green)">Win rate</div><div class="kv" style="font-size:18px;color:var(--green)">${(()=>{const g=S.deals.filter(d=>d.resultado==='Fechado e Ganho').length;const p=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)).length;return p?Math.round(g/p*100)+'%':'—';})()}</div><div class="ks">Ganhos vs encerrados</div></div>
       <div class="kpi" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)"><div class="kl" style="color:var(--amber)">Aging médio</div><div class="kv" style="font-size:18px;color:var(--amber)">${(()=>{if(!fl.length)return'—';const avg=fl.reduce((s,d)=>s+agingDias(d),0)/fl.length;return Math.round(avg)+'d';})()}</div><div class="ks">Dias médio aberto</div></div>
     </div>
@@ -925,7 +947,7 @@ function renderDash(){
   </div>
   <div class="g2">
     <div class="card">
-      <div class="ct">Evolução MRR recebido</div>
+      <div class="ct">Evolução Retainer recebido/mês</div>
       <div class="cw-lg"><canvas id="cMRR"></canvas></div>
       <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:6px">Retainers marcados como Recebido · tracejado = projeção</div>
     </div>
@@ -950,7 +972,7 @@ function renderDash(){
         return buckets.map(b=>{const n=fl.filter(d=>{const ag=agingDias(d);return ag>=b.min&&ag<=b.max;}).length;const pct=Math.round(n/total*100);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${b.c};font-weight:600">${b.l}</span><span>${n} deal${n!==1?'s':''} (${pct}%)</span></div><div style="height:8px;background:var(--bg3);border-radius:4px"><div style="height:8px;background:${b.c};border-radius:4px;width:${pct}%"></div></div></div>`;}).join('');
       })()}
     </div>
-    <div class="card"><div class="ct">Por probabilidade</div>
+    <div class="card"><div class="ct">Expectativa de fechamento</div>
       ${['Alta','Média','Baixa'].map(p=>{const n=fl.filter(d=>d.prob===p).length;const pct=fl.length?Math.round(n/fl.length*100):0;return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${PC[p]};font-weight:600">${p}</span><span>${n} deal${n!==1?'s':''} (${pct}%)</span></div><div style="height:8px;background:var(--bg3);border-radius:4px"><div style="height:8px;background:${PC[p]};border-radius:4px;width:${pct}%;transition:width .4s"></div></div></div>`;}).join('')}
     </div>
   </div>
@@ -1098,29 +1120,56 @@ function renderReceita(){
     ${S.filtroPeriodoTipo==='personalizado'?`<input type="date" class="fsel" value="${S.filtroPeriodoIni}" onchange="S.filtroPeriodoIni=this.value;render()" placeholder="De"/> <span style="color:var(--text2)">até</span> <input type="date" class="fsel" value="${S.filtroPeriodoFim}" onchange="S.filtroPeriodoFim=this.value;render()" placeholder="Até"/>`:''}
     <select class="fsel" onchange="S.filtroColabReceita=this.value;render()"><option value="">Todos os colaboradores</option>${S.usuarios.map(u=>`<option value="${u.nome}"${S.filtroColabReceita===u.nome?' selected':''}>${u.nome}</option>`).join('')}</select>
   </div>
-  <div class="kpis k4" style="margin-bottom:10px">
-    <div class="kpi ac"><div class="kl">MRR estimado</div><div class="kv">${fmt(tRet)}</div><div class="ks">ARR: ${fmt(tRet*12)}</div></div>
-    <div class="kpi ac3"><div class="kl">Retainer recebido</div><div class="kv">${fmt(retRecebido)}</div><div class="ks">${S.retParcelas.filter(p=>p.status==='Recebido').length} parcelas confirmadas</div></div>
-    <div class="kpi" style="background:${retAtrasado?'rgba(239,68,68,.08)':'rgba(245,158,11,.08)'};border:1px solid ${retAtrasado?'rgba(239,68,68,.25)':'rgba(245,158,11,.2)'}"><div class="kl">Retainer pendente</div><div class="kv" style="color:${retAtrasado?'var(--red)':'var(--amber)'}">${fmt(retPendente+retAtrasado)}</div><div class="ks">${nAtrasadas?'⚠ '+nAtrasadas+' atrasada'+( nAtrasadas!==1?'s':''):'Sem atrasos ✓'}</div></div>
-    <div class="kpi"><div class="kl">% Recebido</div><div class="kv" style="color:${retProg>=80?'var(--green)':retProg>=50?'var(--amber)':'var(--red)'}">${retTotal?retProg+'%':'—'}</div><div class="ks">do total lançado</div></div>
+  <div class="kpis k3" style="margin-bottom:10px">
+    <div class="kpi ac">
+      <div class="kl">Retainer contratado/mês</div>
+      <div class="kv">${fmt(tRet)}</div>
+      <div class="ks">Anualizado: ${fmt(tRet*12)}</div>
+    </div>
+    <div class="kpi ac3">
+      <div class="kl">Retainer recebido (total)</div>
+      <div class="kv">${fmt(retRecebido)}</div>
+      <div class="ks">${S.retParcelas.filter(p=>p.status==='Recebido').length} parcelas confirmadas</div>
+    </div>
+    <div class="kpi" style="${nAtrasadas?'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25)':'background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)'}">
+      <div class="kl">Retainer a receber</div>
+      <div class="kv" style="color:${nAtrasadas?'var(--red)':'var(--amber)'}">${fmt(retPendente+retAtrasado)}</div>
+      <div class="ks">${nAtrasadas?'⚠ '+nAtrasadas+' atrasada'+(nAtrasadas!==1?'s':''):'Sem atrasos ✓'}</div>
+    </div>
+  </div>
+  <div class="kpis k3" style="margin-bottom:14px">
+    <div class="kpi">
+      <div class="kl">Success fee contratado</div>
+      <div class="kv">${fmt(tSF)}</div>
+      <div class="ks">Fee médio: ${at.length?(at.reduce((s,d)=>s+(d.success_fee||0),0)/at.length).toFixed(1)+'%':'—'} · ${at.length} mandatos ativos</div>
+    </div>
+    <div class="kpi ac2">
+      <div class="kl">Success fee realizado</div>
+      <div class="kv">${fmt(sfGanhos)}</div>
+      <div class="ks">${ganhos.length} deal${ganhos.length!==1?'s':''} fechado${ganhos.length!==1?'s':''} e ganho${ganhos.length!==1?'s':''}</div>
+    </div>
+    <div class="kpi" style="${tReal?'background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)':''}">
+      <div class="kl">Receita realizada total</div>
+      <div class="kv" style="color:${tReal?'var(--green)':'var(--text)'}">${fmt(tReal+retRecebido)}</div>
+      <div class="ks">Ret: ${fmt(retRecebido)} · SF: ${fmt(tReal)}</div>
+    </div>
   </div>
   ${retTotal?`<div class="card" style="margin-bottom:14px;padding:14px 18px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Retainer — Recebido vs Total lançado</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Retainer — Recebido vs A receber</div>
       <div style="font-size:12px;font-weight:700;color:var(--green)">${fmt(retRecebido)} <span style="color:var(--text2);font-weight:400">de</span> ${fmt(retTotal)} · ${retProg}%</div>
     </div>
     <div style="height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;display:flex">
-      <div style="height:10px;background:var(--green);border-radius:5px 0 0 5px;width:${retProg}%;transition:width .4s"></div>
-      <div style="height:10px;background:var(--amber);width:${retTotal?Math.round(retPendente/retTotal*100):0}%;transition:width .4s"></div>
-      <div style="height:10px;background:var(--red);border-radius:0 5px 5px 0;width:${retTotal?Math.round(retAtrasado/retTotal*100):0}%;transition:width .4s"></div>
+      <div style="height:10px;background:var(--green);border-radius:${retProg===100?'5px':'5px 0 0 5px'};width:${retProg}%;transition:width .5s"></div>
+      <div style="height:10px;background:var(--amber);width:${retTotal?Math.round(retPendente/retTotal*100):0}%;transition:width .5s"></div>
+      ${retAtrasado?`<div style="height:10px;background:var(--red);border-radius:0 5px 5px 0;width:${retTotal?Math.round(retAtrasado/retTotal*100):0}%"></div>`:''}
     </div>
     <div style="display:flex;gap:16px;margin-top:6px;font-size:10px;color:var(--text2)">
       <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:4px"></span>Recebido ${fmt(retRecebido)}</span>
-      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:4px"></span>Pendente ${fmt(retPendente)}</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:4px"></span>A receber ${fmt(retPendente)}</span>
       ${retAtrasado?`<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:4px"></span>Atrasado ${fmt(retAtrasado)}</span>`:''}
     </div>
-  </div>`:''}
-  <div class="kpis k3" style="margin-bottom:14px">
+  </div>`:''}  <div class="kpis k3" style="margin-bottom:14px">
     <div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div><div class="ks">Fee médio: ${at.length?(at.reduce((s,d)=>s+(d.success_fee||0),0)/at.length).toFixed(1)+'%':'—'}</div></div>
     <div class="kpi ac2"><div class="kl">SF realizado</div><div class="kv">${fmt(sfGanhos)}</div><div class="ks">${ganhos.length} fechado${ganhos.length!==1?'s':''} e ganho${ganhos.length!==1?'s':''}</div></div>
     <div class="kpi" style="${tReal?'background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)':''}"><div class="kl">Realizado no período</div><div class="kv" style="color:${tReal?'var(--green)':'var(--text)'}">${fmt(tReal)}</div><div class="ks">Ret: ${fmt(tRetReal)} · SF: ${fmt(tSFReal)}</div></div>
@@ -1132,7 +1181,7 @@ function renderReceita(){
         <div>
           <div style="font-size:10px;color:var(--text2);letter-spacing:.8px;margin-bottom:4px">A RECEBER — ESTIMADO</div>
           <div style="font-size:28px;font-weight:700">${fmt(tRet)}<span style="font-size:11px;font-weight:400;color:var(--text2)"> /mês</span></div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px">ARR projetado: ${fmt(tRet*12)}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Anualizado: ${fmt(tRet*12)}</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:10px;color:var(--green);letter-spacing:.8px;margin-bottom:4px">REALIZADO</div>
