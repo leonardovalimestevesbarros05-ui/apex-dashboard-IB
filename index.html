@@ -166,6 +166,16 @@ const FASES=[
   {n:'IO / NBO',f:2},{n:'Negociação',f:2},{n:'LOI / MOU',f:2},
   {n:'Due Diligence',f:2},{n:'Contratos',f:2},{n:'Signing & Closing',f:2},
 ];
+const FASES_DCM=[
+  {n:'Prospecção',f:1,d:'Identificação e qualificação do emissor'},
+  {n:'Mandato',f:1,d:'Assinatura do mandato e definição de estrutura'},
+  {n:'Estruturação',f:1,d:'Modelagem financeira, rating e documentação'},
+  {n:'Registro CVM',f:1,d:'Registro na CVM e aprovações regulatórias'},
+  {n:'Roadshow',f:2,d:'Apresentação aos investidores institucionais'},
+  {n:'Precificação',f:2,d:'Book building e definição do preço final'},
+  {n:'Distribuição',f:2,d:'Alocação e distribuição aos investidores'},
+  {n:'Liquidação',f:2,d:'Liquidação financeira e emissão do ativo'},
+];
 const NAV=[
   {s:'Visão Geral'},{k:'dashboard',l:'Dashboard',i:'⬡'},{k:'pipeline',l:'Pipeline',i:'◐'},
   {s:'Projetos'},{k:'ma',l:'Projetos M&A',i:'◈'},{k:'dcm',l:'Projetos DCM',i:'◈'},{k:'encerrados',l:'Encerrados e Congelados',i:'◌'},
@@ -190,6 +200,7 @@ function resTag(r){
   if(r==='Fechado e Perdido')return'<span class="tp">✗ Perdido</span>';
   if(r==='Cancelado')return'<span class="tcan">⊘ Cancelado</span>';
   if(r==='Congelado')return'<span class="tc">❄ Congelado</span>';
+  if(r==='Ativo')return'<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">✓ Ativo</span>';
   return'<span style="color:var(--text2)">—</span>';
 }
 
@@ -328,6 +339,15 @@ function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',ma
 function openEditDeal(id){const d=S.deals.find(x=>x.id===id);if(!d)return;S.editForm={...d,deal_value:String(d.deal_value||''),retainer_f1:String(d.retainer_f1||15000),retainer_f2:String(d.retainer_f2||7000),success_fee:String(d.success_fee||'')};S.modal='deal';render();}
 async function hSaveDeal(){const f=S.editForm;if(!f.cliente.trim())return;const r={...f,deal_value:pN(f.deal_value),retainer_f1:pN(f.retainer_f1)||15000,retainer_f2:pN(f.retainer_f2)||7000,success_fee:pN(f.success_fee)||0};S.modal=null;S.editForm=null;await saveDeal(r);render();}
 async function hDelDeal(id){if(!confirm('Excluir permanentemente?'))return;S.detail=null;S.detailType=null;await delDeal(id);render();}
+async function hSetEtapaDCM(dealId,idx){
+  const d=S.deals.find(x=>x.id===dealId);if(!d)return;
+  const et={...(d.etapas||{})};
+  et[idx]=et[idx]==='done'?'pending':'done';
+  const fa=Object.values(et).filter(v=>v==='done').length;
+  await updEtapas(dealId,et,fa);
+  await addH(dealId,'Etapa DCM',FASES_DCM[idx]?.n,et[idx]==='done'?'Concluída':'Reaberta');
+  render();
+}
 async function hSetEtapa(dealId,idx){const d=S.deals.find(x=>x.id===dealId);if(!d)return;const et={...(d.etapas||{})};et[idx]=et[idx]==='done'?'pending':'done';const fa=Object.values(et).filter(v=>v==='done').length;await updEtapas(dealId,et,fa);await addH(dealId,'Etapa',FASES[idx]?.n,et[idx]==='done'?'Concluída':'Reaberta');render();}
 
 // comentários
@@ -379,15 +399,13 @@ function mDeal(){
   const slU=(k,arr,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)"><option value="">— Selecione —</option>${arr.map(n=>`<option value="${n}"${f[k]===n?' selected':''}>${n}</option>`).join('')}</select></div>`;
   const setores=['Saúde','Agronegócio','Tecnologia','Logística','Educação','Energia','Indústria','Construção','Financeiro','Outro'];
   const isE=f.id&&!f.id.startsWith('new_');
-  const showRes=isE||f.resultado;
   return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar projeto':'Novo projeto'}</h3>
-    <div class="fgrid">${sl('tipo',['M&A','DCM'],'Tipo')}${sl('mandato',['Sell-side','Buy-side','Captação','Reestruturação','Outro'],'Mandato')}</div>
+    <div class="fgrid">${sl('tipo',['M&A','DCM'],'Tipo')}${sl('mandato',f.tipo==='DCM'?['CRI','CRA','Debênture','FII','FIDC','CCI','LCI','LCA','Outro']:['Sell-side','Buy-side','Captação','Reestruturação','Outro'],'Mandato')}</div>
     <div class="fgrid"><div class="fg"><label>Cliente</label><input value="${f.cliente||''}" oninput="uf('cliente',this.value)"/></div><div class="fg"><label>Projeto / ID</label><input value="${f.projeto||''}" oninput="uf('projeto',this.value)"/></div></div>
     <div class="fgrid">${sl('status',Object.keys(SC),'Status')}${sl('prob',['Alta','Média','Baixa'],'Probabilidade')}</div>
     <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('setor',setores,'Setor')}</div>
-    ${showRes?`<div class="fgrid">${sl('resultado',['','Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'],'Resultado final')}<div></div></div>
-    ${f.resultado&&f.resultado!=='Fechado e Ganho'?`<div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Motivo de encerramento</label><textarea oninput="uf('motivo_encerramento',this.value)" style="min-height:50px">${f.motivo_encerramento||''}</textarea></div></div>`:''}
-    `:''}
+    <div class="fgrid">${sl('resultado',['','Ativo','Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'],'Status / Resultado')}<div></div></div>
+    ${f.resultado&&f.resultado!=='Fechado e Ganho'&&f.resultado!=='Ativo'?`<div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Motivo de encerramento</label><textarea oninput="uf('motivo_encerramento',this.value)" style="min-height:50px">${f.motivo_encerramento||''}</textarea></div></div>`:''}
     <div class="sdiv">Financeiro</div>
     <div class="fgrid"><div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.deal_value||''}" oninput="uf('deal_value',this.value)"/></div><div class="fg"><label>Success fee (%)</label><input type="number" step="0.1" value="${f.success_fee||''}" oninput="uf('success_fee',this.value)"/></div></div>
     <div class="fgrid"><div class="fg"><label>Retainer Fase 1 / parcela</label><input type="number" value="${f.retainer_f1||15000}" oninput="uf('retainer_f1',this.value)"/></div><div class="fg"><label>Retainer Fase 2 / mês</label><input type="number" value="${f.retainer_f2||7000}" oninput="uf('retainer_f2',this.value)"/></div></div>
@@ -407,14 +425,14 @@ function mUser(){
     <div class="fgrid"><div class="fg"><label>Nome completo</label><input value="${f.nome||''}" oninput="uf('nome',this.value)"/></div><div class="fg"><label>E-mail</label><input type="email" value="${f.email||''}" oninput="uf('email',this.value)"/></div></div>
     <div class="fgrid"><div class="fg"><label>Senha</label><input type="password" value="${f.senha||''}" oninput="uf('senha',this.value)"/></div>${sl('cargo',CARGOS,'Cargo')}</div>
     <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('area',AREAS,'Área')}</div>
-    <div class="fgrid"><div class="fg"><label>Gestor</label><select onchange="uf('gestor',this.value)"><option value="">— Nenhum —</option>${dirs.map(n=>`<option value="${n}"${f.gestor===n?' selected':''}>${n}</option>`).join('')}</select></div>${sl('ativo',[true,false],'Status')}</div>
+    <div class="fgrid"><div class="fg"><label>Gestor</label><select onchange="uf('gestor',this.value)"><option value="">— Nenhum —</option>${dirs.map(n=>`<option value="${n}"${f.gestor===n?' selected':''}>${n}</option>`).join('')}</select></div><div class="fg"><label>Status</label><select onchange="uf('ativo',this.value==='true')"><option value="true" ${String(f['ativo'])!=='false'?' selected':''}>Ativo</option><option value="false" ${String(f['ativo'])==='false'?' selected':''}>Inativo</option></select></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveUser()">Salvar</button></div>
   </div></div>`;
 }
 function mHora(){
   const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
   return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lançar horas</h3>
-    <div class="fgrid"><div class="fg"><label>Colaborador</label><select onchange="uf('usuario_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${f.usuario_id===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
+    <div class="fgrid"><div class="fg"><label>Colaborador</label><select onchange="uf('usuario_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${(f.usuario_id||S.currentUser?.id)===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
     <div class="fgrid"><div class="fg"><label>Tipo</label><select onchange="uf('tipo_hora',this.value)"><option value="BIB"${f.tipo_hora==='BIB'?' selected':''}>BIB — Billable</option><option value="NIB"${f.tipo_hora==='NIB'?' selected':''}>NIB — Non-billable</option></select></div><div class="fg"><label>Horas</label><input type="number" step="0.5" value="${f.horas||''}" oninput="uf('horas',this.value)"/></div></div>
     <div class="fgrid"><div class="fg"><label>Fase</label><select onchange="uf('fase',this.value)"><option value="">—</option><option>Fase 1 — Preparation</option><option>Fase 2 — Execution</option><option>Geral</option></select></div><div class="fg"><label>Etapa</label><input value="${f.etapa||''}" oninput="uf('etapa',this.value)" placeholder="Ex: Valuation"/></div></div>
     <div class="fgrid"><div class="fg"><label>Data</label><input type="date" value="${f.data||''}" oninput="uf('data',this.value)"/></div><div></div></div>
@@ -464,6 +482,34 @@ function sfStepper(d){
   </div>`;
 }
 
+// ═══ DCM STEPPER ═══
+function dcmStepper(d){
+  const et=d.etapas||{};
+  const total=FASES_DCM.length;
+  const feitas=Object.values(et).filter(v=>v==='done').length;
+  const pct=Math.round(feitas/total*100);
+  const f1=FASES_DCM.filter(x=>x.f===1);
+  const f2=FASES_DCM.filter(x=>x.f===2);
+  const rF=(fases,offset)=>fases.map((e,i)=>{
+    const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;
+    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapaDCM('${d.id}',${idx})" title="${e.d}">
+      <div class="sf-circle">${done?'✓':idx+1}</div>
+      <div class="sf-label">${e.n}</div>
+    </div>`;}).join('');
+  return`<div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600">Progresso: <span style="color:var(--cyan)">${pct}%</span> — ${feitas}/${total} etapas</div>
+    </div>
+    <div style="height:6px;background:var(--bg3);border-radius:3px;margin-bottom:18px;overflow:hidden">
+      <div style="height:6px;background:linear-gradient(90deg,var(--cyan),#0052A3);border-radius:3px;width:${pct}%;transition:width .4s"></div>
+    </div>
+    <div class="sf-fase-lbl" style="background:rgba(0,180,216,.1);color:var(--cyan)">Fase 1 — Preparação & Estruturação</div>
+    <div class="sf-wrap"><div class="sf-track">${rF(f1,0)}</div></div>
+    <div class="sf-fase-lbl" style="margin-top:8px;background:rgba(0,120,212,.1);color:var(--blue)">Fase 2 — Distribuição & Liquidação</div>
+    <div class="sf-wrap"><div class="sf-track">${rF(f2,4)}</div></div>
+  </div>`;
+}
+
 // ═══ COMENTÁRIOS ═══
 function renderComts(dealId,idx,comtsD){
   const k=`${dealId}_${idx}`;const sh=S.novoComt[`sh_${k}`];const comtsEt=comtsD.filter(c=>c.etapa_idx===idx);const u=S.currentUser;
@@ -493,11 +539,13 @@ function renderComts(dealId,idx,comtsD){
 // ═══ DETALHE PROJETO ═══
 function renderDetalhe(d){
   const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;
+  const fasesTotal=d.tipo==='DCM'?FASES_DCM.length:FASES.length;
   const horasD=S.horas.filter(h=>h.deal_id===d.id);const totalH=horasD.reduce((s,h)=>s+(h.horas||0),0);
   const bib=horasD.filter(h=>h.tipo_hora==='BIB').reduce((s,h)=>s+(h.horas||0),0);
   const nib=horasD.filter(h=>h.tipo_hora!=='BIB').reduce((s,h)=>s+(h.horas||0),0);
   const eq=[{r:'Diretor',n:d.diretor},{r:'Gerente',n:d.gerente},{r:'Analista',n:d.analista}].filter(p=>p.n);
   const sf=(d.deal_value||0)*((d.success_fee||0)/100);
+  const pct=Math.round(feitas/fasesTotal*100);
   const histD=S.historico.filter(h=>h.deal_id===d.id);
   const comtsD=S.comentarios.filter(c=>c.deal_id===d.id);
   return`
@@ -524,15 +572,15 @@ function renderDetalhe(d){
     <div class="kpi"><div class="kl">Horas</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks"><span class="bib-tag">BIB ${bib.toFixed(1)}h</span> <span class="nib-tag">NIB ${nib.toFixed(1)}h</span></div></div>
   </div>
   <div class="card">
-    <div class="ct">Progresso das Fases M&A</div>
-    ${sfStepper(d)}
+    <div class="ct">Progresso das Fases ${d.tipo==='DCM'?'DCM':'M&A'}</div>
+    ${d.tipo==='DCM'?dcmStepper(d):sfStepper(d)}
     <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">
-      ${FASES.map((e,i)=>{
+      ${(d.tipo==='DCM'?FASES_DCM:FASES).map((e,i)=>{
         const done=et[i]==='done';
         return`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
             <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:14px">${done?'✅':'⬜'}</span>
+              <span style="font-size:14px;cursor:pointer" onclick="${d.tipo==='DCM'?`hSetEtapaDCM('${d.id}',${i})`:`hSetEtapa('${d.id}',${i})`}">${done?'✅':'⬜'}</span>
               <span style="font-size:12px;font-weight:${done?600:400};color:${done?'var(--green)':'var(--text)'}">${e.n}</span>
               <span style="font-size:10px;color:var(--text2)">Fase ${e.f}</span>
             </div>
@@ -614,13 +662,13 @@ function renderPerfilAnalista(uid){
   <div class="card"><div class="ct">Projetos do colaborador</div>
     ${deals.length===0?`<div class="empty">Nenhum projeto</div>`:`
     <table><thead><tr><th>Cliente</th><th>Papel</th><th>Status</th><th>Deal value</th><th>SF potencial</th><th>Progresso</th><th></th></tr></thead>
-    <tbody>${deals.map(d=>{const papel=d.diretor===u.nome?'Diretor':d.gerente===u.nome?'Gerente':'Analista';const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);const sf=(d.deal_value||0)*((d.success_fee||0)/100);return`<tr><td style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';render()">${d.cliente}</td><td>${bdg(papel,'#0078D4')}</td><td>${bdg(d.status,SC[d.status]||'#888')}</td><td style="font-weight:600">${fmt(d.deal_value)}</td><td style="color:var(--cyan)">${fmt(sf)}</td><td><div style="min-width:80px"><div style="font-size:10px;color:var(--text2);margin-bottom:2px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td><td><button class="btn bsm" onclick="S.detail='${d.id}';S.detailType='deal';render()">Ver</button></td></tr>`;}).join('')}</tbody></table>`}
+    <tbody>${deals.map(d=>{const papel=d.diretor===u.nome?'Diretor':d.gerente===u.nome?'Gerente':'Analista';const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const fasesTotal=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(feitas/fasesTotal*100);const sf=(d.deal_value||0)*((d.success_fee||0)/100);return`<tr><td style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';render()">${d.cliente}</td><td>${bdg(papel,'#0078D4')}</td><td>${bdg(d.status,SC[d.status]||'#888')}</td><td style="font-weight:600">${fmt(d.deal_value)}</td><td style="color:var(--cyan)">${fmt(sf)}</td><td><div style="min-width:80px"><div style="font-size:10px;color:var(--text2);margin-bottom:2px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td><td><button class="btn bsm" onclick="S.detail='${d.id}';S.detailType='deal';render()">Ver</button></td></tr>`;}).join('')}</tbody></table>`}
   </div>`;
 }
 
 // ═══ PÁGINAS ═══
 function filtrados(){let l=S.deals;if(S.filtroColab)l=l.filter(d=>d.diretor===S.filtroColab||d.gerente===S.filtroColab||d.analista===S.filtroColab);return l;}
-function ativos(l){return(l||S.deals).filter(d=>d.status!=='Concluído'&&d.status!=='Congelado'&&!['Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'].includes(d.resultado));}
+function ativos(l){return(l||S.deals).filter(d=>d.status!=='Concluído'&&!['Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'].includes(d.resultado)||d.resultado==='Ativo');}
 
 function renderDash(){
   const all=filtrados();const at=ativos(all);
@@ -654,13 +702,22 @@ function renderDash(){
     <div class="card"><div class="ct">Deal value por mandato</div><div class="cw"><canvas id="cM"></canvas></div></div>
     <div class="card"><div class="ct">Status dos projetos</div><div class="cw"><canvas id="cS"></canvas></div></div>
   </div>
-  <div class="card">
-    <div class="ct">Distribuição por fase</div>
-    <div style="display:flex;gap:20px;margin-bottom:10px;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--blue)"></div><span style="font-size:11px;color:var(--text2)">Fase 1 — Preparation</span></div>
-      <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--cyan)"></div><span style="font-size:11px;color:var(--text2)">Fase 2 — Execution</span></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Fases M&A</div>
+      <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue)"></div><span style="font-size:11px;color:var(--text2)">Fase 1 — Preparation</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--cyan)"></div><span style="font-size:11px;color:var(--text2)">Fase 2 — Execution</span></div>
+      </div>
+      <div class="cw-lg"><canvas id="cFases"></canvas></div>
     </div>
-    <div class="cw-lg"><canvas id="cFases"></canvas></div>
+    <div class="card">
+      <div class="ct">Fases DCM</div>
+      <div style="display:flex;gap:16px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--cyan)"></div><span style="font-size:11px;color:var(--text2)">Deals por etapa</span></div>
+      </div>
+      <div class="cw-lg"><canvas id="cFasesDCM"></canvas></div>
+    </div>
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Projetos por analista</div>
@@ -680,14 +737,24 @@ function renderDash(){
 function renderPipeline(){
   const at=ativos(filtrados());
   const fases=['Preparação','Abordagem','Negociação','Due Diligence','Contratos','Closing'];
+  const fasesDCM=['Prospecção','Mandato','Estruturação','Reg. CVM','Roadshow','Precificação','Distribuição','Liquidação'];
   const mapa={};fases.forEach(f=>mapa[f]=[]);
-  at.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;let f=fases[0];if(n>=10)f=fases[5];else if(n>=8)f=fases[4];else if(n>=6)f=fases[3];else if(n>=4)f=fases[2];else if(n>=2)f=fases[1];mapa[f].push(d);});
+  const mapaDCM={};fasesDCM.forEach(f=>mapaDCM[f]=[]);
+  at.filter(d=>d.tipo!=='DCM').forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;let f=fases[0];if(n>=10)f=fases[5];else if(n>=8)f=fases[4];else if(n>=6)f=fases[3];else if(n>=4)f=fases[2];else if(n>=2)f=fases[1];mapa[f].push(d);});
+  at.filter(d=>d.tipo==='DCM').forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const idx=Math.min(n,fasesDCM.length-1);mapaDCM[fasesDCM[idx]].push(d);});
   const tDV=at.reduce((s,d)=>s+(d.deal_value||0),0);const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   return`
   <div class="kpis k3"><div class="kpi ac"><div class="kl">Pipeline</div><div class="kv">${fmt(tDV)}</div></div><div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div></div><div class="kpi"><div class="kl">Deals</div><div class="kv">${at.length}</div></div></div>
-  <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
+  <div style="margin-bottom:10px;font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px">M&A</div>
+  <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px">
     ${fases.map(f=>`<div class="pipe-col"><div class="pipe-header">${f} <span style="font-size:9px;opacity:.7">${mapa[f].length}</span></div><div class="pipe-body">
       ${mapa[f].length===0?`<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>`:mapa[f].map(d=>`<div class="pipe-card" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}%</div><div style="margin-top:5px">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`).join('')}
+    </div></div>`).join('')}
+  </div>
+  <div style="margin-bottom:10px;font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px">DCM</div>
+  <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
+    ${fasesDCM.map(f=>`<div class="pipe-col"><div class="pipe-header" style="border-bottom-color:var(--cyan);color:var(--cyan)">${f} <span style="font-size:9px;opacity:.7">${mapaDCM[f].length}</span></div><div class="pipe-body">
+      ${mapaDCM[f].length===0?`<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>`:mapaDCM[f].map(d=>`<div class="pipe-card" style="border-left-color:var(--cyan)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.mandato||'—'}</div><div style="margin-top:5px">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`).join('')}
     </div></div>`).join('')}
   </div>`;
 }
@@ -695,15 +762,16 @@ function renderPipeline(){
 function renderProjetos(){
   const tipo=S.page==='ma'?'M&A':S.page==='dcm'?'DCM':null;
   const enc=S.page==='encerrados';
-  const list=enc?S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'].includes(d.resultado)||d.status==='Concluído'||d.status==='Congelado')
-    :tipo?S.deals.filter(d=>d.tipo===tipo&&!['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)&&d.status!=='Concluído')
-    :S.deals.filter(d=>!['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)&&d.status!=='Concluído');
+  const RESULTADOS_ENC=['Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'];
+  const list=enc?S.deals.filter(d=>RESULTADOS_ENC.includes(d.resultado)&&d.resultado!=='Ativo')
+    :tipo?S.deals.filter(d=>d.tipo===tipo&&!RESULTADOS_ENC.includes(d.resultado)&&d.resultado!=='Congelado'&&d.resultado!=='Cancelado'&&d.resultado!=='Fechado e Perdido'&&d.resultado!=='Fechado e Ganho')
+    :S.deals.filter(d=>!RESULTADOS_ENC.includes(d.resultado)||d.resultado==='Ativo');
   return`
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px">${!enc?`<button class="btn" onclick="openAddDeal()">+ Novo projeto</button>`:''}</div>
   <div class="card" style="margin-bottom:0"><div style="overflow-x:auto">
     ${list.length===0?`<div class="empty">Nenhum projeto.</div>`:`
     <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th><th>Status</th>${enc?'<th>Resultado</th>':''}<th>Prob.</th><th>Polo</th><th>Deal value</th><th>Retainer</th><th>Progresso</th><th>Equipe</th><th></th></tr></thead>
-    <tbody>${list.map(d=>{const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);return`<tr>
+    <tbody>${list.map(d=>{const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const fasesTotal=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(feitas/fasesTotal*100);return`<tr>
       <td><div style="font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.setor||''}</div></td>
       <td style="color:var(--text2)">${d.projeto||'—'}</td>
       <td>${bdg(d.mandato,MC[d.mandato]||'#888')}</td>
@@ -876,14 +944,21 @@ function initCharts(){
     const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
     if(Object.keys(bySt).length)mkChart('cS',{type:'doughnut',data:{labels:Object.keys(bySt),datasets:[{data:Object.values(bySt),backgroundColor:Object.keys(bySt).map(k=>SC[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
     // gráfico de fases separado F1 / F2
+    // M&A chart
+    const flMA=fl.filter(d=>d.tipo!=='DCM');
+    const flDCM=fl.filter(d=>d.tipo==='DCM');
     const f1Names=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt'];
     const f2Names=['IO/NBO','Negoc.','LOI/MOU','Due Dilig.','Contratos','Closing'];
     const allNames=[...f1Names,...f2Names];
-    const f1Counts=f1Names.map((_,i)=>fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===i;}).length);
-    const f2Counts=f2Names.map((_,i)=>fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===6+i;}).length);
+    const f1Counts=f1Names.map((_,i)=>flMA.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===i;}).length);
+    const f2Counts=f2Names.map((_,i)=>flMA.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===6+i;}).length);
     const allCounts=[...f1Counts,...f2Counts];
     const bgColors=[...f1Names.map(()=>'#0078D4'),...f2Names.map(()=>'#00B4D8')];
-    if(fl.length)mkChart('cFases',{type:'bar',data:{labels:allNames,datasets:[{data:allCounts,backgroundColor:bgColors,borderRadius:6,borderWidth:0,label:'Projetos'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} projeto${c.raw!==1?'s':''}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid},y:{ticks:{color:'#8899B0',font:{size:10},stepSize:1},grid}},responsive:true,maintainAspectRatio:false}});
+    if(flMA.length)mkChart('cFases',{type:'bar',data:{labels:allNames,datasets:[{data:allCounts,backgroundColor:bgColors,borderRadius:6,borderWidth:0,label:'M&A'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} projeto${c.raw!==1?'s':''}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid},y:{ticks:{color:'#8899B0',font:{size:10},stepSize:1},grid}},responsive:true,maintainAspectRatio:false}});
+    // DCM chart
+    const dcmNames=FASES_DCM.map(f=>f.n);
+    const dcmCounts=FASES_DCM.map((_,i)=>flDCM.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;return n===i;}).length);
+    if(flDCM.length)mkChart('cFasesDCM',{type:'bar',data:{labels:dcmNames,datasets:[{data:dcmCounts,backgroundColor:'#00B4D8',borderRadius:6,borderWidth:0,label:'DCM'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} deal${c.raw!==1?'s':''}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid},y:{ticks:{color:'#8899B0',font:{size:10},stepSize:1},grid}},responsive:true,maintainAspectRatio:false}});
   }
 }
 
