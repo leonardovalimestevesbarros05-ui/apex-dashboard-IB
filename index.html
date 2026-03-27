@@ -179,7 +179,7 @@ const FASES_DCM=[
 const NAV=[
   {s:'Visão Geral'},{k:'dashboard',l:'Dashboard',i:'⬡'},{k:'pipeline',l:'Pipeline',i:'◐'},
   {s:'Projetos'},{k:'ma',l:'Projetos M&A',i:'◈'},{k:'dcm',l:'Projetos DCM',i:'◈'},{k:'encerrados',l:'Encerrados e Congelados',i:'◌'},
-  {s:'Pessoas'},{k:'equipe',l:'Equipe',i:'◎'},{k:'tarefas',l:'Tarefas',i:'◉'},
+  {s:'Pessoas'},{k:'equipe',l:'Equipe',i:'◎'},{k:'tarefas',l:'Tarefas',i:'◉',badge:true},
   {s:'Financeiro'},{k:'receita',l:'Receita',i:'◆'},{k:'horas',l:'Gestão de Horas',i:'◷'},
 ];
 const TITLES={dashboard:'Dashboard',pipeline:'Pipeline',ma:'Projetos M&A',dcm:'Projetos DCM',encerrados:'Encerrados e Congelados',receita:'Receita',horas:'Gestão de Horas',equipe:'Equipe',tarefas:'Tarefas'};
@@ -225,12 +225,77 @@ function dealScore(d){
   return{score,cor};
 }
 
+// ── GERAÇÃO AUTOMÁTICA DE PARCELAS DE RETAINER ──
+function gerarCronogramaRetainer(d){
+  if(!d.data_assinatura)return[];
+  const parts=d.data_assinatura.split('/');
+  let dataBase;
+  if(parts.length===3) dataBase=new Date(parts[2],parts[1]-1,parts[0]);
+  else dataBase=new Date(d.data_assinatura);
+  if(isNaN(dataBase))return[];
+
+  const r1=d.retainer_f1||15000;
+  const r2=d.retainer_f2||7000;
+  const parcelas=[];
+
+  // Fase 1 — Parcela 1 (assinatura)
+  const d1=new Date(dataBase);
+  parcelas.push({
+    mes:`${String(d1.getMonth()+1).padStart(2,'0')}/${d1.getFullYear()}`,
+    valor:r1,tipo:'Fase 1 — Parcela 1',
+    desc:'Na assinatura do contrato',
+    dataRef:new Date(d1)
+  });
+
+  // Fase 1 — Parcela 2 (30 dias depois)
+  const d2=new Date(dataBase);d2.setDate(d2.getDate()+30);
+  parcelas.push({
+    mes:`${String(d2.getMonth()+1).padStart(2,'0')}/${d2.getFullYear()}`,
+    valor:r1,tipo:'Fase 1 — Parcela 2',
+    desc:'Final da Fase 1',
+    dataRef:new Date(d2)
+  });
+
+  // Fase 2 — mensais (começa 30 dias após parcela 2, até 24 meses)
+  const inicioF2=new Date(d2);inicioF2.setDate(inicioF2.getDate()+30);
+  const hoje=new Date();
+  const limite=new Date(hoje.getFullYear(),hoje.getMonth()+6,1);
+  for(let i=0;i<24;i++){
+    const dt=new Date(inicioF2.getFullYear(),inicioF2.getMonth()+i,inicioF2.getDate());
+    if(dt>limite)break;
+    parcelas.push({
+      mes:`${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`,
+      valor:r2,tipo:'Fase 2',
+      desc:`Retainer mensal`,
+      dataRef:new Date(dt)
+    });
+  }
+  return parcelas;
+}
+
+async function sincronizarParcelasRetainer(dealId){
+  const d=S.deals.find(x=>x.id===dealId);if(!d)return;
+  const cronograma=gerarCronogramaRetainer(d);if(!cronograma.length)return;
+  const existentes=S.retParcelas.filter(p=>p.deal_id===dealId).map(p=>p.mes);
+  const novas=cronograma.filter(c=>!existentes.includes(c.mes));
+  if(!novas.length)return;
+  const toInsert=novas.map(p=>({deal_id:dealId,mes:p.mes,valor:p.valor,tipo:p.tipo,status:'Pendente',data_envio:null,data_recebimento:null,observacao:p.desc}));
+  const{data:ins}=await sb.from('retainer_parcelas').insert(toInsert).select();
+  if(ins)S.retParcelas=[...S.retParcelas,...ins];
+}
+
 function agingDias(d){
   if(!d.created_at)return 0;
   return Math.round((new Date()-new Date(d.created_at))/(1000*60*60*24));
 }
 
 // Período
+function getMRRHistorico(){
+  const byMes={};
+  S.retParcelas.filter(p=>p.status==='Recebido').forEach(p=>{byMes[p.mes]=(byMes[p.mes]||0)+(p.valor||0);});
+  S.recReal.filter(r=>r.tipo==='retainer').forEach(r=>{if(r.periodo)byMes[r.periodo]=(byMes[r.periodo]||0)+(r.valor||0);});
+  return Object.entries(byMes).sort((a,b)=>{const[ma,ya]=a[0].split('/');const[mb,yb]=b[0].split('/');return new Date(ya,ma-1)-new Date(yb,mb-1);});
+}
 function getMeses(){const r=[];const now=new Date();for(let i=0;i<18;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);r.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}return r;}
 function getAnos(){const r=[];const y=new Date().getFullYear();for(let i=0;i<5;i++)r.push(String(y-i));return r;}
 function dentroDoFiltro(dataStr){
@@ -737,7 +802,14 @@ function renderDetalhe(d){
     <tbody>${horasD.map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td>${h.tipo_hora==='BIB'?'<span class="bib-tag">BIB</span>':'<span class="nib-tag">NIB</span>'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}
   </div>
   ${(()=>{
-    const parcelas=S.retParcelas.filter(p=>p.deal_id===d.id);
+    // Auto-sync parcelas from contract dates
+    if(S.deals.find(x=>x.id===d.id)&&d.data_assinatura){
+      setTimeout(()=>sincronizarParcelasRetainer(d.id).then(()=>render()),100);
+    }
+    const parcelas=S.retParcelas.filter(p=>p.deal_id===d.id).sort((a,b)=>{
+      const [ma,ya]=a.mes.split('/');const[mb,yb]=b.mes.split('/');
+      return new Date(ya,ma-1)-new Date(yb,mb-1);
+    });
     const recebido=parcelas.filter(p=>p.status==='Recebido').reduce((s,p)=>s+(p.valor||0),0);
     const pendente=parcelas.filter(p=>p.status!=='Recebido').reduce((s,p)=>s+(p.valor||0),0);
     const atrasado=parcelas.filter(p=>p.status==='Atrasado').length;
@@ -748,11 +820,19 @@ function renderDetalhe(d){
         <div class="ct" style="margin:0">Acompanhamento de Retainer</div>
         <button class="btn bsm" onclick="openAddRetParcela('${d.id}')">+ Lançar parcela</button>
       </div>
-      <div class="kpis k3" style="margin-bottom:14px">
-        <div class="kpi ac3"><div class="kl">Recebido</div><div class="kv" style="font-size:18px">${fmt(recebido)}</div><div class="ks">${parcelas.filter(p=>p.status==='Recebido').length} parcela${parcelas.filter(p=>p.status==='Recebido').length!==1?'s':''}</div></div>
-        <div class="kpi" style="background:var(--bg3)"><div class="kl">Pendente</div><div class="kv" style="font-size:18px">${fmt(pendente)}</div></div>
+      <div class="kpis k4" style="margin-bottom:14px">
+        <div class="kpi ac3"><div class="kl">Total recebido</div><div class="kv" style="font-size:18px">${fmt(recebido)}</div><div class="ks">${parcelas.filter(p=>p.status==='Recebido').length} parcela${parcelas.filter(p=>p.status==='Recebido').length!==1?'s':''}</div></div>
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Pendente</div><div class="kv" style="font-size:18px">${fmt(pendente)}</div><div class="ks">${parcelas.filter(p=>p.status==='Pendente'||p.status==='E-mail enviado').length} parcelas</div></div>
         <div class="kpi" style="background:${atrasado?'rgba(239,68,68,.08)':'var(--bg3)'};border:1px solid ${atrasado?'rgba(239,68,68,.2)':'var(--border)'}"><div class="kl">Atrasados</div><div class="kv" style="font-size:18px;color:${atrasado?'var(--red)':'var(--text)'}">${atrasado}</div></div>
+        <div class="kpi" style="background:var(--bg3)"><div class="kl">Total contrato</div><div class="kv" style="font-size:18px">${fmt(recebido+pendente)}</div><div class="ks">${parcelas.length} parcelas geradas</div></div>
       </div>
+      ${(()=>{
+        const prog=parcelas.length?Math.round(recebido/(recebido+pendente||1)*100):0;
+        return`<div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span style="color:var(--text2)">Progresso de recebimento</span><span style="font-weight:700;color:var(--green)">${prog}%</span></div>
+          <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:8px;background:linear-gradient(90deg,var(--green),#16A34A);border-radius:4px;width:${prog}%;transition:width .4s"></div></div>
+        </div>`;
+      })()}
       ${parcelas.length===0?`<div class="empty" style="padding:20px">Nenhuma parcela lançada. Clique em "+ Lançar parcela" para começar.</div>`:
       `<table><thead><tr><th>Mês</th><th>Tipo</th><th>Valor</th><th>Status</th><th>E-mail enviado</th><th>Recebido em</th><th>Obs</th><th></th></tr></thead>
       <tbody>${parcelas.map(p=>`<tr>
@@ -810,6 +890,10 @@ function renderPerfilAnalista(uid){
     <div class="kpi ac2"><div class="kl">Retainer mensal</div><div class="kv">${fmt(totalRet)}</div></div>
     <div class="kpi"><div class="kl">Fee potencial</div><div class="kv">${fmt(totalSF)}</div></div>
     <div class="kpi ac3"><div class="kl">Fee realizado</div><div class="kv">${fmt(sfRealizado)}</div><div class="ks">Receita: ${fmt(recRealU)}</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">Evolução de horas mensais</div>
+    <div class="cw"><canvas id="cHorasAnalista_${u.id.replace(/-/g,'')}"></canvas></div>
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Horas por projeto</div>
@@ -917,6 +1001,18 @@ function renderDash(){
     <div class="card"><div class="ct">${S.seg==='dcm'?'Fases DCM':'Fases M&A'}</div><div class="cw-lg"><canvas id="cFases"></canvas></div></div>
     ${S.seg==='geral'?`<div class="card"><div class="ct">Fases DCM</div><div class="cw-lg"><canvas id="cFasesDCM"></canvas></div></div>`:
     `<div class="card"><div class="ct">Status dos projetos</div><div class="cw"><canvas id="cS"></canvas></div></div>`}
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Evolução MRR recebido</div>
+      <div class="cw"><canvas id="cMRR"></canvas></div>
+      <div style="font-size:10px;color:var(--text2);margin-top:8px;text-align:center">Baseado em parcelas de retainer marcadas como Recebido</div>
+    </div>
+    <div class="card">
+      <div class="ct">Pipeline M&A vs DCM</div>
+      <div class="cw"><canvas id="cMADCM"></canvas></div>
+    </div>
   </div>
 
   <div class="card">
@@ -1245,7 +1341,7 @@ function render(){
   const sidebar=`<div class="sidebar">
     <div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>
     ${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:
-    `<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;render()"><span class="nav-icon">${n.i}</span>${n.l}</div>`).join('')}
+    `<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;render()"><span class="nav-icon">${n.i}</span>${n.l}${n.badge?(()=>{const hoje=new Date();hoje.setHours(0,0,0,0);const venc=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return venc?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:16px;text-align:center">${venc}</span>`:'';})():''}</div>`).join('')}
     <div style="flex:1"></div>
     <div class="sidebar-footer">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''} · ${u?.polo||''}</div></div></div>
@@ -1255,7 +1351,7 @@ function render(){
   </div>`;
   const modal=S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():S.modal==='retparcela'?mRetParcela():'';
   app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
-  if(!S.loading&&!S.detail)setTimeout(initCharts,80);
+  if(!S.loading)setTimeout(initCharts,80);
 }
 
 async function init(){
