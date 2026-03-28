@@ -266,11 +266,24 @@ document.documentElement.setAttribute('data-theme',S.theme);
 
 // ═══ AUTH ═══
 async function tentarLogin(){
-  const{data,error}=await sb.from('usuarios').select('*').eq('email',S.loginEmail).eq('senha',S.loginSenha).eq('ativo',true).single();
-  if(data&&!error){S.loggedIn=true;S.currentUser=data;SS('apex_li',true);SS('apex_cu',data);S.loginErr='';await loadAll();}
-  else{S.loginErr='E-mail ou senha incorretos.';render();}
+  try{
+    // Tenta login via RPC com senha hasheada (bcrypt)
+    const{data:rpc,error:rpcErr}=await sb.rpc('apex_login',{
+      p_email:S.loginEmail,
+      p_senha:S.loginSenha
+    });
+    if(rpc&&rpc.length>0&&!rpcErr){
+      const{senha:_s,...safeU}=rpc[0];
+      S.loggedIn=true;S.currentUser=safeU;SS('apex_li',true);SS('apex_cu',safeU);S.loginErr='';
+      await loadAll();return;
+    }
+    // Fallback: login direto (para senhas ainda não hasheadas)
+    const{data,error}=await sb.from('usuarios').select('*').eq('email',S.loginEmail).eq('senha',S.loginSenha).eq('ativo',true).single();
+    if(data&&!error){S.loggedIn=true;S.currentUser=data;SS('apex_li',true);const{senha:_,...safeUser}=data;SS('apex_cu',safeUser);S.loginErr='';await loadAll();}
+    else{S.loginErr='E-mail ou senha incorretos.';render();}
+  }catch(e){S.loginErr='Erro ao conectar. Tente novamente.';render();}
 }
-function logout(){S.loggedIn=false;S.currentUser=null;SS('apex_li',false);SS('apex_cu',null);render();}
+function logout(){S.loggedIn=false;S.currentUser=null;SS('apex_li',false);SS('apex_cu',null);localStorage.removeItem('apex_login_time');render();}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';SS('apex_theme',S.theme);document.documentElement.setAttribute('data-theme',S.theme);render();}
 
 // ═══ LOAD ═══
@@ -453,7 +466,13 @@ async function hDelDeal(id){if(!confirm('Excluir permanentemente?'))return;S.det
 async function hSetEtapaDCM(dealId,idx){
   const d=S.deals.find(x=>x.id===dealId);if(!d)return;
   const et={...(d.etapas||{})};
+  // HARD BLOCK: não avança sem concluir anterior
+  if(et[idx]!=='done'&&idx>0&&et[idx-1]!=='done'){
+    alert('⚠ Conclua a etapa anterior primeiro:\n"'+FASES_DCM[idx-1]?.n+'"');return;
+  }
   et[idx]=et[idx]==='done'?'pending':'done';
+  // Se desmarcar, remove posteriores
+  if(et[idx]!=='done'){for(let i=idx+1;i<FASES_DCM.length;i++)if(et[i]==='done')et[i]='pending';}
   const fa=Object.values(et).filter(v=>v==='done').length;
   await updEtapas(dealId,et,fa);
   await addH(dealId,'Etapa DCM',FASES_DCM[idx]?.n,et[idx]==='done'?'Concluída':'Reaberta');
@@ -590,9 +609,9 @@ function mTarefa(){
 // ═══ STEPPER ═══
 function sfStepper(d){
   const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);
-  const rF=(fases,offset)=>fases.map((e,i)=>{const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;
-    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapa('${d.id}',${idx})" title="${done?'Clique para reabrir':'Marcar como concluído'}">
-      <div class="sf-circle">${done?'✓':idx+1}</div><div class="sf-label">${e.n}</div>
+  const rF=(fases,offset)=>fases.map((e,i)=>{const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;const isLk=!done&&idx>0&&et[idx-1]!=='done';
+    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapa('${d.id}',${idx})" title="${done?'Clique para reabrir':isLk?'Conclua a etapa anterior':'Marcar como concluído'}" style="${isLk?'opacity:.4;cursor:not-allowed':''}">
+      <div class="sf-circle">${done?'✓':isLk?'🔒':idx+1}</div><div class="sf-label">${e.n}</div>
     </div>`;}).join('');
   const f1=FASES.filter(x=>x.f===1);const f2=FASES.filter(x=>x.f===2);
   return`<div>
@@ -616,9 +635,9 @@ function dcmStepper(d){
   const f1=FASES_DCM.filter(x=>x.f===1);
   const f2=FASES_DCM.filter(x=>x.f===2);
   const rF=(fases,offset)=>fases.map((e,i)=>{
-    const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;
-    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapaDCM('${d.id}',${idx})" title="${e.d}">
-      <div class="sf-circle">${done?'✓':idx+1}</div>
+    const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;const isLk=!done&&idx>0&&et[idx-1]!=='done';
+    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapaDCM('${d.id}',${idx})" title="${isLk?'Conclua a etapa anterior':e.d}" style="${isLk?'opacity:.4;cursor:not-allowed':''}">
+      <div class="sf-circle">${done?'✓':isLk?'🔒':idx+1}</div>
       <div class="sf-label">${e.n}</div>
     </div>`;}).join('');
   return`<div>
@@ -1418,8 +1437,16 @@ function render(){
 }
 
 async function init(){
+  // Auto-logout após 8h
+  const loginTime=parseInt(localStorage.getItem('apex_login_time')||'0');
+  const agora=Date.now();
+  if(S.loggedIn&&loginTime&&(agora-loginTime)>8*60*60*1000){
+    logout();return;
+  }
   if(S.loggedIn){await loadAll();}else{render();}
   setInterval(()=>{if(S.loggedIn)loadAll();},60000);
+  // Registrar tempo de login
+  if(S.loggedIn&&!loginTime)localStorage.setItem('apex_login_time',String(agora));
 }
 init();
 </script>
