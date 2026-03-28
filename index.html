@@ -256,7 +256,7 @@ let S={
   deals:[],usuarios:[],horas:[],comentarios:[],historico:[],recReal:[],tarefas:[],retParcelas:[],
   detail:null,detailType:null,
   loading:true,lastSync:null,charts:{},
-  filtroColab:'',filtroColabReceita:'',filtroResultado:'',
+  filtroColab:'',filtroColabReceita:'',filtroResultado:'',filtroTipo:'',
   filtroPeriodo:'total',filtroPeriodoTipo:'total',
   filtroPeriodoIni:'',filtroPeriodoFim:'',
   editandoComt:null,
@@ -885,119 +885,100 @@ function ativos(l){return(l||S.deals).filter(d=>d.status!=='Concluído'&&!['Fech
 
 function renderDash(){
   const all=filtrados();const at=ativos(all);
-  const fl=S.seg==='ma'?at.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
   const maAtivos=ativos(S.deals).filter(d=>d.tipo!=='DCM');
   const dcmAtivos=ativos(S.deals).filter(d=>d.tipo==='DCM');
+  const fl=S.seg==='ma'?maAtivos:S.seg==='dcm'?dcmAtivos:at;
   const ganhos=S.deals.filter(d=>d.resultado==='Fechado e Ganho');
   const encerrados=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado));
   const winRate=encerrados.length?Math.round(ganhos.length/encerrados.length*100):0;
-  const filtFL=S.filtroColab?fl.filter(d=>d.diretor===S.filtroColab||d.gerente===S.filtroColab||d.analista===S.filtroColab):fl;
   const tDV=fl.reduce((s,d)=>s+(d.deal_value||0),0);
   const tRet=fl.reduce((s,d)=>s+(d.retainer_f2||0),0);
   const tSF=fl.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
-  const rPond=fl.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100)*({Alta:.8,Média:.5,Baixa:.2}[d.prob]||.5),0);
-  const tH=S.horas.reduce((s,h)=>s+(h.horas||0),0);
-  const byM={};fl.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
-  const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
-  // fases separadas
-  const f1Names=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt'];
-  const f2Names=['IO/NBO','Negoc.','LOI/MOU','Due Dilig.','Contratos','Closing'];
-  const byFase1={};f1Names.forEach((n,i)=>byFase1[i]=[]);
-  const byFase2={};f2Names.forEach((n,i)=>byFase2[i]=[]);
-  fl.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;if(n<6)byFase1[n]=(byFase1[n]||[]).concat(d);else byFase2[n-6]=(byFase2[n-6]||[]).concat(d);});
-  // analistas
+  const sfReal=ganhos.filter(d=>S.seg==='ma'?d.tipo!=='DCM':S.seg==='dcm'?d.tipo==='DCM':true).reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+  const retRecebido=S.retParcelas.filter(p=>p.status==='Recebido').reduce((s,p)=>s+(p.valor||0),0);
+  const retPendente=S.retParcelas.filter(p=>['Pendente','E-mail enviado','Atrasado'].includes(p.status)).reduce((s,p)=>s+(p.valor||0),0);
   const analistas=S.usuarios.filter(u=>['Analista Sênior','Analista','Assistente','Estagiário','Gerente'].includes(u.cargo));
-  const byA=analistas.map(u=>{const n=S.deals.filter(d=>d.analista===u.nome||d.gerente===u.nome).length;return{nome:u.nome,n,id:u.id};}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  const byA=analistas.map(u=>{const n=fl.filter(d=>d.analista===u.nome||d.gerente===u.nome||d.diretor===u.nome).length;return{nome:u.nome,n,id:u.id};}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
   const maxA=Math.max(...byA.map(x=>x.n),1);
   return`
-  <div class="kpis k5">
-    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${S.seg==='geral'?maAtivos.length+' M&A · '+dcmAtivos.length+' DCM':S.deals.filter(d=>d.resultado==='Fechado e Ganho').length+' ganhos'}</div></div>
+  <div class="kpis k4" style="margin-bottom:10px">
+    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${maAtivos.length} M&A · ${dcmAtivos.length} DCM</div></div>
     <div class="kpi"><div class="kl">Deal value total</div><div class="kv">${fmt(tDV)}</div><div class="ks">Valor agregado dos mandatos</div></div>
     <div class="kpi ac2"><div class="kl">Success fee potencial</div><div class="kv">${fmt(tSF)}</div><div class="ks">Se todos os deals fecharem</div></div>
+    <div class="kpi ac3"><div class="kl">Success fee realizado</div><div class="kv">${fmt(sfReal)}</div><div class="ks">${ganhos.length} deal${ganhos.length!==1?'s':''} ganho${ganhos.length!==1?'s':''}</div></div>
+  </div>
+  <div class="kpis k4" style="margin-bottom:20px">
     <div class="kpi"><div class="kl">Retainer em execução/mês</div><div class="kv">${fmt(tRet)}</div><div class="ks">Anualizado: ${fmt(tRet*12)}</div></div>
-    <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Win rate</div><div class="kv" style="color:var(--green)">${(()=>{const g=S.deals.filter(d=>d.resultado==='Fechado e Ganho').length;const e=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)).length;return e?Math.round(g/e*100)+'%':'—';})()}</div><div class="ks">Ganhos / total encerrados</div></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="ct" style="margin:0">📊 Visão de Pipeline</div>
-      <span style="font-size:10px;color:var(--text2)">Ferramenta de planejamento — não representa receita contabilizada</span>
-    </div>
-    <div class="kpis k5" style="margin-bottom:0">
-      <div class="kpi" style="background:var(--bg3)"><div class="kl">Expectativa de fechamento</div><div class="kv" style="font-size:18px">${fmt(rPond)}</div><div class="ks">Ponderado por probabilidade de fechamento</div></div>
-      <div class="kpi" style="background:var(--bg3)"><div class="kl">SF esperado total</div><div class="kv" style="font-size:18px">${fmt(fl.filter(d=>d.prob==='Alta').reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0))}</div><div class="ks">${fl.filter(d=>d.prob==='Alta').length} deals alta prob.</div></div>
-      <div class="kpi" style="background:var(--bg3)"><div class="kl">Retainers ativos/mês</div><div class="kv" style="font-size:18px">${fmt(tRet)}</div><div class="ks">Anualizado: ${fmt(tRet*12)}</div></div>
-      <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl" style="color:var(--green)">Win rate</div><div class="kv" style="font-size:18px;color:var(--green)">${(()=>{const g=S.deals.filter(d=>d.resultado==='Fechado e Ganho').length;const p=S.deals.filter(d=>['Fechado e Ganho','Fechado e Perdido','Cancelado'].includes(d.resultado)).length;return p?Math.round(g/p*100)+'%':'—';})()}</div><div class="ks">Ganhos vs encerrados</div></div>
-      <div class="kpi" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)"><div class="kl" style="color:var(--amber)">Aging médio</div><div class="kv" style="font-size:18px;color:var(--amber)">${(()=>{if(!fl.length)return'—';const avg=fl.reduce((s,d)=>s+agingDias(d),0)/fl.length;return Math.round(avg)+'d';})()}</div><div class="ks">Dias médio aberto</div></div>
-    </div>
+    <div class="kpi" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)"><div class="kl">Retainer a receber</div><div class="kv" style="color:var(--amber)">${fmt(retPendente)}</div><div class="ks">Pendente de recebimento</div></div>
+    <div class="kpi ac3"><div class="kl">Retainer recebido</div><div class="kv">${fmt(retRecebido)}</div><div class="ks">${S.retParcelas.filter(p=>p.status==='Recebido').length} parcelas</div></div>
+    <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Win rate</div><div class="kv" style="color:var(--green)">${winRate}%</div><div class="ks">${ganhos.length} ganhos / ${encerrados.length} encerrados</div></div>
   </div>
   <div class="g2">
-    <div class="card"><div class="ct">Deal value por mandato</div><div class="cw"><canvas id="cM"></canvas></div></div>
-    <div class="card"><div class="ct">Status dos projetos</div><div class="cw"><canvas id="cS"></canvas></div></div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Deals por mandato</div>
+      <div class="cw"><canvas id="cM"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Status dos projetos</div>
+      <div class="cw"><canvas id="cS"></canvas></div>
+    </div>
   </div>
+  <div style="height:14px"></div>
   <div class="g2">
-    <div class="card">
-      <div class="ct">Fases M&A</div>
-      <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue)"></div><span style="font-size:11px;color:var(--text2)">Fase 1 — Preparation</span></div>
-        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--cyan)"></div><span style="font-size:11px;color:var(--text2)">Fase 2 — Execution</span></div>
-      </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Fases M&A — pipeline</div>
       <div class="cw-lg"><canvas id="cFases"></canvas></div>
     </div>
-    <div class="card">
-      <div class="ct">Fases DCM</div>
-      <div style="display:flex;gap:16px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--cyan)"></div><span style="font-size:11px;color:var(--text2)">Deals por etapa</span></div>
-      </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Fases DCM — pipeline</div>
       <div class="cw-lg"><canvas id="cFasesDCM"></canvas></div>
     </div>
   </div>
+  <div style="height:14px"></div>
   <div class="g2">
-    <div class="card">
-      <div class="ct">Evolução Retainer recebido/mês</div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Retainer recebido ao longo do tempo</div>
       <div class="cw-lg"><canvas id="cMRR"></canvas></div>
-      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:6px">Retainers marcados como Recebido · tracejado = projeção</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center;margin-top:6px">Parcelas marcadas como Recebido · tracejado = projeção</div>
     </div>
-    <div class="card">
-      <div class="ct">Pipeline M&A vs DCM por probabilidade</div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Expectativa de fechamento por probabilidade</div>
       <div class="cw-lg"><canvas id="cMADCM"></canvas></div>
     </div>
   </div>
+  <div style="height:14px"></div>
   <div class="g2">
-    <div class="card"><div class="ct">Projetos por analista</div>
-      ${byA.length===0?`<div class="empty" style="padding:16px">Cadastre analistas na aba Equipe</div>`:
-      byA.map((x,i)=>{const pct=Math.round(x.n/maxA*100);return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div class="av" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,${PAL[i%PAL.length]},${PAL[(i+1)%PAL.length]})">${ini(x.nome)}</div>
-        <div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${x.id}';S.detailType='analista';render()">${x.nome}</span><span style="font-weight:700">${x.n}</span></div>
-        <div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PAL[i%PAL.length]};border-radius:3px;width:${pct}%"></div></div></div>
-      </div>`;}).join('')}
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">Projetos por analista</div>
+      ${byA.length===0?`<div class="empty" style="padding:20px">Cadastre analistas na aba Equipe</div>`:
+        byA.map((x,i)=>{const pct=Math.round(x.n/maxA*100);return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div class="av" style="width:30px;height:30px;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,${PAL[i%PAL.length]},${PAL[(i+1)%PAL.length]})">${ini(x.nome)}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+              <span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${x.id}';S.detailType='analista';render()">${x.nome}</span>
+              <span style="font-weight:700;color:var(--text)">${x.n} deal${x.n!==1?'s':''}</span>
+            </div>
+            <div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PAL[i%PAL.length]};border-radius:3px;width:${pct}%"></div></div>
+          </div>
+        </div>`;}).join('')}
     </div>
-    <div class="card"><div class="ct">Aging dos deals ativos</div>
-      ${(()=>{
-        const buckets=[{l:'0-15d',min:0,max:15,c:'var(--green)'},{l:'16-30d',min:16,max:30,c:'var(--blue)'},{l:'31-60d',min:31,max:60,c:'var(--amber)'},{l:'+60d',min:61,max:9999,c:'var(--red)'}];
-        const total=fl.length||1;
-        return buckets.map(b=>{const n=fl.filter(d=>{const ag=agingDias(d);return ag>=b.min&&ag<=b.max;}).length;const pct=Math.round(n/total*100);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${b.c};font-weight:600">${b.l}</span><span>${n} deal${n!==1?'s':''} (${pct}%)</span></div><div style="height:8px;background:var(--bg3);border-radius:4px"><div style="height:8px;background:${b.c};border-radius:4px;width:${pct}%"></div></div></div>`;}).join('');
-      })()}
-    </div>
-    <div class="card"><div class="ct">Expectativa de fechamento</div>
-      ${['Alta','Média','Baixa'].map(p=>{const n=fl.filter(d=>d.prob===p).length;const pct=fl.length?Math.round(n/fl.length*100):0;return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:${PC[p]};font-weight:600">${p}</span><span>${n} deal${n!==1?'s':''} (${pct}%)</span></div><div style="height:8px;background:var(--bg3);border-radius:4px"><div style="height:8px;background:${PC[p]};border-radius:4px;width:${pct}%;transition:width .4s"></div></div></div>`;}).join('')}
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="ct" style="margin:0">🎯 Radar de Oportunidades</div>
-    </div>
-    <div class="g3" style="margin-bottom:0">
-      <div>
-        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🔴 Em risco / Parados +30d</div>
-        ${(()=>{const lista=fl.filter(d=>d.classificacao==='Em risco'||agingDias(d)>30);return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal em risco</div>':lista.slice(0,4).map(d=>`<div style="padding:6px 8px;background:rgba(239,68,68,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--red)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${agingDias(d)}d aberto · ${d.prob}</div></div>`).join('');})()}
-      </div>
-      <div>
-        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🟡 Próximos de fechar</div>
-        ${(()=>{const lista=fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const total=d.tipo==='DCM'?FASES_DCM.length:FASES.length;return n/total>=0.7;});return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal em fase final</div>':lista.slice(0,4).map(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const total=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(n/total*100);return`<div style="padding:6px 8px;background:rgba(245,158,11,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--amber)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${pct}% concluído · SF: ${fmt((d.deal_value||0)*((d.success_fee||0)/100))}</div></div>`;}).join('');})()}
-      </div>
-      <div>
-        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🟢 Alta probabilidade</div>
-        ${(()=>{const lista=fl.filter(d=>d.prob==='Alta');return lista.length===0?'<div style="font-size:11px;color:var(--text2)">Nenhum deal alta prob.</div>':lista.slice(0,4).map(d=>`<div style="padding:6px 8px;background:rgba(34,197,94,.07);border-radius:6px;margin-bottom:6px;cursor:pointer;border-left:3px solid var(--green)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:11px;font-weight:600">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}% SF</div></div>`).join('');})()}
+    <div class="card" style="margin-bottom:0">
+      <div class="ct">🎯 Radar de Oportunidades</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">🔴 Em risco / Parados +30d</div>
+        ${(()=>{const lista=fl.filter(d=>d.classificacao==='Em risco'||agingDias(d)>30);
+          return lista.length===0?'<div style="font-size:11px;color:var(--text2);padding:4px 0">Nenhum deal em risco ✓</div>':
+          lista.slice(0,3).map(d=>`<div style="padding:7px 10px;background:rgba(239,68,68,.07);border-radius:7px;cursor:pointer;border-left:3px solid var(--red)" onclick="S.detail='${d.id}';S.detailType='deal';render()">
+            <div style="font-size:11px;font-weight:600">${d.cliente}</div>
+            <div style="font-size:10px;color:var(--text2)">${agingDias(d)}d aberto · ${d.prob||'—'}</div>
+          </div>`).join('');})()}
+        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin:6px 0 2px">🟡 Próximos de fechar</div>
+        ${(()=>{const lista=fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const t=d.tipo==='DCM'?FASES_DCM.length:FASES.length;return n/t>=0.7;});
+          return lista.length===0?'<div style="font-size:11px;color:var(--text2);padding:4px 0">Nenhum em fase final</div>':
+          lista.slice(0,3).map(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const t=d.tipo==='DCM'?FASES_DCM.length:FASES.length;return`<div style="padding:7px 10px;background:rgba(245,158,11,.07);border-radius:7px;cursor:pointer;border-left:3px solid var(--amber)" onclick="S.detail='${d.id}';S.detailType='deal';render()">
+            <div style="font-size:11px;font-weight:600">${d.cliente}</div>
+            <div style="font-size:10px;color:var(--text2)">${Math.round(n/t*100)}% concluído · SF: ${fmt((d.deal_value||0)*((d.success_fee||0)/100))}</div>
+          </div>`;}).join('');})()}
       </div>
     </div>
   </div>`;
@@ -1005,26 +986,47 @@ function renderDash(){
 
 function renderPipeline(){
   const at=ativos(filtrados());
+  const maDeals=at.filter(d=>d.tipo!=='DCM');
+  const dcmDeals=at.filter(d=>d.tipo==='DCM');
+  const tDV=at.reduce((s,d)=>s+(d.deal_value||0),0);
+  const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   const fases=['Preparação','Abordagem','Negociação','Due Diligence','Contratos','Closing'];
-  const fasesDCM=['Prospecção','Mandato','Estruturação','Reg. CVM','Roadshow','Precificação','Distribuição','Liquidação'];
+  const fasesDCM=['Prospecção','Mandato','Estruturação','Reg. CVM','Roadshow','Precif.','Distribuição','Liquidação'];
   const mapa={};fases.forEach(f=>mapa[f]=[]);
   const mapaDCM={};fasesDCM.forEach(f=>mapaDCM[f]=[]);
-  at.filter(d=>d.tipo!=='DCM').forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;let f=fases[0];if(n>=10)f=fases[5];else if(n>=8)f=fases[4];else if(n>=6)f=fases[3];else if(n>=4)f=fases[2];else if(n>=2)f=fases[1];mapa[f].push(d);});
-  at.filter(d=>d.tipo==='DCM').forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const idx=Math.min(n,fasesDCM.length-1);mapaDCM[fasesDCM[idx]].push(d);});
-  const tDV=at.reduce((s,d)=>s+(d.deal_value||0),0);const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+  maDeals.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;let f=fases[0];if(n>=10)f=fases[5];else if(n>=8)f=fases[4];else if(n>=6)f=fases[3];else if(n>=4)f=fases[2];else if(n>=2)f=fases[1];mapa[f].push(d);});
+  dcmDeals.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const idx=Math.min(n,fasesDCM.length-1);mapaDCM[fasesDCM[idx]].push(d);});
+  const pCard=(d,cor)=>`<div class="pipe-card" style="border-left-color:${cor}" onclick="S.detail='${d.id}';S.detailType='deal';render()">
+    <div style="font-size:12px;font-weight:600;margin-bottom:3px;cursor:pointer">${d.cliente}</div>
+    <div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)}</div>
+    <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div>
+  </div>`;
   return`
-  <div class="kpis k4"><div class="kpi ac"><div class="kl">Pipeline total</div><div class="kv">${fmt(tDV)}</div></div><div class="kpi"><div class="kl">SF potencial</div><div class="kv">${fmt(tSF)}</div></div><div class="kpi"><div class="kl">Deals ativos</div><div class="kv">${at.length}</div><div class="ks">${at.filter(d=>d.tipo!=='DCM').length} M&A · ${at.filter(d=>d.tipo==='DCM').length} DCM</div></div><div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Alta probabilidade</div><div class="kv" style="color:var(--green)">${at.filter(d=>d.prob==='Alta').length}</div><div class="ks">${fmt(at.filter(d=>d.prob==='Alta').reduce((s,d)=>s+(d.deal_value||0),0))}</div></div></div>
-  <div style="margin-bottom:10px;font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px">M&A</div>
-  <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px">
-    ${fases.map(f=>`<div class="pipe-col"><div class="pipe-header">${f} <span style="font-size:9px;opacity:.7">${mapa[f].length}</span></div><div class="pipe-body">
-      ${mapa[f].length===0?`<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>`:mapa[f].map(d=>`<div class="pipe-card" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.success_fee||0}%</div><div style="margin-top:5px">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`).join('')}
-    </div></div>`).join('')}
+  <div class="kpis k4" style="margin-bottom:20px">
+    <div class="kpi ac"><div class="kl">Deals ativos</div><div class="kv">${at.length}</div><div class="ks">${maDeals.length} M&A · ${dcmDeals.length} DCM</div></div>
+    <div class="kpi"><div class="kl">Deal value total</div><div class="kv">${fmt(tDV)}</div></div>
+    <div class="kpi"><div class="kl">Success fee potencial</div><div class="kv">${fmt(tSF)}</div></div>
+    <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Alta probabilidade</div><div class="kv" style="color:var(--green)">${at.filter(d=>d.prob==='Alta').length}</div><div class="ks">${fmt(at.filter(d=>d.prob==='Alta').reduce((s,d)=>s+(d.deal_value||0),0))}</div></div>
   </div>
-  <div style="margin-bottom:10px;font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px">DCM</div>
+  <div style="margin-bottom:8px;display:flex;align-items:center;gap:8px">
+    <div style="width:14px;height:14px;border-radius:3px;background:var(--blue);flex-shrink:0"></div>
+    <span style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px">M&A — ${maDeals.length} projeto${maDeals.length!==1?'s':''}</span>
+  </div>
+  <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px">
+    ${fases.map(f=>`<div class="pipe-col">
+      <div class="pipe-header">${f} <span style="font-size:9px;opacity:.6">${mapa[f].length}</span></div>
+      <div class="pipe-body">${mapa[f].length===0?'<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>':mapa[f].map(d=>pCard(d,'var(--blue)')).join('')}</div>
+    </div>`).join('')}
+  </div>
+  <div style="margin-bottom:8px;display:flex;align-items:center;gap:8px">
+    <div style="width:14px;height:14px;border-radius:3px;background:var(--cyan);flex-shrink:0"></div>
+    <span style="font-size:11px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px">DCM — ${dcmDeals.length} projeto${dcmDeals.length!==1?'s':''}</span>
+  </div>
   <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
-    ${fasesDCM.map(f=>`<div class="pipe-col"><div class="pipe-header" style="border-bottom-color:var(--cyan);color:var(--cyan)">${f} <span style="font-size:9px;opacity:.7">${mapaDCM[f].length}</span></div><div class="pipe-body">
-      ${mapaDCM[f].length===0?`<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>`:mapaDCM[f].map(d=>`<div class="pipe-card" style="border-left-color:var(--cyan)" onclick="S.detail='${d.id}';S.detailType='deal';render()"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)} · ${d.mandato||'—'}</div><div style="margin-top:5px">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div></div>`).join('')}
-    </div></div>`).join('')}
+    ${fasesDCM.map(f=>`<div class="pipe-col">
+      <div class="pipe-header" style="border-bottom-color:var(--cyan);color:var(--cyan)">${f} <span style="font-size:9px;opacity:.6">${mapaDCM[f].length}</span></div>
+      <div class="pipe-body">${mapaDCM[f].length===0?'<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>':mapaDCM[f].map(d=>pCard(d,'var(--cyan)')).join('')}</div>
+    </div>`).join('')}
   </div>`;
 }
 
@@ -1123,6 +1125,7 @@ function renderReceita(){
     ${S.filtroPeriodoTipo==='ytd'?`<select class="fsel" onchange="S.filtroPeriodo=this.value;render()">${anos.map(a=>`<option value="${a}"${S.filtroPeriodo===a?' selected':''}>${a}</option>`).join('')}</select>`:''}
     ${S.filtroPeriodoTipo==='personalizado'?`<input type="date" class="fsel" value="${S.filtroPeriodoIni}" onchange="S.filtroPeriodoIni=this.value;render()" placeholder="De"/> <span style="color:var(--text2)">até</span> <input type="date" class="fsel" value="${S.filtroPeriodoFim}" onchange="S.filtroPeriodoFim=this.value;render()" placeholder="Até"/>`:''}
     <select class="fsel" onchange="S.filtroColabReceita=this.value;render()"><option value="">Todos os colaboradores</option>${S.usuarios.map(u=>`<option value="${u.nome}"${S.filtroColabReceita===u.nome?' selected':''}>${u.nome}</option>`).join('')}</select>
+    <select class="fsel" onchange="S.filtroTipo=this.value;render()"><option value="">M&A + DCM</option><option value="MA"${S.filtroTipo==='MA'?' selected':''}>Só M&A</option><option value="DCM"${S.filtroTipo==='DCM'?' selected':''}>Só DCM</option></select>
   </div>
   <div class="kpis k3" style="margin-bottom:10px">
     <div class="kpi ac">
@@ -1321,45 +1324,68 @@ function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}ca
 function mkChart(id,cfg){const el=document.getElementById(id);if(!el)return;try{S.charts[id]=new Chart(el,cfg);}catch{}}
 function initCharts(){
   destroyCharts();
-  const at=ativos(filtrados());const fl=S.seg==='ma'?at.filter(d=>d.tipo==='M&A'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
-  const lbl={color:'#8899B0',font:{size:10},boxWidth:10};const grid={color:'rgba(255,255,255,0.04)'};
+  const lbl={color:'#8899B0',font:{size:10},boxWidth:10};
+  const grid={color:'rgba(255,255,255,0.04)'};
+  const darkTick={color:'#8899B0',font:{size:9}};
+
   if(S.page==='dashboard'){
+    const at=ativos(S.deals);
+    const fl=S.seg==='ma'?at.filter(d=>d.tipo!=='DCM'):S.seg==='dcm'?at.filter(d=>d.tipo==='DCM'):at;
     const flMA=fl.filter(d=>d.tipo!=='DCM');
     const flDCM=fl.filter(d=>d.tipo==='DCM');
-    // Donut mandato M&A
+
+    // Donut mandato
     const byM={};fl.forEach(d=>{byM[d.mandato]=(byM[d.mandato]||0)+(d.deal_value||0);});
-    if(Object.keys(byM).length)mkChart('cM',{type:'doughnut',data:{labels:Object.keys(byM),datasets:[{data:Object.values(byM),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
+    if(Object.keys(byM).length&&document.getElementById('cM'))
+      mkChart('cM',{type:'doughnut',data:{labels:Object.keys(byM),datasets:[{data:Object.values(byM),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
+
     // Donut status
-    const bySt={};S.deals.forEach(d=>{bySt[d.status]=(bySt[d.status]||0)+1;});
-    if(Object.keys(bySt).length)mkChart('cS',{type:'doughnut',data:{labels:Object.keys(bySt),datasets:[{data:Object.values(bySt),backgroundColor:Object.keys(bySt).map(k=>SC[k]||'#888'),borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
-    // Fases M&A horizontal
+    const bySt={};S.deals.forEach(d=>{bySt[d.resultado||d.status]=(bySt[d.resultado||d.status]||0)+1;});
+    const stColors=Object.keys(bySt).map(k=>k==='Fechado e Ganho'?'#22C55E':k==='Fechado e Perdido'?'#EF4444':k==='Congelado'?'#F59E0B':k==='Cancelado'?'#64748B':'#0078D4');
+    if(Object.keys(bySt).length&&document.getElementById('cS'))
+      mkChart('cS',{type:'doughnut',data:{labels:Object.keys(bySt),datasets:[{data:Object.values(bySt),backgroundColor:stColors,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
+
+    // M&A fases horizontal
     const f1N=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt'];
     const f2N=['IO/NBO','Negoc.','LOI/MOU','Due Dilig.','Contratos','Closing'];
     const maN=[...f1N,...f2N];
     const maC=[...f1N.map((_,i)=>flMA.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===i).length),...f2N.map((_,i)=>flMA.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===6+i).length)];
     const maBg=[...f1N.map(()=>'#0078D4'),...f2N.map(()=>'#00B4D8')];
-    if(document.getElementById('cFases'))mkChart('cFases',{type:'bar',data:{labels:maN,datasets:[{data:maC,backgroundColor:maBg,borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
-    // Fases DCM horizontal
+    if(document.getElementById('cFases'))
+      mkChart('cFases',{type:'bar',data:{labels:maN,datasets:[{data:maC,backgroundColor:maBg,borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+
+    // DCM fases horizontal
     const dcmN=FASES_DCM.map(f=>f.n);
     const dcmC=FASES_DCM.map((_,i)=>flDCM.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===i).length);
-    if(document.getElementById('cFasesDCM'))mkChart('cFasesDCM',{type:'bar',data:{labels:dcmN,datasets:[{data:dcmC,backgroundColor:'#00B4D8',borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+    if(document.getElementById('cFasesDCM'))
+      mkChart('cFasesDCM',{type:'bar',data:{labels:dcmN,datasets:[{data:dcmC,backgroundColor:'#00B4D8',borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+
     // MRR linha
     const mrrH=getMRRHistorico();
     if(document.getElementById('cMRR')){
       if(mrrH.length){
-        mkChart('cMRR',{type:'line',data:{labels:mrrH.map(x=>x[0]),datasets:[{data:mrrH.map(x=>x[1]),borderColor:'#22C55E',backgroundColor:'rgba(34,197,94,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#22C55E',borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+        mkChart('cMRR',{type:'line',data:{labels:mrrH.map(x=>x[0]),datasets:[{data:mrrH.map(x=>x[1]),borderColor:'#22C55E',backgroundColor:'rgba(34,197,94,.1)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#22C55E',borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid}},responsive:true,maintainAspectRatio:false}});
       } else {
         const mp=getMeses().slice(0,6).reverse();
-        const pj=ativos(S.deals).reduce((s,d)=>s+(d.retainer_f2||0),0);
-        mkChart('cMRR',{type:'line',data:{labels:mp,datasets:[{data:mp.map(()=>pj),borderColor:'#0078D4',backgroundColor:'rgba(0,120,212,.06)',tension:.4,fill:true,borderDash:[5,5],pointRadius:3,borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+        const pj=at.reduce((s,d)=>s+(d.retainer_f2||0),0);
+        mkChart('cMRR',{type:'line',data:{labels:mp,datasets:[{data:mp.map(()=>pj),borderColor:'#0078D4',backgroundColor:'rgba(0,120,212,.06)',tension:.4,fill:true,borderDash:[5,5],pointRadius:3,borderWidth:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`R$ ${c.raw.toLocaleString('pt-BR')}`}}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid}},responsive:true,maintainAspectRatio:false}});
       }
     }
-    // Pipeline M&A vs DCM barras
+
+    // Pipeline M&A vs DCM por probabilidade
     const grps=['Alta','Média','Baixa'];
-    const allAt=ativos(S.deals);
-    const maDV=grps.map(p=>allAt.filter(d=>d.tipo!=='DCM'&&d.prob===p).reduce((s,d)=>s+(d.deal_value||0),0));
-    const dcmDV=grps.map(p=>allAt.filter(d=>d.tipo==='DCM'&&d.prob===p).reduce((s,d)=>s+(d.deal_value||0),0));
-    if(document.getElementById('cMADCM'))mkChart('cMADCM',{type:'bar',data:{labels:grps,datasets:[{label:'M&A',data:maDV,backgroundColor:'#0078D4',borderRadius:5,borderWidth:0},{label:'DCM',data:dcmDV,backgroundColor:'#00B4D8',borderRadius:5,borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},scales:{x:{ticks:{color:'#8899B0'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e6?`${(v/1e6).toFixed(0)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+    const maDV=grps.map(p=>fl.filter(d=>d.tipo!=='DCM'&&d.prob===p).reduce((s,d)=>s+(d.deal_value||0),0));
+    const dcmDV=grps.map(p=>fl.filter(d=>d.tipo==='DCM'&&d.prob===p).reduce((s,d)=>s+(d.deal_value||0),0));
+    if(document.getElementById('cMADCM'))
+      mkChart('cMADCM',{type:'bar',data:{labels:grps,datasets:[{label:'M&A',data:maDV,backgroundColor:'#0078D4',borderRadius:5,borderWidth:0},{label:'DCM',data:dcmDV,backgroundColor:'#00B4D8',borderRadius:5,borderWidth:0}]},options:{plugins:{legend:{labels:lbl}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,callback:v=>v>=1e6?`${(v/1e6).toFixed(0)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid}},responsive:true,maintainAspectRatio:false}});
+  }
+
+  if(S.page==='receita'){
+    const atR=ativos(S.deals);
+    const mrrR=atR.reduce((s,d)=>s+(d.retainer_f2||0),0);
+    const sfPotR=atR.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+    if(document.getElementById('cRetSF'))
+      mkChart('cRetSF',{type:'doughnut',data:{labels:['Retainer em execução','Success Fee potencial'],datasets:[{data:[mrrR,sfPotR],backgroundColor:['#0078D4','#00B4D8'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});
   }
 }
 
