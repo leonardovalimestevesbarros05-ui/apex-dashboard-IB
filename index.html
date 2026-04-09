@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Apex Partners ÔÇö Investment Banking</title>
+<title>Apex Partners — Investment Banking</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -161,40 +161,40 @@ const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 const SHEET_ID='1va3HsPbT4Ac_50VTKvTsCNSLD4OMHpZaQBakDw0sdDM';
 const sb=supabase.createClient(SURL,SKEY);
 const PAL=['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B','#EF4444','#3BA0E6','#F97316'];
-const SC={'Em execu├º├úo':'#22C55E','Proposta enviada':'#F59E0B','Em negocia├º├úo':'#3BA0E6','Conclu├¡do':'#64748B','Em estrutura├º├úo':'#A78BFA','Congelado':'#EF4444','Ativo':'#22C55E','Cancelado':'#64748B'};
-const MC={'Sell-side':'#0078D4','sell-side':'#0078D4','Buy-side':'#00B4D8','buy-side':'#00B4D8','Capta├º├úo':'#22C55E','Reestrutura├º├úo':'#F59E0B','Outro':'#8899B0'};
-const PC={'Alta':'#22C55E','M├®dia':'#F59E0B','Baixa':'#EF4444'};
-const CARGOS=['S├│cio / Diretor','Gerente','Analista S├¬nior','Analista','Assistente','Estagi├írio'];
+const SC={'Em execução':'#22C55E','Proposta enviada':'#F59E0B','Em negociação':'#3BA0E6','Concluído':'#64748B','Em estruturação':'#A78BFA','Congelado':'#EF4444','Ativo':'#22C55E','Cancelado':'#64748B'};
+const MC={'Sell-side':'#0078D4','sell-side':'#0078D4','Buy-side':'#00B4D8','buy-side':'#00B4D8','Captação':'#22C55E','Reestruturação':'#F59E0B','Outro':'#8899B0'};
+const PC={'Alta':'#22C55E','Média':'#F59E0B','Baixa':'#EF4444'};
+const CARGOS=['Sócio / Diretor','Gerente','Analista Sênior','Analista','Assistente','Estagiário'];
 const POLOS=['ES','SC','Ambos'];
 const AREAS=['M&A','DCM','Ambas'];
 const RESULTADOS=['Fechado e Ganho','Fechado e Perdido','Cancelado','Congelado'];
 const FASES=[
-  {n:'Kickoff & Info',f:1},{n:'An├ílise & Info',f:1},{n:'Valuation',f:1},
+  {n:'Kickoff & Info',f:1},{n:'Análise & Info',f:1},{n:'Valuation',f:1},
   {n:'Teaser + Memo',f:1},{n:'Buyers List',f:1},{n:'Go-to-market',f:1},
-  {n:'IO / NBO',f:2},{n:'Negocia├º├úo',f:2},{n:'LOI / MOU',f:2},
+  {n:'IO / NBO',f:2},{n:'Negociação',f:2},{n:'LOI / MOU',f:2},
   {n:'Due Diligence',f:2},{n:'Contratos',f:2},{n:'Signing & Closing',f:2},
 ];
 const FASES_DCM=[
-  {n:'Prospec├º├úo',f:1,d:'Identifica├º├úo e qualifica├º├úo do emissor'},
-  {n:'Mandato',f:1,d:'Assinatura do mandato e defini├º├úo de estrutura'},
-  {n:'Estrutura├º├úo',f:1,d:'Modelagem financeira, rating e documenta├º├úo'},
-  {n:'Registro CVM',f:1,d:'Registro na CVM e aprova├º├Áes regulat├│rias'},
-  {n:'Roadshow',f:2,d:'Apresenta├º├úo aos investidores institucionais'},
-  {n:'Precifica├º├úo',f:2,d:'Book building e defini├º├úo do pre├ºo final'},
-  {n:'Distribui├º├úo',f:2,d:'Aloca├º├úo e distribui├º├úo aos investidores'},
-  {n:'Liquida├º├úo',f:2,d:'Liquida├º├úo financeira e emiss├úo do ativo'},
+  {n:'Prospecção',f:1,d:'Identificação e qualificação do emissor'},
+  {n:'Mandato',f:1,d:'Assinatura do mandato e definição de estrutura'},
+  {n:'Estruturação',f:1,d:'Modelagem financeira, rating e documentação'},
+  {n:'Registro CVM',f:1,d:'Registro na CVM e aprovações regulatórias'},
+  {n:'Roadshow',f:2,d:'Apresentação aos investidores institucionais'},
+  {n:'Precificação',f:2,d:'Book building e definição do preço final'},
+  {n:'Distribuição',f:2,d:'Alocação e distribuição aos investidores'},
+  {n:'Liquidação',f:2,d:'Liquidação financeira e emissão do ativo'},
 ];
 const STATUS_NOVO_CORES={
   'Ativo':'#22C55E',
   'On Hold':'#F59E0B',
-  'Encerrado ÔÇô Ganho':'#0078D4',
-  'Encerrado ÔÇô Perdido':'#EF4444',
-  'Encerrado ÔÇô Rescindido':'#64748B',
+  'Encerrado – Ganho':'#0078D4',
+  'Encerrado – Perdido':'#EF4444',
+  'Encerrado – Rescindido':'#64748B',
 };
 function statusNovoBdg(s){
   const c=STATUS_NOVO_CORES[s]||'#888';
-  const icons={'Ativo':'ÔùÅ','On Hold':'ÔÅ©','Encerrado ÔÇô Ganho':'­ƒÅå','Encerrado ÔÇô Perdido':'Ô£ù','Encerrado ÔÇô Rescindido':'Ôèÿ'};
-  return`<span style="background:${c}22;color:${c};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">${icons[s]||''} ${s||'ÔÇö'}</span>`;
+  const icons={'Ativo':'●','On Hold':'⏸','Encerrado – Ganho':'🏆','Encerrado – Perdido':'✗','Encerrado – Rescindido':'⊘'};
+  return`<span style="background:${c}22;color:${c};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">${icons[s]||''} ${s||'—'}</span>`;
 }
 function isAtivo(d){return !d.status_novo||d.status_novo==='Ativo';}
 function isOnHold(d){return d.status_novo==='On Hold';}
@@ -223,36 +223,36 @@ function diasMandatoCalc(d){
 }
 
 const NAV=[
-  {s:'Vis├úo Geral'},{k:'dashboard',l:'Dashboard',i:'Ô¼í'},{k:'pipeline',l:'Pipeline',i:'ÔùÉ'},
-  {s:'Projetos'},{k:'ma',l:'Projetos M&A',i:'Ôùê'},{k:'dcm',l:'Projetos DCM',i:'Ôùê'},{k:'onhold',l:'On Hold',i:'Ôùî'},{k:'encerrados',l:'Encerrados',i:'Ôùî'},
-  {s:'Pessoas'},{k:'equipe',l:'Equipe',i:'ÔùÄ'},{k:'tarefas',l:'Tarefas',i:'Ôùë',badge:true},
-  {s:'Financeiro'},{k:'receita',l:'Receita',i:'Ôùå'},{k:'horas',l:'Gest├úo de Horas',i:'ÔùÀ'},
+  {s:'Visão Geral'},{k:'dashboard',l:'Dashboard',i:'⬡'},{k:'pipeline',l:'Pipeline',i:'◐'},
+  {s:'Projetos'},{k:'ma',l:'Projetos M&A',i:'◈'},{k:'dcm',l:'Projetos DCM',i:'◈'},{k:'onhold',l:'On Hold',i:'◌'},{k:'encerrados',l:'Encerrados',i:'◌'},
+  {s:'Pessoas'},{k:'equipe',l:'Equipe',i:'◎'},{k:'tarefas',l:'Tarefas',i:'◉',badge:true},
+  {s:'Financeiro'},{k:'receita',l:'Receita',i:'◆'},{k:'horas',l:'Gestão de Horas',i:'◷'},
 ];
-const TITLES={dashboard:'Dashboard',pipeline:'Pipeline',ma:'Projetos M&A',dcm:'Projetos DCM',onhold:'On Hold',encerrados:'Encerrados',receita:'Receita',horas:'Gest├úo de Horas',equipe:'Equipe',tarefas:'Tarefas'};
-const SUBS={dashboard:'Vis├úo executiva da carteira',pipeline:'Funil de deals',ma:'Mandatos M&A ativos',dcm:'Mandatos DCM ativos',onhold:'Projetos com mandato vigente pausados',encerrados:'Projetos ganhos, perdidos ou rescindidos',receita:'Retainers, success fees e receita realizada',horas:'Controle de horas por projeto',equipe:'Gest├úo do time de IB',tarefas:'Gest├úo de atividades e prazos'};
+const TITLES={dashboard:'Dashboard',pipeline:'Pipeline',ma:'Projetos M&A',dcm:'Projetos DCM',onhold:'On Hold',encerrados:'Encerrados',receita:'Receita',horas:'Gestão de Horas',equipe:'Equipe',tarefas:'Tarefas'};
+const SUBS={dashboard:'Visão executiva da carteira',pipeline:'Funil de deals',ma:'Mandatos M&A ativos',dcm:'Mandatos DCM ativos',onhold:'Projetos com mandato vigente pausados',encerrados:'Projetos ganhos, perdidos ou rescindidos',receita:'Retainers, success fees e receita realizada',horas:'Controle de horas por projeto',equipe:'Gestão do time de IB',tarefas:'Gestão de atividades e prazos'};
 
-const fmt=v=>{if(!v&&v!==0)return'ÔÇö';const n=parseFloat(v);if(isNaN(n))return'ÔÇö';if(n>=1e9)return`R$ ${(n/1e9).toFixed(1)}B`;if(n>=1e6)return`R$ ${(n/1e6).toFixed(1)}M`;if(n>=1e3)return`R$ ${(n/1e3).toFixed(0)}K`;return`R$ ${n.toLocaleString('pt-BR')}`;};
+const fmt=v=>{if(!v&&v!==0)return'—';const n=parseFloat(v);if(isNaN(n))return'—';if(n>=1e9)return`R$ ${(n/1e9).toFixed(1)}B`;if(n>=1e6)return`R$ ${(n/1e6).toFixed(1)}M`;if(n>=1e3)return`R$ ${(n/1e3).toFixed(0)}K`;return`R$ ${n.toLocaleString('pt-BR')}`;};
 const ini=n=>n?n.trim().split(' ').filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join(''):'?';
 const bdg=(t,c)=>`<span class="badge" style="background:${c||'#888'}22;color:${c||'#888'}">${t||''}</span>`;
 const pt=p=>`<span class="ptag p${p||'ES'}">${p||'ES'}</span>`;
 const pN=v=>{if(!v&&v!==0)return 0;return parseFloat(String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))||0;};
-const fmtTS=ts=>{if(!ts)return'ÔÇö';const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});};
-const fmtD=d=>{if(!d)return'ÔÇö';return new Date(d).toLocaleDateString('pt-BR');};
+const fmtTS=ts=>{if(!ts)return'—';const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});};
+const fmtD=d=>{if(!d)return'—';return new Date(d).toLocaleDateString('pt-BR');};
 const LS=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}};
 const SS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 
 function resTag(r){
-  if(r==='Fechado e Ganho')return'<span class="tg">­ƒÅå Ganho</span>';
-  if(r==='Fechado e Perdido')return'<span class="tp">Ô£ù Perdido</span>';
-  if(r==='Cancelado')return'<span class="tcan">Ôèÿ Cancelado</span>';
-  if(r==='Congelado')return'<span class="tc">ÔØä Congelado</span>';
-  if(r==='Ativo')return'<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">Ô£ô Ativo</span>';
-  return'<span style="color:var(--text2)">ÔÇö</span>';
+  if(r==='Fechado e Ganho')return'<span class="tg">🏆 Ganho</span>';
+  if(r==='Fechado e Perdido')return'<span class="tp">✗ Perdido</span>';
+  if(r==='Cancelado')return'<span class="tcan">⊘ Cancelado</span>';
+  if(r==='Congelado')return'<span class="tc">❄ Congelado</span>';
+  if(r==='Ativo')return'<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">✓ Ativo</span>';
+  return'<span style="color:var(--text2)">—</span>';
 }
 
 function classBdg(c){
-  if(c==='Em risco')return'<span style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">ÔÜá Em risco</span>';
-  if(c==='Congelado')return'<span style="background:rgba(100,116,139,.15);color:#94A3B8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">ÔØä Congelado</span>';
+  if(c==='Em risco')return'<span style="background:rgba(245,158,11,.15);color:var(--amber);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">⚠ Em risco</span>';
+  if(c==='Congelado')return'<span style="background:rgba(100,116,139,.15);color:#94A3B8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px">❄ Congelado</span>';
   return'';
 }
 
@@ -260,7 +260,7 @@ function dealScore(d){
   const totalFases=d.tipo==='DCM'?FASES_DCM.length:FASES.length;
   const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;
   const faseScore=(feitas/totalFases)*40;
-  const probScore=({Alta:40,M├®dia:24,Baixa:8}[d.prob]||16);
+  const probScore=({Alta:40,Média:24,Baixa:8}[d.prob]||16);
   const criado=d.created_at?new Date(d.created_at):new Date();
   const semanas=Math.max(0,(new Date()-criado)/(1000*60*60*24*7)-4);
   const agingPenalty=Math.min(20,semanas*2);
@@ -274,16 +274,16 @@ function agingDias(d){
   return Math.round((new Date()-new Date(d.created_at))/(1000*60*60*24));
 }
 
-// ÔöÇÔöÇ P&L de projeto encerrado ÔöÇÔöÇ
+// ── P&L de projeto encerrado ──
 function calcPL(d){
   const horasD=S.horas.filter(h=>h.deal_id===d.id);
   const totalHoras=horasD.reduce((s,h)=>s+(h.horas||0),0);
   const retRecebido=S.retParcelas.filter(p=>p.deal_id===d.id&&p.status==='Recebido').reduce((s,p)=>s+(p.valor||0),0);
   const recReal=S.recReal.filter(r=>r.deal_id===d.id).reduce((s,r)=>s+(r.valor||0),0);
-  const sfRealizado=d.status_novo==='Encerrado ÔÇô Ganho'?(d.deal_value||0)*((d.success_fee||0)/100):0;
+  const sfRealizado=d.status_novo==='Encerrado – Ganho'?(d.deal_value||0)*((d.success_fee||0)/100):0;
   const receitaTotal=retRecebido+recReal+sfRealizado;
   const valorHora=totalHoras>0?receitaTotal/totalHoras:0;
-  // Custo estimado (horas * custo medio por hora da equipe ÔÇö referencia mercado IB)
+  // Custo estimado (horas * custo medio por hora da equipe — referencia mercado IB)
   const custoHoraRef=250; // R$250/h referencia
   const custoEstimado=totalHoras*custoHoraRef;
   const lucro=receitaTotal-custoEstimado;
@@ -324,7 +324,7 @@ let S={
 };
 document.documentElement.setAttribute('data-theme',S.theme);
 
-// ÔòÉÔòÉÔòÉ AUTH ÔòÉÔòÉÔòÉ
+// ═══ AUTH ═══
 async function tentarLogin(){
   try{
     const{data:rpc,error:rpcErr}=await sb.rpc('apex_login',{p_email:S.loginEmail,p_senha:S.loginSenha});
@@ -337,7 +337,7 @@ async function tentarLogin(){
 function logout(){S.loggedIn=false;S.currentUser=null;SS('apex_li',false);SS('apex_cu',null);localStorage.removeItem('apex_login_time');render();}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';SS('apex_theme',S.theme);document.documentElement.setAttribute('data-theme',S.theme);render();}
 
-// ÔòÉÔòÉÔòÉ LOAD ÔòÉÔòÉÔòÉ
+// ═══ LOAD ═══
 async function loadAll(){
   S.loading=true;render();
   try{
@@ -362,11 +362,11 @@ async function loadAll(){
   S.loading=false;render();
 }
 
-// ÔòÉÔòÉÔòÉ SUPABASE CRUD ÔòÉÔòÉÔòÉ
+// ═══ SUPABASE CRUD ═══
 const uf=(k,v)=>{if(S.editForm)S.editForm[k]=v;};
 async function saveDeal(d){
   const isN=!d.id||d.id.startsWith('new_');
-  if(isN){const t={...d};delete t.id;const{data:nd}=await sb.from('deals').insert(t).select().single();if(nd){S.deals.unshift(nd);await addH(nd.id,'Cria├º├úo','ÔÇö','Projeto criado');}}
+  if(isN){const t={...d};delete t.id;const{data:nd}=await sb.from('deals').insert(t).select().single();if(nd){S.deals.unshift(nd);await addH(nd.id,'Criação','—','Projeto criado');}}
   else{
     const old=S.deals.find(x=>x.id===d.id);
     await sb.from('deals').update({...d,updated_at:new Date()}).eq('id',d.id);
@@ -392,17 +392,17 @@ async function saveHora(d){
 }
 async function delHora(id){await sb.from('horas').delete().eq('id',id);S.horas=S.horas.filter(x=>x.id!==id);}
 async function updEtapas(id,et,fa){await sb.from('deals').update({etapas:et,fase_atual:fa,updated_at:new Date()}).eq('id',id);const i=S.deals.findIndex(x=>x.id===id);if(i>=0){S.deals[i].etapas=et;S.deals[i].fase_atual=fa;}}
-async function addComt(dealId,idx,txt){const u=S.currentUser;const{data:c}=await sb.from('comentarios').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Usu├írio',etapa_idx:idx,etapa_nome:FASES[idx]?.n,texto:txt}).select().single();if(c)S.comentarios.push(c);}
+async function addComt(dealId,idx,txt){const u=S.currentUser;const{data:c}=await sb.from('comentarios').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Usuário',etapa_idx:idx,etapa_nome:FASES[idx]?.n,texto:txt}).select().single();if(c)S.comentarios.push(c);}
 async function editComt(id,txt){await sb.from('comentarios').update({texto:txt}).eq('id',id);const i=S.comentarios.findIndex(x=>x.id===id);if(i>=0)S.comentarios[i].texto=txt;}
 async function delComt(id){await sb.from('comentarios').delete().eq('id',id);S.comentarios=S.comentarios.filter(x=>x.id!==id);}
 async function addH(dealId,campo,ant,nov){
   if(String(ant||'')===String(nov||''))return;
   const u=S.currentUser;
-  const{data:h}=await sb.from('historico').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Sistema',campo,valor_anterior:String(ant||''),valor_novo:String(nov||''),descricao:`${campo}: ${ant} ÔåÆ ${nov}`}).select().single();
+  const{data:h}=await sb.from('historico').insert({deal_id:dealId,usuario_id:u?.id,usuario_nome:u?.nome||'Sistema',campo,valor_anterior:String(ant||''),valor_novo:String(nov||''),descricao:`${campo}: ${ant} → ${nov}`}).select().single();
   if(h)S.historico.unshift(h);
 }
 
-// ÔöÇÔöÇ RETAINER PARCELAS ÔöÇÔöÇ
+// ── RETAINER PARCELAS ──
 async function updRetStatus(id,status,extra){
   const upd={status,...extra};
   await sb.from('retainer_parcelas').update(upd).eq('id',id);
@@ -435,15 +435,15 @@ async function gerarCronogramaRetainer(dealId){
   if(!d||!d.data_assinatura){alert('Cadastre a data de assinatura do contrato primeiro.');return;}
   const parts=d.data_assinatura.split('/');
   const base=parts.length===3?new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0])):new Date(d.data_assinatura);
-  if(isNaN(base)){alert('Data de assinatura inv├ílida.');return;}
+  if(isNaN(base)){alert('Data de assinatura inválida.');return;}
   const r1=d.retainer_f1||15000,r2=d.retainer_f2||7000;
   const existentes=new Set(S.retParcelas.filter(p=>p.deal_id===dealId).map(p=>p.mes));
   const novas=[];
   const m1=String(base.getMonth()+1).padStart(2,'0')+'/'+base.getFullYear();
-  if(!existentes.has(m1))novas.push({deal_id:dealId,mes:m1,valor:r1,tipo:'Fase 1 ÔÇö Parcela 1',status:'Pendente',observacao:'Na assinatura'});
+  if(!existentes.has(m1))novas.push({deal_id:dealId,mes:m1,valor:r1,tipo:'Fase 1 — Parcela 1',status:'Pendente',observacao:'Na assinatura'});
   const d2=new Date(base);d2.setDate(d2.getDate()+30);
   const m2=String(d2.getMonth()+1).padStart(2,'0')+'/'+d2.getFullYear();
-  if(!existentes.has(m2))novas.push({deal_id:dealId,mes:m2,valor:r1,tipo:'Fase 1 ÔÇö Parcela 2',status:'Pendente',observacao:'Final Fase 1'});
+  if(!existentes.has(m2))novas.push({deal_id:dealId,mes:m2,valor:r1,tipo:'Fase 1 — Parcela 2',status:'Pendente',observacao:'Final Fase 1'});
   const ini2=new Date(base);ini2.setDate(ini2.getDate()+60);
   const limite=new Date();limite.setMonth(limite.getMonth()+6);
   for(let i=0;i<24;i++){
@@ -452,13 +452,13 @@ async function gerarCronogramaRetainer(dealId){
     const m=String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
     if(!existentes.has(m))novas.push({deal_id:dealId,mes:m,valor:r2,tipo:'Fase 2',status:'Pendente',observacao:'Retainer mensal'});
   }
-  if(!novas.length){alert('Todas as parcelas j├í foram geradas.');return;}
+  if(!novas.length){alert('Todas as parcelas já foram geradas.');return;}
   const{data:ins}=await sb.from('retainer_parcelas').insert(novas).select();
   if(ins)S.retParcelas=[...S.retParcelas,...ins];
   render();
 }
 
-// ÔöÇÔöÇ METAS ÔöÇÔöÇ
+// ── METAS ──
 async function saveMeta(ano, dados){
   const existe=S.metas.find(m=>m.ano===ano);
   if(existe){
@@ -474,7 +474,7 @@ function getMeta(ano){
   return S.metas.find(m=>m.ano===ano)||{ano,meta_retainer:0,meta_success_fee:0,meta_total:0};
 }
 
-// ÔöÇÔöÇ ANEXOS ÔöÇÔöÇ
+// ── ANEXOS ──
 async function uploadAnexo(dealId, etapaIdx, etapaNome, file){
   const path=`deals/${dealId}/etapa_${etapaIdx}/${Date.now()}_${file.name}`;
   const{error:upErr}=await sb.storage.from('apex-anexos').upload(path, file);
@@ -484,7 +484,7 @@ async function uploadAnexo(dealId, etapaIdx, etapaNome, file){
     deal_id:dealId,etapa_idx:etapaIdx,etapa_nome:etapaNome,
     nome_arquivo:file.name,storage_path:path,
     tamanho_bytes:file.size,tipo_arquivo:file.type,
-    usuario_id:u?.id,usuario_nome:u?.nome||'ÔÇö'
+    usuario_id:u?.id,usuario_nome:u?.nome||'—'
   }).select().single();
   if(nd)S.anexos.push(nd);
   return nd;
@@ -502,7 +502,7 @@ async function downloadAnexo(id){
   if(data?.signedUrl)window.open(data.signedUrl,'_blank');
 }
 
-// ÔöÇÔöÇ STATUS NOVO CRUD ÔöÇÔöÇ
+// ── STATUS NOVO CRUD ──
 async function hSetStatusNovo(dealId, statusNovo){
   const d=S.deals.find(x=>x.id===dealId);if(!d)return;
   let motivo='';
@@ -512,9 +512,9 @@ async function hSetStatusNovo(dealId, statusNovo){
     motivo=m;
   }
   const upd={status_novo:statusNovo,motivo_encerramento:motivo||d.motivo_encerramento||'',updated_at:new Date()};
-  if(statusNovo==='Encerrado ÔÇô Ganho')upd.resultado='Fechado e Ganho';
-  else if(statusNovo==='Encerrado ÔÇô Perdido')upd.resultado='Fechado e Perdido';
-  else if(statusNovo==='Encerrado ÔÇô Rescindido')upd.resultado='Cancelado';
+  if(statusNovo==='Encerrado – Ganho')upd.resultado='Fechado e Ganho';
+  else if(statusNovo==='Encerrado – Perdido')upd.resultado='Fechado e Perdido';
+  else if(statusNovo==='Encerrado – Rescindido')upd.resultado='Cancelado';
   else if(statusNovo==='On Hold')upd.resultado='Congelado';
   else upd.resultado=null;
   await sb.from('deals').update(upd).eq('id',dealId);
@@ -537,7 +537,7 @@ async function saveTarefa(d){
 }
 async function delTarefa(id){await sb.from('tarefas').delete().eq('id',id);S.tarefas=S.tarefas.filter(x=>x.id!==id);}
 
-// ÔòÉÔòÉÔòÉ SHEETS ÔòÉÔòÉÔòÉ
+// ═══ SHEETS ═══
 async function importSheets(){
   try{
     const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=Contratos`);
@@ -558,8 +558,8 @@ async function importSheets(){
       const mandatoRaw=(g(7)||'').toLowerCase();
       let mandato='Sell-side';
       if(mandatoRaw.includes('buy'))mandato='Buy-side';
-      else if(mandatoRaw.includes('capta'))mandato='Capta├º├úo';
-      else if(mandatoRaw.includes('reestrutura'))mandato='Reestrutura├º├úo';
+      else if(mandatoRaw.includes('capta'))mandato='Captação';
+      else if(mandatoRaw.includes('reestrutura'))mandato='Reestruturação';
       else if(mandatoRaw.includes('sell')||mandatoRaw.includes('venda'))mandato='Sell-side';
       toI.push({
         source:'sheets',arquivo:arq,data_extracao:g(1),cliente:g(2)||arq,cnpj:g(3),contato:g(4),email:g(5),projeto:g(6)||g(2)||arq,mandato,descricao:g(8),data_assinatura:dataAss,data_inicio:dataAss,retainer_f1:15000,retainer_f2:ret||7000,success_fee:sf,success_fee_min:pN(g(17)),success_fee_base:g(18),deal_value:pN(g(19)),dia_fat:g(21)||'30',obs:g(23),diretor:g(24),gerente:g(25),analista:g(26),setor:g(27),status:st,status_fat:g(30)||'Pendente',tipo:'M&A',polo:'ES',prob:'Alta',etapas:{},fase_atual:0,parcelas:[],classificacao:'Ativo',resultado:null,
@@ -575,41 +575,41 @@ async function importSheets(){
 }
 function parseCSV(t){const r=[];for(const l of t.split('\n')){if(!l.trim())continue;const row=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){if(q&&l[i+1]==='"'){c+='"';i++;}else q=!q;}else if(ch===','&&!q){row.push(c.trim());c='';}else c+=ch;}row.push(c.trim());r.push(row);}return r;}
 
-// ÔòÉÔòÉÔòÉ ACTIONS ÔòÉÔòÉÔòÉ
-function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execu├º├úo',prob:'Alta',classificacao:'Ativo',status_novo:'Ativo',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0,resultado:null,motivo_encerramento:'',volume_emitido:null,taxa_media:null,data_inicio_mandato:'',prazo_mandato_meses:12};S.modal='deal';render();}
+// ═══ ACTIONS ═══
+function openAddDeal(){S.editForm={id:'new_',tipo:'M&A',cliente:'',projeto:'',mandato:'Sell-side',setor:'',status:'Em execução',prob:'Alta',classificacao:'Ativo',status_novo:'Ativo',deal_value:'',retainer_f1:'15000',retainer_f2:'7000',success_fee:'3',dia_fat:'30',diretor:'',gerente:'',analista:'',data_assinatura:'',polo:'ES',obs:'',etapas:{},fase_atual:0,resultado:null,motivo_encerramento:'',volume_emitido:null,taxa_media:null,data_inicio_mandato:'',prazo_mandato_meses:12};S.modal='deal';render();}
 function openEditDeal(id){const d=S.deals.find(x=>x.id===id);if(!d)return;S.editForm={...d,deal_value:String(d.deal_value||''),retainer_f1:String(d.retainer_f1||15000),retainer_f2:String(d.retainer_f2||7000),success_fee:String(d.success_fee||'')};S.modal='deal';render();}
 
-// ÔòÉÔòÉ ETAPAS COM OBRIGATORIEDADE DE ANEXO ÔòÉÔòÉ
+// ══ ETAPAS COM OBRIGATORIEDADE DE ANEXO ══
 async function hSetEtapa(dealId,idx){
   const d=S.deals.find(x=>x.id===dealId);if(!d)return;
   const et={...(d.etapas||{})};
-  // Ao marcar como conclu├¡da, exigir anexo
+  // Ao marcar como concluída, exigir anexo
   if(et[idx]!=='done'){
     const anexosEtapa=S.anexos.filter(a=>a.deal_id===dealId&&a.etapa_idx===idx);
     if(anexosEtapa.length===0){
-      alert('­ƒôÄ Anexe pelo menos um documento nesta etapa antes de conclu├¡-la:\n\n"'+FASES[idx]?.n+'"\n\nUse o bot├úo "­ƒôÄ Anexar" ao lado da etapa.');
+      alert('📎 Anexe pelo menos um documento nesta etapa antes de concluí-la:\n\n"'+FASES[idx]?.n+'"\n\nUse o botão "📎 Anexar" ao lado da etapa.');
       return;
     }
   }
   et[idx]=et[idx]==='done'?'pending':'done';
   const fa=Object.values(et).filter(v=>v==='done').length;
   await updEtapas(dealId,et,fa);
-  await addH(dealId,'Etapa',FASES[idx]?.n,et[idx]==='done'?'Conclu├¡da':'Reaberta');
+  await addH(dealId,'Etapa',FASES[idx]?.n,et[idx]==='done'?'Concluída':'Reaberta');
   render();
 }
 
 async function hSetEtapaDCM(dealId,idx){
   const d=S.deals.find(x=>x.id===dealId);if(!d)return;
   const et={...(d.etapas||{})};
-  // Bloqueia se etapa anterior n├úo conclu├¡da
+  // Bloqueia se etapa anterior não concluída
   if(et[idx]!=='done'&&idx>0&&et[idx-1]!=='done'){
-    alert('ÔÜá Conclua a etapa anterior primeiro:\n"'+FASES_DCM[idx-1]?.n+'"');return;
+    alert('⚠ Conclua a etapa anterior primeiro:\n"'+FASES_DCM[idx-1]?.n+'"');return;
   }
   // Exigir anexo ao concluir
   if(et[idx]!=='done'){
     const anexosEtapa=S.anexos.filter(a=>a.deal_id===dealId&&a.etapa_idx===idx);
     if(anexosEtapa.length===0){
-      alert('­ƒôÄ Anexe pelo menos um documento nesta etapa antes de conclu├¡-la:\n\n"'+FASES_DCM[idx]?.n+'"\n\nUse o bot├úo "­ƒôÄ Anexar" ao lado da etapa.');
+      alert('📎 Anexe pelo menos um documento nesta etapa antes de concluí-la:\n\n"'+FASES_DCM[idx]?.n+'"\n\nUse o botão "📎 Anexar" ao lado da etapa.');
       return;
     }
   }
@@ -617,7 +617,7 @@ async function hSetEtapaDCM(dealId,idx){
   if(et[idx]!=='done'){for(let i=idx+1;i<FASES_DCM.length;i++)if(et[i]==='done')et[i]='pending';}
   const fa=Object.values(et).filter(v=>v==='done').length;
   await updEtapas(dealId,et,fa);
-  await addH(dealId,'Etapa DCM',FASES_DCM[idx]?.n,et[idx]==='done'?'Conclu├¡da':'Reaberta');
+  await addH(dealId,'Etapa DCM',FASES_DCM[idx]?.n,et[idx]==='done'?'Concluída':'Reaberta');
   render();
 }
 
@@ -640,7 +640,7 @@ async function hSetClassif(dealId, classif){
   render();
 }
 
-// ÔòÉÔòÉ SAVE DEAL ÔÇö auto-sync data_inicio = data_assinatura ÔòÉÔòÉ
+// ══ SAVE DEAL — auto-sync data_inicio = data_assinatura ══
 async function hSaveDeal(){
   const f=S.editForm;if(!f.cliente.trim())return;
   const r={...f,deal_value:pN(f.deal_value),retainer_f1:pN(f.retainer_f1)||15000,retainer_f2:pN(f.retainer_f2)||7000,success_fee:pN(f.success_fee)||0};
@@ -650,13 +650,13 @@ async function hSaveDeal(){
 }
 async function hDelDeal(id){if(!confirm('Excluir permanentemente?'))return;S.detail=null;S.detailType=null;await delDeal(id);render();}
 
-// coment├írios
+// comentários
 async function hAddComt(dealId,idx){const k=`${dealId}_${idx}`;const txt=(S.novoComt[k]||'').trim();if(!txt)return;await addComt(dealId,idx,txt);S.novoComt[k]='';const el=document.getElementById(`cinput_${k}`);if(el)el.value='';render();}
 function togComt(k){S.novoComt[`sh_${k}`]=!S.novoComt[`sh_${k}`];render();}
 function startEditComt(id,txt){S.editandoComt={id,txt};render();}
 function cancelEditComt(){S.editandoComt=null;render();}
 async function saveEditComt(){if(!S.editandoComt)return;await editComt(S.editandoComt.id,S.editandoComt.txt);S.editandoComt=null;render();}
-async function hDelComt(id){if(!confirm('Excluir coment├írio?'))return;await delComt(id);render();}
+async function hDelComt(id){if(!confirm('Excluir comentário?'))return;await delComt(id);render();}
 
 function openAddUser(){S.editForm={id:'new_',nome:'',email:'',senha:'',cargo:'Analista',polo:'ES',area:'M&A',gestor:'',ativo:true};S.modal='user';render();}
 function openEditUser(id){const u=S.usuarios.find(x=>x.id===id);if(!u)return;S.editForm={...u};S.modal='user';render();}
@@ -674,9 +674,9 @@ function openAddTarefa(){S.editForm={id:'new_',titulo:'',descricao:'',deal_id:''
 function openEditTarefa(id){const t=S.tarefas.find(x=>x.id===id);if(!t)return;S.editForm={...t};S.modal='tarefa';render();}
 async function hSaveTarefa(){const f=S.editForm;if(!f.titulo.trim())return;const u=S.usuarios.find(x=>x.id===f.responsavel_id);if(u)f.responsavel_nome=u.nome;S.modal=null;S.editForm=null;await saveTarefa(f);render();}
 async function hDelTarefa(id){await delTarefa(id);render();}
-async function toggleTarefa(id){const t=S.tarefas.find(x=>x.id===id);if(!t)return;const ns=t.status==='Conclu├¡da'?'Aberta':'Conclu├¡da';t.status=ns;await sb.from('tarefas').update({status:ns,updated_at:new Date()}).eq('id',id);render();}
+async function toggleTarefa(id){const t=S.tarefas.find(x=>x.id===id);if(!t)return;const ns=t.status==='Concluída'?'Aberta':'Concluída';t.status=ns;await sb.from('tarefas').update({status:ns,updated_at:new Date()}).eq('id',id);render();}
 
-// ÔòÉÔòÉÔòÉ PDF ÔòÉÔòÉÔòÉ
+// ═══ PDF ═══
 function exportPDF(id){
   const d=S.deals.find(x=>x.id===id);if(!d)return;
   const w=window.open('','_blank');const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;const fT=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(feitas/fT*100);const sf=(d.deal_value||0)*((d.success_fee||0)/100);
@@ -684,96 +684,96 @@ function exportPDF(id){
   const fasesRef=d.tipo==='DCM'?FASES_DCM:FASES;
   const pl=isEncerrado(d)?calcPL(d):null;
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${d.cliente}</title><style>body{font-family:'Segoe UI',sans-serif;padding:40px;color:#0A1628;font-size:13px}h1{font-size:22px;font-weight:700;margin-bottom:4px}h2{font-size:13px;font-weight:700;color:#0078D4;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;border-bottom:2px solid #E8EEF8;padding-bottom:6px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.kpi{background:#F0F4FA;border-radius:10px;padding:14px;border:1px solid #D8E4F0}.kl{font-size:10px;color:#4A6080;text-transform:uppercase;margin-bottom:4px}.kv{font-size:18px;font-weight:700}table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;padding:8px;background:#F0F4FA;border-bottom:1px solid #D8E4F0}td{padding:8px;border-bottom:1px solid #E8EEF8}.done{color:#16A34A}.pending{color:#D97706}</style></head><body>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px"><div style="width:32px;height:32px;background:#0078D4;border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:11px;height:11px;background:white;transform:rotate(45deg)"></div></div><div style="font-size:11px;color:#4A6080;letter-spacing:2px;text-transform:uppercase">APEX PARTNERS ÔÇö Investment Banking</div></div>
-  <h1>${d.projeto||d.cliente}</h1><div style="color:#4A6080;margin-bottom:16px">${d.cliente}${d.cnpj?' ┬À '+d.cnpj:''}${d.setor?' ┬À '+d.setor:''} ┬À Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>
-  <div class="kpis"><div class="kpi"><div class="kl">Deal Value</div><div class="kv">${fmt(d.deal_value)}</div></div><div class="kpi"><div class="kl">Retainer/m├¬s</div><div class="kv">${fmt(d.retainer_f2)}</div></div><div class="kpi"><div class="kl">Success Fee</div><div class="kv">${d.success_fee||0}% (${fmt(sf)})</div></div><div class="kpi"><div class="kl">Progresso</div><div class="kv">${pct}%</div></div></div>
-  <h2>Fases ${d.tipo==='DCM'?'DCM':'M&A'}</h2><table><thead><tr><th>Etapa</th><th>Fase</th><th>Status</th></tr></thead><tbody>${fasesRef.map((e,i)=>`<tr><td>${e.n}</td><td>Fase ${e.f}</td><td class="${et[i]==='done'?'done':'pending'}">${et[i]==='done'?'Ô£ô Conclu├¡do':'Pendente'}</td></tr>`).join('')}</tbody></table>
-  ${pl?`<h2>An├ílise P&L</h2><div class="kpis"><div class="kpi"><div class="kl">Receita total</div><div class="kv">${fmt(pl.receitaTotal)}</div></div><div class="kpi"><div class="kl">Horas trabalhadas</div><div class="kv">${pl.totalHoras.toFixed(1)}h</div></div><div class="kpi"><div class="kl">Valor/hora</div><div class="kv">${fmt(pl.valorHora)}</div></div><div class="kpi"><div class="kl">Margem</div><div class="kv" style="color:${pl.lucro>=0?'#16A34A':'#DC2626'}">${pl.margem}%</div></div></div>`:''}
-  ${hist.length?`<h2>Hist├│rico</h2><table><thead><tr><th>Data</th><th>Usu├írio</th><th>Campo</th><th>Altera├º├úo</th></tr></thead><tbody>${hist.slice(0,15).map(h=>`<tr><td>${fmtTS(h.created_at)}</td><td>${h.usuario_nome||'ÔÇö'}</td><td>${h.campo}</td><td>${h.valor_anterior} ÔåÆ ${h.valor_novo}</td></tr>`).join('')}</tbody></table>`:''}
-  <div style="margin-top:30px;padding-top:14px;border-top:1px solid #D8E4F0;font-size:10px;color:#4A6080;text-align:center">APEX PARTNERS ÔÇö DOCUMENTO CONFIDENCIAL</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px"><div style="width:32px;height:32px;background:#0078D4;border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:11px;height:11px;background:white;transform:rotate(45deg)"></div></div><div style="font-size:11px;color:#4A6080;letter-spacing:2px;text-transform:uppercase">APEX PARTNERS — Investment Banking</div></div>
+  <h1>${d.projeto||d.cliente}</h1><div style="color:#4A6080;margin-bottom:16px">${d.cliente}${d.cnpj?' · '+d.cnpj:''}${d.setor?' · '+d.setor:''} · Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>
+  <div class="kpis"><div class="kpi"><div class="kl">Deal Value</div><div class="kv">${fmt(d.deal_value)}</div></div><div class="kpi"><div class="kl">Retainer/mês</div><div class="kv">${fmt(d.retainer_f2)}</div></div><div class="kpi"><div class="kl">Success Fee</div><div class="kv">${d.success_fee||0}% (${fmt(sf)})</div></div><div class="kpi"><div class="kl">Progresso</div><div class="kv">${pct}%</div></div></div>
+  <h2>Fases ${d.tipo==='DCM'?'DCM':'M&A'}</h2><table><thead><tr><th>Etapa</th><th>Fase</th><th>Status</th></tr></thead><tbody>${fasesRef.map((e,i)=>`<tr><td>${e.n}</td><td>Fase ${e.f}</td><td class="${et[i]==='done'?'done':'pending'}">${et[i]==='done'?'✓ Concluído':'Pendente'}</td></tr>`).join('')}</tbody></table>
+  ${pl?`<h2>Análise P&L</h2><div class="kpis"><div class="kpi"><div class="kl">Receita total</div><div class="kv">${fmt(pl.receitaTotal)}</div></div><div class="kpi"><div class="kl">Horas trabalhadas</div><div class="kv">${pl.totalHoras.toFixed(1)}h</div></div><div class="kpi"><div class="kl">Valor/hora</div><div class="kv">${fmt(pl.valorHora)}</div></div><div class="kpi"><div class="kl">Margem</div><div class="kv" style="color:${pl.lucro>=0?'#16A34A':'#DC2626'}">${pl.margem}%</div></div></div>`:''}
+  ${hist.length?`<h2>Histórico</h2><table><thead><tr><th>Data</th><th>Usuário</th><th>Campo</th><th>Alteração</th></tr></thead><tbody>${hist.slice(0,15).map(h=>`<tr><td>${fmtTS(h.created_at)}</td><td>${h.usuario_nome||'—'}</td><td>${h.campo}</td><td>${h.valor_anterior} → ${h.valor_novo}</td></tr>`).join('')}</tbody></table>`:''}
+  <div style="margin-top:30px;padding-top:14px;border-top:1px solid #D8E4F0;font-size:10px;color:#4A6080;text-align:center">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div>
   <script>window.print();<\/script></body></html>`);w.document.close();
 }
 
-// ÔòÉÔòÉÔòÉ MODAIS ÔòÉÔòÉÔòÉ
+// ═══ MODAIS ═══
 function mDeal(){
   const f=S.editForm;
   const sl=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`;
-  const slU=(k,arr,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)"><option value="">ÔÇö Selecione ÔÇö</option>${arr.map(n=>`<option value="${n}"${f[k]===n?' selected':''}>${n}</option>`).join('')}</select></div>`;
-  const setores=['Sa├║de','Agroneg├│cio','Tecnologia','Log├¡stica','Educa├º├úo','Energia','Ind├║stria','Constru├º├úo','Financeiro','Outro'];
+  const slU=(k,arr,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)"><option value="">— Selecione —</option>${arr.map(n=>`<option value="${n}"${f[k]===n?' selected':''}>${n}</option>`).join('')}</select></div>`;
+  const setores=['Saúde','Agronegócio','Tecnologia','Logística','Educação','Energia','Indústria','Construção','Financeiro','Outro'];
   const isE=f.id&&!f.id.startsWith('new_');
   return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar projeto':'Novo projeto'}</h3>
-    <div class="fgrid">${sl('tipo',['M&A','DCM'],'Tipo')}${sl('mandato',f.tipo==='DCM'?['CRI','CRA','Deb├¬nture','FII','FIDC','CCI','LCI','LCA','Outro']:['Sell-side','Buy-side','Capta├º├úo','Reestrutura├º├úo','Outro'],'Mandato')}</div>
+    <div class="fgrid">${sl('tipo',['M&A','DCM'],'Tipo')}${sl('mandato',f.tipo==='DCM'?['CRI','CRA','Debênture','FII','FIDC','CCI','LCI','LCA','Outro']:['Sell-side','Buy-side','Captação','Reestruturação','Outro'],'Mandato')}</div>
     <div class="fgrid"><div class="fg"><label>Cliente</label><input value="${f.cliente||''}" oninput="uf('cliente',this.value)"/></div><div class="fg"><label>Projeto / ID</label><input value="${f.projeto||''}" oninput="uf('projeto',this.value)"/></div></div>
-    <div class="fgrid">${sl('status',Object.keys(SC),'Status')}${sl('prob',['Alta','M├®dia','Baixa'],'Probabilidade')}</div>
+    <div class="fgrid">${sl('status',Object.keys(SC),'Status')}${sl('prob',['Alta','Média','Baixa'],'Probabilidade')}</div>
     <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('setor',setores,'Setor')}</div>
-    <div class="fgrid">${sl('status_novo',['Ativo','On Hold','Encerrado ÔÇô Ganho','Encerrado ÔÇô Perdido','Encerrado ÔÇô Rescindido'],'Status do projeto')}<div></div></div>
+    <div class="fgrid">${sl('status_novo',['Ativo','On Hold','Encerrado – Ganho','Encerrado – Perdido','Encerrado – Rescindido'],'Status do projeto')}<div></div></div>
     ${(f.status_novo||'').startsWith('Encerrado')?`<div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Motivo de encerramento</label><textarea oninput="uf('motivo_encerramento',this.value)" style="min-height:50px">${f.motivo_encerramento||''}</textarea></div></div>`:''}
-    <div class="fgrid"><div class="fg"><label>Data de assinatura / in├¡cio</label><input type="date" value="${f.data_assinatura||''}" oninput="uf('data_assinatura',this.value)"/></div><div class="fg"><label>Prazo do mandato (meses)</label><input type="number" value="${f.prazo_mandato_meses||12}" oninput="uf('prazo_mandato_meses',parseInt(this.value)||12)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Data de assinatura / início</label><input type="date" value="${f.data_assinatura||''}" oninput="uf('data_assinatura',this.value)"/></div><div class="fg"><label>Prazo do mandato (meses)</label><input type="number" value="${f.prazo_mandato_meses||12}" oninput="uf('prazo_mandato_meses',parseInt(this.value)||12)"/></div></div>
     <div class="sdiv">Financeiro</div>
     <div class="fgrid"><div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.deal_value||''}" oninput="uf('deal_value',this.value);document.getElementById('fee_preview').textContent='Fee estimado: '+fmt((parseFloat(this.value)||0)*((parseFloat(document.getElementById('sf_pct_inp').value)||0)/100))"/></div><div class="fg"><label>Success fee (%)</label><input id="sf_pct_inp" type="number" step="0.1" value="${f.success_fee||''}" oninput="uf('success_fee',this.value);document.getElementById('fee_preview').textContent='Fee estimado: '+fmt(((parseFloat(document.getElementById('sf_pct_inp').previousElementSibling?.value)||parseFloat(S.editForm.deal_value)||0)*((parseFloat(this.value)||0)/100)))"/></div></div>
     <div id="fee_preview" style="font-size:12px;font-weight:700;color:var(--cyan);margin:-6px 0 8px;text-align:right">${(f.deal_value&&f.success_fee)?'Fee estimado: '+fmt((pN(f.deal_value))*(pN(f.success_fee)/100)):''}</div>
-    <div class="fgrid"><div class="fg"><label>Retainer Fase 1 / parcela</label><input type="number" value="${f.retainer_f1||15000}" oninput="uf('retainer_f1',this.value)"/></div><div class="fg"><label>Retainer Fase 2 / m├¬s</label><input type="number" value="${f.retainer_f2||7000}" oninput="uf('retainer_f2',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Retainer Fase 1 / parcela</label><input type="number" value="${f.retainer_f1||15000}" oninput="uf('retainer_f1',this.value)"/></div><div class="fg"><label>Retainer Fase 2 / mês</label><input type="number" value="${f.retainer_f2||7000}" oninput="uf('retainer_f2',this.value)"/></div></div>
     <div class="sdiv">Equipe</div>
-    <div class="fgrid">${slU('diretor',S.usuarios.filter(u=>u.cargo==='S├│cio / Diretor').map(u=>u.nome),'Diretor')}${slU('gerente',S.usuarios.filter(u=>['Gerente','Analista S├¬nior'].includes(u.cargo)).map(u=>u.nome),'Gerente')}</div>
-    <div class="fgrid">${slU('analista',S.usuarios.filter(u=>['Analista S├¬nior','Analista','Assistente','Estagi├írio'].includes(u.cargo)).map(u=>u.nome),'Analista')}<div></div></div>
-    ${f.tipo==='DCM'?`<div class="fgrid"><div class="fg"><label>Volume emitido (R$)</label><input type="number" value="${f.volume_emitido||''}" oninput="uf('volume_emitido',this.value)" placeholder="Ex: 50000000"/></div><div class="fg"><label>Taxa m├®dia (%)</label><input type="number" step="0.01" value="${f.taxa_media||''}" oninput="uf('taxa_media',this.value)" placeholder="Ex: 12.5"/></div></div>`:''}
-    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Observa├º├Áes</label><textarea oninput="uf('obs',this.value)">${f.obs||''}</textarea></div></div>
+    <div class="fgrid">${slU('diretor',S.usuarios.filter(u=>u.cargo==='Sócio / Diretor').map(u=>u.nome),'Diretor')}${slU('gerente',S.usuarios.filter(u=>['Gerente','Analista Sênior'].includes(u.cargo)).map(u=>u.nome),'Gerente')}</div>
+    <div class="fgrid">${slU('analista',S.usuarios.filter(u=>['Analista Sênior','Analista','Assistente','Estagiário'].includes(u.cargo)).map(u=>u.nome),'Analista')}<div></div></div>
+    ${f.tipo==='DCM'?`<div class="fgrid"><div class="fg"><label>Volume emitido (R$)</label><input type="number" value="${f.volume_emitido||''}" oninput="uf('volume_emitido',this.value)" placeholder="Ex: 50000000"/></div><div class="fg"><label>Taxa média (%)</label><input type="number" step="0.01" value="${f.taxa_media||''}" oninput="uf('taxa_media',this.value)" placeholder="Ex: 12.5"/></div></div>`:''}
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Observações</label><textarea oninput="uf('obs',this.value)">${f.obs||''}</textarea></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveDeal()">Salvar</button></div>
   </div></div>`;
 }
 function mUser(){
   const f=S.editForm;
   const sl=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${String(f[k])===String(o)?' selected':''}>${o}</option>`).join('')}</select></div>`;
-  const dirs=S.usuarios.filter(u=>u.cargo==='S├│cio / Diretor'||u.cargo==='Gerente').map(u=>u.nome);
+  const dirs=S.usuarios.filter(u=>u.cargo==='Sócio / Diretor'||u.cargo==='Gerente').map(u=>u.nome);
   const isE=f.id&&!f.id.startsWith('new_');
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar usu├írio':'Novo usu├írio'}</h3>
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar usuário':'Novo usuário'}</h3>
     <div class="fgrid"><div class="fg"><label>Nome completo</label><input value="${f.nome||''}" oninput="uf('nome',this.value)"/></div><div class="fg"><label>E-mail</label><input type="email" value="${f.email||''}" oninput="uf('email',this.value)"/></div></div>
     <div class="fgrid"><div class="fg"><label>Senha</label><input type="password" value="${f.senha||''}" oninput="uf('senha',this.value)"/></div>${sl('cargo',CARGOS,'Cargo')}</div>
-    <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('area',AREAS,'├ürea')}</div>
-    <div class="fgrid"><div class="fg"><label>Gestor</label><select onchange="uf('gestor',this.value)"><option value="">ÔÇö Nenhum ÔÇö</option>${dirs.map(n=>`<option value="${n}"${f.gestor===n?' selected':''}>${n}</option>`).join('')}</select></div><div class="fg"><label>Status</label><select onchange="uf('ativo',this.value==='true')"><option value="true" ${String(f['ativo'])!=='false'?' selected':''}>Ativo</option><option value="false" ${String(f['ativo'])==='false'?' selected':''}>Inativo</option></select></div></div>
+    <div class="fgrid">${sl('polo',POLOS,'Polo')}${sl('area',AREAS,'Área')}</div>
+    <div class="fgrid"><div class="fg"><label>Gestor</label><select onchange="uf('gestor',this.value)"><option value="">— Nenhum —</option>${dirs.map(n=>`<option value="${n}"${f.gestor===n?' selected':''}>${n}</option>`).join('')}</select></div><div class="fg"><label>Status</label><select onchange="uf('ativo',this.value==='true')"><option value="true" ${String(f['ativo'])!=='false'?' selected':''}>Ativo</option><option value="false" ${String(f['ativo'])==='false'?' selected':''}>Inativo</option></select></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveUser()">Salvar</button></div>
   </div></div>`;
 }
 function mHora(){
-  const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Conclu├¡do'&&d.status!=='Congelado');
-  // Se veio de um projeto, s├│ mostra BIB
+  const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
+  // Se veio de um projeto, só mostra BIB
   const fromDeal=!!f.deal_id;
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lan├ºar horas</h3>
-    <div class="fgrid"><div class="fg"><label>Colaborador</label><select onchange="uf('usuario_id',this.value)"><option value="">ÔÇö Selecione ÔÇö</option>${S.usuarios.map(u=>`<option value="${u.id}"${(f.usuario_id||S.currentUser?.id)===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">ÔÇö Selecione ÔÇö</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
-    <div class="fgrid">${fromDeal?`<div class="fg"><label>Tipo</label><input value="BIB ÔÇö Billable" disabled style="opacity:.7"/></div>`:`<div class="fg"><label>Tipo</label><select onchange="uf('tipo_hora',this.value)"><option value="BIB"${f.tipo_hora==='BIB'?' selected':''}>BIB ÔÇö Billable</option><option value="NIB"${f.tipo_hora==='NIB'?' selected':''}>NIB ÔÇö Non-billable</option></select></div>`}<div class="fg"><label>Horas</label><input type="number" step="0.5" value="${f.horas||''}" oninput="uf('horas',this.value)"/></div></div>
-    <div class="fgrid"><div class="fg"><label>Fase</label><select onchange="uf('fase',this.value)"><option value="">ÔÇö</option><option>Fase 1 ÔÇö Preparation</option><option>Fase 2 ÔÇö Execution</option><option>Geral</option></select></div><div class="fg"><label>Etapa</label><input value="${f.etapa||''}" oninput="uf('etapa',this.value)" placeholder="Ex: Valuation"/></div></div>
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lançar horas</h3>
+    <div class="fgrid"><div class="fg"><label>Colaborador</label><select onchange="uf('usuario_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${(f.usuario_id||S.currentUser?.id)===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
+    <div class="fgrid">${fromDeal?`<div class="fg"><label>Tipo</label><input value="BIB — Billable" disabled style="opacity:.7"/></div>`:`<div class="fg"><label>Tipo</label><select onchange="uf('tipo_hora',this.value)"><option value="BIB"${f.tipo_hora==='BIB'?' selected':''}>BIB — Billable</option><option value="NIB"${f.tipo_hora==='NIB'?' selected':''}>NIB — Non-billable</option></select></div>`}<div class="fg"><label>Horas</label><input type="number" step="0.5" value="${f.horas||''}" oninput="uf('horas',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Fase</label><select onchange="uf('fase',this.value)"><option value="">—</option><option>Fase 1 — Preparation</option><option>Fase 2 — Execution</option><option>Geral</option></select></div><div class="fg"><label>Etapa</label><input value="${f.etapa||''}" oninput="uf('etapa',this.value)" placeholder="Ex: Valuation"/></div></div>
     <div class="fgrid"><div class="fg"><label>Data</label><input type="date" value="${f.data||''}" oninput="uf('data',this.value)"/></div><div></div></div>
-    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Descri├º├úo</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Descrição</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveHora()">Salvar</button></div>
   </div></div>`;
 }
 function mRetParcela(){
   const f=S.editForm;
   const opts=(k,arr)=>`<select style="background:var(--input);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:var(--text);font-size:12px;font-family:inherit;outline:none;width:100%" onchange="uf('${k}',this.value)">${arr.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select>`;
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lan├ºar parcela de retainer</h3>
-    <div class="fgrid"><div class="fg"><label>M├¬s (MM/AAAA)</label><input value="${f.mes||''}" placeholder="03/2026" oninput="uf('mes',this.value)"/></div><div class="fg"><label>Tipo</label>${opts('tipo',['Fase 1 ÔÇö Parcela 1','Fase 1 ÔÇö Parcela 2','Fase 2'])}</div></div>
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Lançar parcela de retainer</h3>
+    <div class="fgrid"><div class="fg"><label>Mês (MM/AAAA)</label><input value="${f.mes||''}" placeholder="03/2026" oninput="uf('mes',this.value)"/></div><div class="fg"><label>Tipo</label>${opts('tipo',['Fase 1 — Parcela 1','Fase 1 — Parcela 2','Fase 2'])}</div></div>
     <div class="fgrid"><div class="fg"><label>Valor (R$)</label><input type="number" value="${f.valor||''}" oninput="uf('valor',this.value)"/></div><div class="fg"><label>Status</label>${opts('status',['Pendente','E-mail enviado','Recebido','Atrasado'])}</div></div>
     <div class="fgrid"><div class="fg"><label>Data e-mail</label><input type="date" value="${f.data_envio||''}" oninput="uf('data_envio',this.value)"/></div><div class="fg"><label>Data recebimento</label><input type="date" value="${f.data_recebimento||''}" oninput="uf('data_recebimento',this.value)"/></div></div>
-    <div class="fg"><label>Observa├º├úo</label><input value="${f.observacao||''}" oninput="uf('observacao',this.value)"/></div>
+    <div class="fg"><label>Observação</label><input value="${f.observacao||''}" oninput="uf('observacao',this.value)"/></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveRetParcela()">Salvar</button></div>
   </div></div>`;
 }
 function mRecReal(){
   const f=S.editForm;
   return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Registrar receita realizada</h3>
-    <div class="fgrid"><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">ÔÇö Selecione ÔÇö</option>${S.deals.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div><div class="fg"><label>Tipo</label><select onchange="uf('tipo',this.value)"><option value="retainer"${f.tipo==='retainer'?' selected':''}>Retainer</option><option value="success_fee"${f.tipo==='success_fee'?' selected':''}>Success Fee</option></select></div></div>
-    <div class="fgrid"><div class="fg"><label>Valor (R$)</label><input type="number" value="${f.valor||''}" oninput="uf('valor',this.value)"/></div><div class="fg"><label>Per├¡odo (MM/AAAA)</label><input value="${f.periodo||''}" oninput="uf('periodo',this.value)" placeholder="03/2026"/></div></div>
-    <div class="fgrid"><div class="fg"><label>Data pagamento</label><input type="date" value="${f.data_pagamento||''}" oninput="uf('data_pagamento',this.value)"/></div><div class="fg"><label>Descri├º├úo</label><input value="${f.descricao||''}" oninput="uf('descricao',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Selecione —</option>${S.deals.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div><div class="fg"><label>Tipo</label><select onchange="uf('tipo',this.value)"><option value="retainer"${f.tipo==='retainer'?' selected':''}>Retainer</option><option value="success_fee"${f.tipo==='success_fee'?' selected':''}>Success Fee</option></select></div></div>
+    <div class="fgrid"><div class="fg"><label>Valor (R$)</label><input type="number" value="${f.valor||''}" oninput="uf('valor',this.value)"/></div><div class="fg"><label>Período (MM/AAAA)</label><input value="${f.periodo||''}" oninput="uf('periodo',this.value)" placeholder="03/2026"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Data pagamento</label><input type="date" value="${f.data_pagamento||''}" oninput="uf('data_pagamento',this.value)"/></div><div class="fg"><label>Descrição</label><input value="${f.descricao||''}" oninput="uf('descricao',this.value)"/></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveRecReal()">Salvar</button></div>
   </div></div>`;
 }
 function mTarefa(){
-  const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Conclu├¡do'&&d.status!=='Congelado');
+  const f=S.editForm;const ativos=S.deals.filter(d=>d.status!=='Concluído'&&d.status!=='Congelado');
   const sl=(k,opts,l)=>`<div class="fg"><label>${l}</label><select onchange="uf('${k}',this.value)">${opts.map(o=>`<option value="${o}"${f[k]===o?' selected':''}>${o}</option>`).join('')}</select></div>`;
   return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Tarefa</h3>
-    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>T├¡tulo</label><input value="${f.titulo||''}" oninput="uf('titulo',this.value)"/></div></div>
-    <div class="fgrid"><div class="fg"><label>Respons├ível</label><select onchange="uf('responsavel_id',this.value)"><option value="">ÔÇö Selecione ÔÇö</option>${S.usuarios.map(u=>`<option value="${u.id}"${f.responsavel_id===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">ÔÇö Nenhum ÔÇö</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
-    <div class="fgrid">${sl('prioridade',['Alta','Normal','Baixa'],'Prioridade')}${sl('status',['Aberta','Em andamento','Conclu├¡da'],'Status')}</div>
+    <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Título</label><input value="${f.titulo||''}" oninput="uf('titulo',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Responsável</label><select onchange="uf('responsavel_id',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.id}"${f.responsavel_id===u.id?' selected':''}>${u.nome}</option>`).join('')}</select></div><div class="fg"><label>Projeto</label><select onchange="uf('deal_id',this.value)"><option value="">— Nenhum —</option>${ativos.map(d=>`<option value="${d.id}"${f.deal_id===d.id?' selected':''}>${d.cliente}</option>`).join('')}</select></div></div>
+    <div class="fgrid">${sl('prioridade',['Alta','Normal','Baixa'],'Prioridade')}${sl('status',['Aberta','Em andamento','Concluída'],'Status')}</div>
     <div class="fgrid"><div class="fg"><label>Fase</label><input value="${f.fase||''}" oninput="uf('fase',this.value)" placeholder="Ex: Due Diligence"/></div><div class="fg"><label>Prazo</label><input type="date" value="${f.prazo||''}" oninput="uf('prazo',this.value)"/></div></div>
     <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Detalhamento</label><textarea oninput="uf('descricao',this.value)">${f.descricao||''}</textarea></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSaveTarefa()">Salvar</button></div>
@@ -781,31 +781,31 @@ function mTarefa(){
 }
 function mMeta(){
   const f=S.editForm||{};
-  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Meta anual ÔÇö ${f.ano||new Date().getFullYear()}</h3>
+  return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>Meta anual — ${f.ano||new Date().getFullYear()}</h3>
     <div class="fgrid"><div class="fg"><label>Meta de retainer (R$)</label><input type="number" value="${f.meta_retainer||0}" oninput="uf('meta_retainer',parseFloat(this.value)||0)"/></div><div class="fg"><label>Meta de success fee (R$)</label><input type="number" value="${f.meta_success_fee||0}" oninput="uf('meta_success_fee',parseFloat(this.value)||0)"/></div></div>
     <div class="fgrid" style="grid-template-columns:1fr"><div class="fg"><label>Meta total (R$)</label><input type="number" value="${f.meta_total||0}" oninput="uf('meta_total',parseFloat(this.value)||0)"/>
-    <div style="font-size:10px;color:var(--text2);margin-top:4px">Soma autom├ítica: ${fmt((f.meta_retainer||0)+(f.meta_success_fee||0))}</div></div></div>
+    <div style="font-size:10px;color:var(--text2);margin-top:4px">Soma automática: ${fmt((f.meta_retainer||0)+(f.meta_success_fee||0))}</div></div></div>
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="saveMeta(${f.ano||new Date().getFullYear()},{meta_retainer:S.editForm.meta_retainer||0,meta_success_fee:S.editForm.meta_success_fee||0,meta_total:S.editForm.meta_total||0}).then(()=>{S.modal=null;render()})">Salvar</button></div>
   </div></div>`;
 }
 
-// ÔòÉÔòÉÔòÉ STEPPER ÔòÉÔòÉÔòÉ
+// ═══ STEPPER ═══
 function sfStepper(d){
   const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;const pct=Math.round(feitas/FASES.length*100);
   const rF=(fases,offset)=>fases.map((e,i)=>{const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;const isLk=!done&&idx>0&&et[idx-1]!=='done';
     const nAnexos=S.anexos.filter(a=>a.deal_id===d.id&&a.etapa_idx===idx).length;
-    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapa('${d.id}',${idx})" title="${done?'Clique para reabrir':nAnexos===0?'Anexe um documento primeiro':'Marcar como conclu├¡do'}" style="${isLk?'opacity:.4;cursor:not-allowed':''}">
-      <div class="sf-circle">${done?'Ô£ô':nAnexos===0?'­ƒôÄ':idx+1}</div><div class="sf-label">${e.n}${nAnexos===0&&!done?'<br><span style="color:var(--red);font-size:8px">sem anexo</span>':''}</div>
+    return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapa('${d.id}',${idx})" title="${done?'Clique para reabrir':nAnexos===0?'Anexe um documento primeiro':'Marcar como concluído'}" style="${isLk?'opacity:.4;cursor:not-allowed':''}">
+      <div class="sf-circle">${done?'✓':nAnexos===0?'📎':idx+1}</div><div class="sf-label">${e.n}${nAnexos===0&&!done?'<br><span style="color:var(--red);font-size:8px">sem anexo</span>':''}</div>
     </div>`;}).join('');
   const f1=FASES.filter(x=>x.f===1);const f2=FASES.filter(x=>x.f===2);
   return`<div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:600">Progresso: <span style="color:var(--blue)">${pct}%</span> ÔÇö ${feitas}/${FASES.length} etapas</div>
+      <div style="font-size:12px;font-weight:600">Progresso: <span style="color:var(--blue)">${pct}%</span> — ${feitas}/${FASES.length} etapas</div>
     </div>
     <div style="height:6px;background:var(--bg3);border-radius:3px;margin-bottom:18px;overflow:hidden"><div style="height:6px;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:3px;width:${pct}%;transition:width .4s"></div></div>
-    <div class="sf-fase-lbl">Fase 1 ÔÇö Preparation & Marketing</div>
+    <div class="sf-fase-lbl">Fase 1 — Preparation & Marketing</div>
     <div class="sf-wrap"><div class="sf-track">${rF(f1,0)}</div></div>
-    <div class="sf-fase-lbl" style="margin-top:8px;color:var(--cyan)">Fase 2 ÔÇö Execution & Closing</div>
+    <div class="sf-fase-lbl" style="margin-top:8px;color:var(--cyan)">Fase 2 — Execution & Closing</div>
     <div class="sf-wrap"><div class="sf-track">${rF(f2,6)}</div></div>
   </div>`;
 }
@@ -817,44 +817,44 @@ function dcmStepper(d){
     const idx=offset+i;const done=et[idx]==='done';const isAct=!done&&idx===feitas;const isLk=!done&&idx>0&&et[idx-1]!=='done';
     const nAnexos=S.anexos.filter(a=>a.deal_id===d.id&&a.etapa_idx===idx).length;
     return`<div class="sf-step ${done?'done':isAct?'active':''}" onclick="hSetEtapaDCM('${d.id}',${idx})" title="${isLk?'Conclua a etapa anterior':nAnexos===0?'Anexe um documento primeiro':e.d}" style="${isLk?'opacity:.4;cursor:not-allowed':''}">
-      <div class="sf-circle">${done?'Ô£ô':isLk?'­ƒöÆ':nAnexos===0?'­ƒôÄ':idx+1}</div>
+      <div class="sf-circle">${done?'✓':isLk?'🔒':nAnexos===0?'📎':idx+1}</div>
       <div class="sf-label">${e.n}${nAnexos===0&&!done?'<br><span style="color:var(--red);font-size:8px">sem anexo</span>':''}</div>
     </div>`;}).join('');
   return`<div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:600">Progresso: <span style="color:var(--cyan)">${pct}%</span> ÔÇö ${feitas}/${total} etapas</div>
+      <div style="font-size:12px;font-weight:600">Progresso: <span style="color:var(--cyan)">${pct}%</span> — ${feitas}/${total} etapas</div>
     </div>
     <div style="height:6px;background:var(--bg3);border-radius:3px;margin-bottom:18px;overflow:hidden"><div style="height:6px;background:linear-gradient(90deg,var(--cyan),#0052A3);border-radius:3px;width:${pct}%;transition:width .4s"></div></div>
-    <div class="sf-fase-lbl" style="background:rgba(0,180,216,.1);color:var(--cyan)">Fase 1 ÔÇö Prepara├º├úo & Estrutura├º├úo</div>
+    <div class="sf-fase-lbl" style="background:rgba(0,180,216,.1);color:var(--cyan)">Fase 1 — Preparação & Estruturação</div>
     <div class="sf-wrap"><div class="sf-track">${rF(f1,0)}</div></div>
-    <div class="sf-fase-lbl" style="margin-top:8px;background:rgba(0,120,212,.1);color:var(--blue)">Fase 2 ÔÇö Distribui├º├úo & Liquida├º├úo</div>
+    <div class="sf-fase-lbl" style="margin-top:8px;background:rgba(0,120,212,.1);color:var(--blue)">Fase 2 — Distribuição & Liquidação</div>
     <div class="sf-wrap"><div class="sf-track">${rF(f2,4)}</div></div>
   </div>`;
 }
 
-// ÔòÉÔòÉÔòÉ COMENT├üRIOS ÔòÉÔòÉÔòÉ
+// ═══ COMENTÁRIOS ═══
 function renderComts(dealId,idx,comtsD){
   const k=`${dealId}_${idx}`;const sh=S.novoComt[`sh_${k}`];const comtsEt=comtsD.filter(c=>c.etapa_idx===idx);const u=S.currentUser;
   const deal=S.deals.find(x=>x.id===dealId);
   const bloqueado=deal&&isEncerrado(deal);
   if(bloqueado&&!comtsEt.length)return'';
-  if(bloqueado)return`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${comtsEt.map(c=>`<div class="cmt-item"><div class="cmt-meta"><span><strong>${c.usuario_nome||'ÔÇö'}</strong> ┬À ${fmtTS(c.created_at)}</span></div><div class="cmt-text">${c.texto}</div></div>`).join('')}</div>`;
-  if(!sh&&!comtsEt.length)return`<button class="bgh bsm" style="margin-top:4px" onclick="togComt('${k}')">­ƒÆ¼ Comentar</button>`;
+  if(bloqueado)return`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${comtsEt.map(c=>`<div class="cmt-item"><div class="cmt-meta"><span><strong>${c.usuario_nome||'—'}</strong> · ${fmtTS(c.created_at)}</span></div><div class="cmt-text">${c.texto}</div></div>`).join('')}</div>`;
+  if(!sh&&!comtsEt.length)return`<button class="bgh bsm" style="margin-top:4px" onclick="togComt('${k}')">💬 Comentar</button>`;
   return`<div style="margin-top:6px">
-    ${!sh&&comtsEt.length?`<button class="bgh bsm" onclick="togComt('${k}')">­ƒÆ¼ ${comtsEt.length} coment├írio${comtsEt.length!==1?'s':''}</button>`:''}
+    ${!sh&&comtsEt.length?`<button class="bgh bsm" onclick="togComt('${k}')">💬 ${comtsEt.length} comentário${comtsEt.length!==1?'s':''}</button>`:''}
     ${sh?`<div>
       ${comtsEt.map(c=>{const isE=S.editandoComt?.id===c.id;const isMine=c.usuario_id===u?.id;return`<div class="cmt-item">
-        <div class="cmt-meta"><span><strong>${c.usuario_nome||'ÔÇö'}</strong> ┬À ${fmtTS(c.created_at)}</span>
+        <div class="cmt-meta"><span><strong>${c.usuario_nome||'—'}</strong> · ${fmtTS(c.created_at)}</span>
         ${isMine?`<div class="cmt-actions">
           ${isE?`<button class="bgh bsm" onclick="cancelEditComt()">Cancelar</button><button class="btn bsm" onclick="saveEditComt()">Salvar</button>`:
-          `<button class="bgh bsm" onclick="startEditComt('${c.id}','${c.texto.replace(/'/g,"\\'")}')">Editar</button><button class="bdg bsm" onclick="hDelComt('${c.id}')">Ô£ò</button>`}
+          `<button class="bgh bsm" onclick="startEditComt('${c.id}','${c.texto.replace(/'/g,"\\'")}')">Editar</button><button class="bdg bsm" onclick="hDelComt('${c.id}')">✕</button>`}
         </div>`:''}
         </div>
         ${isE?`<input style="width:100%;background:var(--input);border:1px solid var(--blue);border-radius:6px;padding:6px 9px;color:var(--text);font-size:12px;font-family:inherit;outline:none" value="${S.editandoComt.txt}" oninput="S.editandoComt.txt=this.value"/>`:
         `<div class="cmt-text">${c.texto}</div>`}
       </div>`;}).join('')}
       <div class="cmt-inp">
-        <input id="cinput_${k}" placeholder="Adicionar coment├írio..." oninput="S.novoComt['${k}']=this.value" onkeydown="if(event.key==='Enter')hAddComt('${dealId}',${idx})"/>
+        <input id="cinput_${k}" placeholder="Adicionar comentário..." oninput="S.novoComt['${k}']=this.value" onkeydown="if(event.key==='Enter')hAddComt('${dealId}',${idx})"/>
         <button class="btn bsm" onclick="hAddComt('${dealId}',${idx})">Enviar</button>
       </div>
       <button class="bgh bsm" style="margin-top:6px" onclick="togComt('${k}')">Fechar</button>
@@ -862,7 +862,7 @@ function renderComts(dealId,idx,comtsD){
   </div>`;
 }
 
-// ÔòÉÔòÉÔòÉ DETALHE PROJETO ÔòÉÔòÉÔòÉ
+// ═══ DETALHE PROJETO ═══
 function renderDetalhe(d){
   const et=d.etapas||{};const feitas=Object.values(et).filter(v=>v==='done').length;
   const fasesTotal=d.tipo==='DCM'?FASES_DCM.length:FASES.length;
@@ -883,30 +883,30 @@ function renderDetalhe(d){
         ${(()=>{const{score,cor}=dealScore(d);return score?`<span style="background:${cor}22;color:${cor};font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">Score ${score}</span>`:''})()}
       </div>
       <h2 style="font-size:19px;font-weight:700">${d.projeto||d.cliente}</h2>
-      <div style="font-size:12px;color:var(--text2);margin-top:3px">${d.cliente}${d.cnpj?' ┬À CNPJ '+d.cnpj:''}${d.setor?' ┬À '+d.setor:''}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">${d.cliente}${d.cnpj?' · CNPJ '+d.cnpj:''}${d.setor?' · '+d.setor:''}</div>
       ${d.motivo_encerramento?`<div style="margin-top:6px;font-size:11px;color:var(--amber)">Motivo: ${d.motivo_encerramento}</div>`:''}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <div style="display:flex;gap:4px;flex-wrap:wrap;padding:4px;background:var(--bg3);border-radius:12px;border:1px solid var(--border)">
         ${[
-          {k:'Ativo',label:'ÔùÅ Ativo',cor:'#22C55E'},
-          {k:'On Hold',label:'ÔÅ© On Hold',cor:'#F59E0B'},
-          {k:'Encerrado ÔÇô Ganho',label:'­ƒÅå Ganho',cor:'#0078D4'},
-          {k:'Encerrado ÔÇô Perdido',label:'Ô£ù Perdido',cor:'#EF4444'},
-          {k:'Encerrado ÔÇô Rescindido',label:'Ôèÿ Rescindido',cor:'#64748B'},
+          {k:'Ativo',label:'● Ativo',cor:'#22C55E'},
+          {k:'On Hold',label:'⏸ On Hold',cor:'#F59E0B'},
+          {k:'Encerrado – Ganho',label:'🏆 Ganho',cor:'#0078D4'},
+          {k:'Encerrado – Perdido',label:'✗ Perdido',cor:'#EF4444'},
+          {k:'Encerrado – Rescindido',label:'⊘ Rescindido',cor:'#64748B'},
         ].map(op=>{
           const sn=d.status_novo||'Ativo';const isActive=sn===op.k;
           return`<button onclick="hSetStatusNovo('${d.id}','${op.k}')" style="padding:4px 11px;font-size:10px;font-weight:${isActive?700:500};border-radius:8px;border:none;background:${isActive?op.cor+'22':'transparent'};color:${isActive?op.cor:'var(--text2)'};cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap${isActive?';outline:2px solid '+op.cor+';outline-offset:-1px':''}">${op.label}</button>`;
         }).join('')}
       </div>
-      <button class="bgh bsm" onclick="exportPDF('${d.id}')">­ƒôä PDF</button>
+      <button class="bgh bsm" onclick="exportPDF('${d.id}')">📄 PDF</button>
       <button class="bgh" onclick="openEditDeal('${d.id}')">Editar</button>
-      <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">ÔåÉ Voltar</button>
+      <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">← Voltar</button>
     </div>
   </div>
   <div class="kpis k5">
     <div class="kpi ac"><div class="kl">Deal value</div><div class="kv">${fmt(d.deal_value)}</div></div>
-    <div class="kpi"><div class="kl">Retainer F2/m├¬s</div><div class="kv">${fmt(d.retainer_f2)}</div><div class="ks">F1: ${fmt(d.retainer_f1||15000)} ├ù 2</div></div>
+    <div class="kpi"><div class="kl">Retainer F2/mês</div><div class="kv">${fmt(d.retainer_f2)}</div><div class="ks">F1: ${fmt(d.retainer_f1||15000)} × 2</div></div>
     <div class="kpi"><div class="kl">Success fee</div><div class="kv">${d.success_fee||0}%</div><div class="ks">${fmt(sf)} potencial</div></div>
     <div class="kpi"><div class="kl">Horas BIB</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks">Horas trabalhadas no projeto</div></div>
     <div class="kpi" style="${agingDias(d)>60?'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)':agingDias(d)>30?'background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)':''}"><div class="kl">Aging</div><div class="kv" style="font-size:18px;color:${agingDias(d)>60?'var(--red)':agingDias(d)>30?'var(--amber)':'var(--text)'}">${agingDias(d)}d</div><div class="ks">Dias desde abertura</div></div>
@@ -914,13 +914,13 @@ function renderDetalhe(d){
 
   ${isDealEncerrado&&pl?`
   <div class="card" style="border:1px solid ${pl.lucro>=0?'rgba(34,197,94,.3)':'rgba(239,68,68,.3)'};background:${pl.lucro>=0?'rgba(34,197,94,.04)':'rgba(239,68,68,.04)'}">
-    <div class="ct" style="color:${pl.lucro>=0?'var(--green)':'var(--red)'}">­ƒôè An├ílise P&L do Projeto</div>
+    <div class="ct" style="color:${pl.lucro>=0?'var(--green)':'var(--red)'}">📊 Análise P&L do Projeto</div>
     <div class="kpis k5" style="margin-bottom:12px">
-      <div class="kpi"><div class="kl">Receita total</div><div class="kv" style="font-size:17px;color:var(--green)">${fmt(pl.receitaTotal)}</div><div class="ks">Ret: ${fmt(pl.retRecebido)} ┬À SF: ${fmt(pl.sfRealizado)}</div></div>
+      <div class="kpi"><div class="kl">Receita total</div><div class="kv" style="font-size:17px;color:var(--green)">${fmt(pl.receitaTotal)}</div><div class="ks">Ret: ${fmt(pl.retRecebido)} · SF: ${fmt(pl.sfRealizado)}</div></div>
       <div class="kpi"><div class="kl">Horas trabalhadas</div><div class="kv" style="font-size:17px">${pl.totalHoras.toFixed(1)}h</div></div>
-      <div class="kpi"><div class="kl">Valor da hora</div><div class="kv" style="font-size:17px;color:var(--cyan)">${fmt(pl.valorHora)}</div><div class="ks">Receita ├À horas</div></div>
+      <div class="kpi"><div class="kl">Valor da hora</div><div class="kv" style="font-size:17px;color:var(--cyan)">${fmt(pl.valorHora)}</div><div class="ks">Receita ÷ horas</div></div>
       <div class="kpi"><div class="kl">Custo estimado</div><div class="kv" style="font-size:17px">${fmt(pl.custoEstimado)}</div><div class="ks">Ref: R$250/h</div></div>
-      <div class="kpi" style="background:${pl.lucro>=0?'rgba(34,197,94,.1)':'rgba(239,68,68,.1)'}"><div class="kl">${pl.lucro>=0?'Lucro':'Preju├¡zo'}</div><div class="kv ${pl.lucro>=0?'pl-positive':'pl-negative'}" style="font-size:17px">${fmt(Math.abs(pl.lucro))}</div><div class="ks">Margem: ${pl.margem}%</div></div>
+      <div class="kpi" style="background:${pl.lucro>=0?'rgba(34,197,94,.1)':'rgba(239,68,68,.1)'}"><div class="kl">${pl.lucro>=0?'Lucro':'Prejuízo'}</div><div class="kv ${pl.lucro>=0?'pl-positive':'pl-negative'}" style="font-size:17px">${fmt(Math.abs(pl.lucro))}</div><div class="ks">Margem: ${pl.margem}%</div></div>
     </div>
   </div>`:''}
 
@@ -932,14 +932,14 @@ function renderDetalhe(d){
         const done=et[i]==='done';
         const isFaseBreak=d.tipo!=='DCM'&&i===6;
         const nAnexos=S.anexos.filter(a=>a.deal_id===d.id&&a.etapa_idx===i).length;
-        return`${isFaseBreak?'<div style="padding:6px 0;font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;border-top:2px solid rgba(0,180,216,.2);margin-top:4px">Fase 2 ÔÇö Execution & Closing</div>':''}
+        return`${isFaseBreak?'<div style="padding:6px 0;font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;border-top:2px solid rgba(0,180,216,.2);margin-top:4px">Fase 2 — Execution & Closing</div>':''}
         <div style="padding:8px 0;border-bottom:1px solid var(--border)">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
             <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:14px;cursor:pointer" onclick="${d.tipo==='DCM'?`hSetEtapaDCM('${d.id}',${i})`:`hSetEtapa('${d.id}',${i})`}">${done?'Ô£à':'Ô¼£'}</span>
+              <span style="font-size:14px;cursor:pointer" onclick="${d.tipo==='DCM'?`hSetEtapaDCM('${d.id}',${i})`:`hSetEtapa('${d.id}',${i})`}">${done?'✅':'⬜'}</span>
               <span style="font-size:12px;font-weight:${done?600:400};color:${done?'var(--green)':'var(--text)'}">${e.n}</span>
               <span style="font-size:10px;color:var(--text2)">Fase ${e.f}</span>
-              ${!done&&nAnexos===0?'<span style="font-size:9px;color:var(--red);background:rgba(239,68,68,.1);padding:1px 6px;border-radius:4px">­ƒôÄ Requer anexo</span>':''}
+              ${!done&&nAnexos===0?'<span style="font-size:9px;color:var(--red);background:rgba(239,68,68,.1);padding:1px 6px;border-radius:4px">📎 Requer anexo</span>':''}
               ${nAnexos>0?`<span style="font-size:9px;color:var(--green)">${nAnexos} arquivo${nAnexos!==1?'s':''}</span>`:''}
             </div>
             ${renderComts(d.id,i,comtsD)}
@@ -949,7 +949,7 @@ function renderDetalhe(d){
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Dados do contrato</div>
-      ${[['Assinatura / In├¡cio',d.data_assinatura||d.data_inicio],['Polo',d.polo],['CNPJ',d.cnpj],['Mandato',d.prazo_mandato_meses?d.prazo_mandato_meses+' meses':'ÔÇö'],['Dia fat.',d.dia_fat?'Dia '+d.dia_fat:'ÔÇö'],...(d.tipo==='DCM'&&d.volume_emitido?[['Volume emitido',fmt(d.volume_emitido)]]:[]),(d.tipo==='DCM'&&d.taxa_media?[['Taxa m├®dia',d.taxa_media+'%']]:[])[0]?[['Taxa m├®dia',d.taxa_media+'%']]:[]].filter(([,v])=>v&&v!=='ÔÇö').map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span></div>`).join('')}
+      ${[['Assinatura / Início',d.data_assinatura||d.data_inicio],['Polo',d.polo],['CNPJ',d.cnpj],['Mandato',d.prazo_mandato_meses?d.prazo_mandato_meses+' meses':'—'],['Dia fat.',d.dia_fat?'Dia '+d.dia_fat:'—'],...(d.tipo==='DCM'&&d.volume_emitido?[['Volume emitido',fmt(d.volume_emitido)]]:[]),(d.tipo==='DCM'&&d.taxa_media?[['Taxa média',d.taxa_media+'%']]:[])[0]?[['Taxa média',d.taxa_media+'%']]:[]].filter(([,v])=>v&&v!=='—').map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:600;font-size:12px">${v}</span></div>`).join('')}
       ${d.obs?`<div style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.7">${d.obs}</div>`:''}
     </div>
     <div class="card"><div class="ct">Equipe alocada</div>
@@ -966,21 +966,21 @@ function renderDetalhe(d){
       </div>
       ${fasesD.map((e,i)=>{const anx=anexosD.filter(a=>a.etapa_idx===i);return`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${anx.length?'6px':'0'}">
-          <span style="font-size:12px;font-weight:${et[i]==='done'?600:400};color:${et[i]==='done'?'var(--green)':'var(--text2)'}">${et[i]==='done'?'Ô£à ':'Ô¼£ '}${e.n} ${anx.length===0&&et[i]!=='done'?'<span style="color:var(--red);font-size:9px">ÔÇö obrigat├│rio</span>':''}</span>
+          <span style="font-size:12px;font-weight:${et[i]==='done'?600:400};color:${et[i]==='done'?'var(--green)':'var(--text2)'}">${et[i]==='done'?'✅ ':'⬜ '}${e.n} ${anx.length===0&&et[i]!=='done'?'<span style="color:var(--red);font-size:9px">— obrigatório</span>':''}</span>
           <label style="cursor:pointer;font-size:10px;color:var(--blue);font-weight:600">
-            ­ƒôÄ Anexar
+            📎 Anexar
             <input type="file" style="display:none" onchange="(async f=>{if(!f.target.files[0])return;const r=await uploadAnexo('${d.id}',${i},'${e.n}',f.target.files[0]);if(r)render();})(event)"/>
           </label>
         </div>
         ${anx.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--bg3);border-radius:6px;margin-bottom:4px">
-          <span style="font-size:18px">${a.tipo_arquivo?.includes('pdf')?'­ƒôä':a.tipo_arquivo?.includes('image')?'­ƒû╝':'­ƒôÄ'}</span>
+          <span style="font-size:18px">${a.tipo_arquivo?.includes('pdf')?'📄':a.tipo_arquivo?.includes('image')?'🖼':'📎'}</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.nome_arquivo}</div>
-            <div style="font-size:10px;color:var(--text2)">${a.usuario_nome||'ÔÇö'} ┬À ${fmtTS(a.created_at)}</div>
+            <div style="font-size:10px;color:var(--text2)">${a.usuario_nome||'—'} · ${fmtTS(a.created_at)}</div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0">
-            <button class="bgh bsm" onclick="downloadAnexo('${a.id}')">Ô¼ç</button>
-            <button class="bdg bsm" onclick="delAnexo('${a.id}')">Ô£ò</button>
+            <button class="bgh bsm" onclick="downloadAnexo('${a.id}')">⬇</button>
+            <button class="bdg bsm" onclick="delAnexo('${a.id}')">✕</button>
           </div>
         </div>`).join('')}
       </div>`;}).join('')}
@@ -989,11 +989,11 @@ function renderDetalhe(d){
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="ct" style="margin:0">Horas do projeto (BIB)</div>
-      <button class="btn bsm" onclick="openAddHora('${d.id}')">+ Lan├ºar</button>
+      <button class="btn bsm" onclick="openAddHora('${d.id}')">+ Lançar</button>
     </div>
-    ${horasD.length===0?`<div class="empty">Nenhuma hora lan├ºada.</div>`:`
-    <table><thead><tr><th>Colaborador</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descri├º├úo</th><th></th></tr></thead>
-    <tbody>${horasD.map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);return`<tr><td style="font-weight:600">${u?u.nome:'ÔÇö'}</td><td style="color:var(--text2)">${h.fase||'ÔÇö'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'ÔÇö'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">Ô£ò</button></td></tr>`;}).join('')}</tbody></table>`}
+    ${horasD.length===0?`<div class="empty">Nenhuma hora lançada.</div>`:`
+    <table><thead><tr><th>Colaborador</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead>
+    <tbody>${horasD.map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}
   </div>
   ${(()=>{
     const parc=[...S.retParcelas.filter(p=>p.deal_id===d.id)].sort((a,b)=>{const[ma,ya]=a.mes.split('/');const[mb,yb]=b.mes.split('/');return new Date(ya,ma-1)-new Date(yb,mb-1);});
@@ -1008,8 +1008,8 @@ function renderDetalhe(d){
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="ct" style="margin:0">Acompanhamento de Retainer</div>
         <div style="display:flex;gap:6px">
-          ${d.data_assinatura?`<button class="bgh bsm" onclick="gerarCronogramaRetainer('${d.id}')">Ôƒ│ Gerar cronograma</button>`:''}
-          <button class="btn bsm" onclick="openAddRetParcela('${d.id}')">+ Lan├ºar</button>
+          ${d.data_assinatura?`<button class="bgh bsm" onclick="gerarCronogramaRetainer('${d.id}')">⟳ Gerar cronograma</button>`:''}
+          <button class="btn bsm" onclick="openAddRetParcela('${d.id}')">+ Lançar</button>
         </div>
       </div>
       <div class="kpis k4" style="margin-bottom:12px">
@@ -1019,8 +1019,8 @@ function renderDetalhe(d){
         <div class="kpi" style="background:var(--bg3)"><div class="kl">Total contrato</div><div class="kv" style="font-size:18px">${fmt(total)}</div><div class="ks">${parc.length} parcelas</div></div>
       </div>
       ${total?`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span style="color:var(--text2)">Progresso de recebimento</span><span style="font-weight:700;color:var(--green)">${prog}%</span></div><div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:8px;background:linear-gradient(90deg,var(--green),#16A34A);border-radius:4px;width:${prog}%"></div></div></div>`:''}
-      ${parc.length===0?`<div class="empty" style="padding:20px">Clique em "Ôƒ│ Gerar cronograma" para criar automaticamente com base no contrato, ou "+ Lan├ºar" para adicionar manualmente.</div>`:`
-      <div style="overflow-x:auto"><table><thead><tr><th>M├¬s</th><th>Tipo</th><th>Valor</th><th>Status</th><th>E-mail enviado</th><th>Recebido em</th><th>Obs</th><th></th></tr></thead>
+      ${parc.length===0?`<div class="empty" style="padding:20px">Clique em "⟳ Gerar cronograma" para criar automaticamente com base no contrato, ou "+ Lançar" para adicionar manualmente.</div>`:`
+      <div style="overflow-x:auto"><table><thead><tr><th>Mês</th><th>Tipo</th><th>Valor</th><th>Status</th><th>E-mail enviado</th><th>Recebido em</th><th>Obs</th><th></th></tr></thead>
       <tbody>${parc.map(p=>{const pid=p.id;return`<tr>
         <td style="font-weight:600">${p.mes}</td>
         <td style="font-size:11px;color:var(--text2)">${p.tipo||'Fase 2'}</td>
@@ -1034,14 +1034,14 @@ function renderDetalhe(d){
         <td><input type="date" value="${p.data_envio||''}" style="background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-size:11px;font-family:inherit" onchange="(async()=>{S.retParcelas.find(x=>x.id==='${pid}')&&await updRetStatus('${pid}',S.retParcelas.find(x=>x.id==='${pid}').status,{data_envio:this.value||null});})()"/></td>
         <td><input type="date" value="${p.data_recebimento||''}" style="background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-size:11px;font-family:inherit" onchange="(async()=>{S.retParcelas.find(x=>x.id==='${pid}')&&await updRetStatus('${pid}',S.retParcelas.find(x=>x.id==='${pid}').status,{data_recebimento:this.value||null});})()"/></td>
         <td style="font-size:11px;color:var(--text2)">${p.observacao||''}</td>
-        <td><button class="bdg bsm" onclick="delRetParcela('${pid}')">Ô£ò</button></td>
+        <td><button class="bdg bsm" onclick="delRetParcela('${pid}')">✕</button></td>
       </tr>`;}).join('')}</tbody></table></div>`}
     </div>`;
   })()}
   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="bdg" onclick="hDelDeal('${d.id}')">Excluir</button></div>`;
 }
 
-// ÔòÉÔòÉÔòÉ PERFIL ANALISTA ÔòÉÔòÉÔòÉ
+// ═══ PERFIL ANALISTA ═══
 function renderPerfilAnalista(uid){
   const u=S.usuarios.find(x=>x.id===uid);if(!u)return'';
   const deals=S.deals.filter(d=>d.diretor===u.nome||d.gerente===u.nome||d.analista===u.nome);
@@ -1053,7 +1053,7 @@ function renderPerfilAnalista(uid){
   const byFase={};horasU.forEach(h=>{if(h.fase)byFase[h.fase]=(byFase[h.fase]||0)+(h.horas||0);});
   const totalRet=deals.filter(d=>isAtivo(d)).reduce((s,d)=>s+(d.retainer_f2||0),0);
   const totalSF=deals.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
-  const ganhos=deals.filter(d=>d.status_novo==='Encerrado ÔÇô Ganho');
+  const ganhos=deals.filter(d=>d.status_novo==='Encerrado – Ganho');
   const sfRealizado=ganhos.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   return`
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
@@ -1061,19 +1061,19 @@ function renderPerfilAnalista(uid){
       <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff">${ini(u.nome)}</div>
       <div>
         <h2 style="font-size:18px;font-weight:700">${u.nome}</h2>
-        <div style="font-size:12px;color:var(--text2);margin-top:4px">${u.cargo} ┬À ${pt(u.polo)} ┬À ${u.area||'ÔÇö'}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">${u.cargo} · ${pt(u.polo)} · ${u.area||'—'}</div>
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn bsm" onclick="openAddHora()">+ Lan├ºar horas</button>
-      <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">ÔåÉ Voltar</button>
+      <button class="btn bsm" onclick="openAddHora()">+ Lançar horas</button>
+      <button class="bgh" onclick="S.detail=null;S.detailType=null;render()">← Voltar</button>
     </div>
   </div>
   <div class="kpis k4">
     <div class="kpi ac"><div class="kl">Projetos</div><div class="kv">${deals.length}</div></div>
-    <div class="kpi"><div class="kl">Retainer em execu├º├úo/m├¬s</div><div class="kv">${fmt(totalRet)}</div></div>
+    <div class="kpi"><div class="kl">Retainer em execução/mês</div><div class="kv">${fmt(totalRet)}</div></div>
     <div class="kpi ac2"><div class="kl">Success fee potencial</div><div class="kv">${fmt(totalSF)}</div></div>
-    <div class="kpi ac3"><div class="kl">Horas totais</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks">BIB ${bib.toFixed(1)}h ┬À NIB ${nib.toFixed(1)}h</div></div>
+    <div class="kpi ac3"><div class="kl">Horas totais</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks">BIB ${bib.toFixed(1)}h · NIB ${nib.toFixed(1)}h</div></div>
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Horas por projeto</div>
@@ -1087,7 +1087,7 @@ function renderPerfilAnalista(uid){
   </div>`;
 }
 
-// ÔòÉÔòÉÔòÉ P├üGINAS ÔòÉÔòÉÔòÉ
+// ═══ PÁGINAS ═══
 function filtrados(){let l=S.deals;if(S.filtroColab)l=l.filter(d=>d.diretor===S.filtroColab||d.gerente===S.filtroColab||d.analista===S.filtroColab);return l;}
 function ativos(l){return(l||S.deals).filter(d=>(d.status_novo||'Ativo')==='Ativo');}
 function onHold(l){return(l||S.deals).filter(d=>(d.status_novo||'Ativo')==='On Hold');}
@@ -1098,8 +1098,8 @@ function renderDash(){
   const atD=ativos(todosDeal);const ohD=onHold(todosDeal);const encD=encerrados(todosDeal);
   const maAtivos=atD.filter(d=>d.tipo!=='DCM');const dcmAtivos=atD.filter(d=>d.tipo==='DCM');
   const fl=S.seg==='ma'?maAtivos:S.seg==='dcm'?dcmAtivos:atD;
-  const ganhos=todosDeal.filter(d=>d.status_novo==='Encerrado ÔÇô Ganho');
-  const perdidos=todosDeal.filter(d=>d.status_novo==='Encerrado ÔÇô Perdido'||d.status_novo==='Encerrado ÔÇô Rescindido');
+  const ganhos=todosDeal.filter(d=>d.status_novo==='Encerrado – Ganho');
+  const perdidos=todosDeal.filter(d=>d.status_novo==='Encerrado – Perdido'||d.status_novo==='Encerrado – Rescindido');
   const encTotal=ganhos.length+perdidos.length;
   const winRate=encTotal?Math.round(ganhos.length/encTotal*100):0;
   const tDV=fl.reduce((s,d)=>s+(d.deal_value||0),0);
@@ -1107,9 +1107,9 @@ function renderDash(){
   const tSF=fl.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   const sfReal=ganhos.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   const retRecebido=S.retParcelas.filter(p=>p.status==='Recebido').reduce((s,p)=>s+(p.valor||0),0);
-  const feeMedioP=fl.length?(fl.reduce((s,d)=>s+(d.success_fee||0),0)/fl.length).toFixed(1)+'%':'ÔÇö';
-  const feeMedioR=fl.length?fmt(tSF/fl.length):'ÔÇö';
-  const analistas=S.usuarios.filter(u=>['Analista S├¬nior','Analista','Assistente','Estagi├írio','Gerente'].includes(u.cargo));
+  const feeMedioP=fl.length?(fl.reduce((s,d)=>s+(d.success_fee||0),0)/fl.length).toFixed(1)+'%':'—';
+  const feeMedioR=fl.length?fmt(tSF/fl.length):'—';
+  const analistas=S.usuarios.filter(u=>['Analista Sênior','Analista','Assistente','Estagiário','Gerente'].includes(u.cargo));
   const byA=analistas.map(u=>{const n=fl.filter(d=>d.analista===u.nome||d.gerente===u.nome||d.diretor===u.nome).length;return{nome:u.nome,n,id:u.id,cargo:u.cargo};}).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
   const maxA=Math.max(...byA.map(x=>x.n),1);
   const anoAtual=new Date().getFullYear();
@@ -1124,7 +1124,7 @@ function renderDash(){
 
   return`
   <div class="kpis k4" style="margin-bottom:10px">
-    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${atD.length} Ativos ┬À ${ohD.length} On Hold</div></div>
+    <div class="kpi ac"><div class="kl">Projetos ativos</div><div class="kv">${fl.length}</div><div class="ks">${atD.length} Ativos · ${ohD.length} On Hold</div></div>
     <div class="kpi"><div class="kl">Deal value total</div><div class="kv">${fmt(tDV)}</div><div class="ks">Pipeline ativo</div></div>
     <div class="kpi"><div class="kl">Success fee potencial</div><div class="kv">${fmt(tSF)}</div><div class="ks">Se todos fecharem</div></div>
     <div class="kpi" style="background:rgba(0,120,212,.08);border:1px solid rgba(0,120,212,.2)"><div class="kl">SF realizado</div><div class="kv" style="color:var(--blue)">${fmt(sfReal)}</div><div class="ks">${ganhos.length} deal${ganhos.length!==1?'s':''} ganho${ganhos.length!==1?'s':''}</div></div>
@@ -1132,13 +1132,13 @@ function renderDash(){
   <div class="kpis k3" style="margin-bottom:20px">
     <div class="kpi ac3"><div class="kl">Retainer recebido</div><div class="kv">${fmt(retRecebido)}</div><div class="ks">${S.retParcelas.filter(p=>p.status==='Recebido').length} parcelas</div></div>
     <div class="kpi ac2"><div class="kl">Retainer mensal (a faturar)</div><div class="kv">${fmt(tRet)}</div><div class="ks">Anualizado: ${fmt(tRet*12)}</div></div>
-    <div class="kpi" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)"><div class="kl">Fee m├®dio</div><div class="kv" style="color:var(--purple)">${feeMedioP}</div><div class="ks">Em valor: ${feeMedioR}</div></div>
+    <div class="kpi" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)"><div class="kl">Fee médio</div><div class="kv" style="color:var(--purple)">${feeMedioP}</div><div class="ks">Em valor: ${feeMedioR}</div></div>
   </div>
 
   ${metaAtual.meta_total?`<div class="card" style="margin-bottom:14px;padding:14px 18px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Meta anual ${anoAtual}</div>
-      <button class="bgh bsm" onclick="S.modal='meta';S.editForm={ano:${anoAtual},...getMeta(${anoAtual})};render()" style="font-size:9px;padding:2px 8px">ÔÜÖ Editar meta</button>
+      <button class="bgh bsm" onclick="S.modal='meta';S.editForm={ano:${anoAtual},...getMeta(${anoAtual})};render()" style="font-size:9px;padding:2px 8px">⚙ Editar meta</button>
     </div>
     <div style="margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -1182,7 +1182,7 @@ function renderDash(){
   <div style="height:14px"></div>
   <div class="g2">
     <div class="card" style="margin-bottom:0">
-      <div class="ct">Retainer recebido por m├¬s</div>
+      <div class="ct">Retainer recebido por mês</div>
       <div class="cw-lg"><canvas id="cMRR"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:0">
@@ -1193,11 +1193,11 @@ function renderDash(){
   <div style="height:14px"></div>
   <div class="g2">
     <div class="card" style="margin-bottom:0">
-      <div class="ct">Fases M&A ÔÇö pipeline</div>
+      <div class="ct">Fases M&A — pipeline</div>
       <div class="cw-lg"><canvas id="cFases"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:0">
-      <div class="ct">Fases DCM ÔÇö pipeline</div>
+      <div class="ct">Fases DCM — pipeline</div>
       <div class="cw-lg"><canvas id="cFasesDCM"></canvas></div>
     </div>
   </div>
@@ -1208,7 +1208,7 @@ function renderDash(){
       <div class="cw-lg"><canvas id="cAging"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:0">
-      <div class="ct">Distribui├º├úo por Setor</div>
+      <div class="ct">Distribuição por Setor</div>
       <div class="cw"><canvas id="cSetor"></canvas></div>
     </div>
   </div>
@@ -1221,7 +1221,7 @@ function renderDash(){
           <div class="av" style="width:30px;height:30px;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,${PAL[i%PAL.length]},${PAL[(i+1)%PAL.length]})">${ini(x.nome)}</div>
           <div style="flex:1">
             <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-              <span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${x.id}';S.detailType='analista';render()">${x.nome}</span><span style="font-size:9px;color:var(--text2);font-weight:400"> ┬À ${x.cargo||''}</span>
+              <span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${x.id}';S.detailType='analista';render()">${x.nome}</span><span style="font-size:9px;color:var(--text2);font-weight:400"> · ${x.cargo||''}</span>
               <span style="font-weight:700">${x.n} deal${x.n!==1?'s':''}</span>
             </div>
             <div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PAL[i%PAL.length]};border-radius:3px;width:${pct}%"></div></div>
@@ -1229,20 +1229,20 @@ function renderDash(){
         </div>`;}).join('')}
     </div>
     <div class="card" style="margin-bottom:0">
-      <div class="ct">­ƒÄ» Radar de Oportunidades</div>
+      <div class="ct">🎯 Radar de Oportunidades</div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">ÔÅ© On Hold ÔÇö Mandato vigente</div>
+        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⏸ On Hold — Mandato vigente</div>
         ${ohD.length===0?'<div style="font-size:11px;color:var(--text2);padding:4px 0">Nenhum projeto On Hold</div>':
         ohD.slice(0,3).map(d=>{const dias=diasMandatoCalc(d);return`<div style="padding:7px 10px;background:rgba(245,158,11,.07);border-radius:7px;cursor:pointer;border-left:3px solid var(--amber)" onclick="S.detail='${d.id}';S.detailType='deal';render()">
           <div style="font-size:11px;font-weight:600">${d.cliente}</div>
-          <div style="font-size:10px;color:var(--text2)">${dias!==null?(dias>0?dias+'d restantes no mandato':'ÔÜá Mandato vencido'):'Sem prazo definido'}</div>
+          <div style="font-size:10px;color:var(--text2)">${dias!==null?(dias>0?dias+'d restantes no mandato':'⚠ Mandato vencido'):'Sem prazo definido'}</div>
         </div>`;}).join('')}
-        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin:6px 0 2px">­ƒƒí Pr├│ximos de fechar</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin:6px 0 2px">🟡 Próximos de fechar</div>
         ${(()=>{const lista=fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const t=d.tipo==='DCM'?FASES_DCM.length:FASES.length;return n/t>=0.7;});
           return lista.length===0?'<div style="font-size:11px;color:var(--text2);padding:4px 0">Nenhum em fase final</div>':
           lista.slice(0,3).map(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const t=d.tipo==='DCM'?FASES_DCM.length:FASES.length;return`<div style="padding:7px 10px;background:rgba(34,197,94,.07);border-radius:7px;cursor:pointer;border-left:3px solid var(--green)" onclick="S.detail='${d.id}';S.detailType='deal';render()">
             <div style="font-size:11px;font-weight:600">${d.cliente}</div>
-            <div style="font-size:10px;color:var(--text2)">${Math.round(n/t*100)}% ┬À SF: ${fmt((d.deal_value||0)*((d.success_fee||0)/100))}</div>
+            <div style="font-size:10px;color:var(--text2)">${Math.round(n/t*100)}% · SF: ${fmt((d.deal_value||0)*((d.success_fee||0)/100))}</div>
           </div>`;}).join('');})()}
       </div>
     </div>
@@ -1252,28 +1252,28 @@ function renderDash(){
 function renderPipeline(){
   const at=ativos(filtrados());const maDeals=at.filter(d=>d.tipo!=='DCM');const dcmDeals=at.filter(d=>d.tipo==='DCM');
   const tDV=at.reduce((s,d)=>s+(d.deal_value||0),0);const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
-  const fases=['Prepara├º├úo','Abordagem','Negocia├º├úo','Due Diligence','Contratos','Closing'];
-  const fasesDCM=['Prospec├º├úo','Mandato','Estrutura├º├úo','Reg. CVM','Roadshow','Precif.','Distribui├º├úo','Liquida├º├úo'];
+  const fases=['Preparação','Abordagem','Negociação','Due Diligence','Contratos','Closing'];
+  const fasesDCM=['Prospecção','Mandato','Estruturação','Reg. CVM','Roadshow','Precif.','Distribuição','Liquidação'];
   const mapa={};fases.forEach(f=>mapa[f]=[]);const mapaDCM={};fasesDCM.forEach(f=>mapaDCM[f]=[]);
   maDeals.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;let f=fases[0];if(n>=10)f=fases[5];else if(n>=8)f=fases[4];else if(n>=6)f=fases[3];else if(n>=4)f=fases[2];else if(n>=2)f=fases[1];mapa[f].push(d);});
   dcmDeals.forEach(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const idx=Math.min(n,fasesDCM.length-1);mapaDCM[fasesDCM[idx]].push(d);});
   const pCard=(d,cor)=>`<div class="pipe-card" style="border-left-color:${cor}" onclick="S.detail='${d.id}';S.detailType='deal';render()">
     <div style="font-size:12px;font-weight:600;margin-bottom:3px">${d.cliente}</div>
     <div style="font-size:10px;color:var(--text2)">${fmt(d.deal_value||0)}</div>
-    <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${bdg(d.prob||'ÔÇö',PC[d.prob]||'#888')}</div>
+    <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${bdg(d.prob||'—',PC[d.prob]||'#888')}</div>
   </div>`;
   return`
   <div class="kpis k4" style="margin-bottom:20px">
-    <div class="kpi ac"><div class="kl">Deals ativos</div><div class="kv">${at.length}</div><div class="ks">${maDeals.length} M&A ┬À ${dcmDeals.length} DCM</div></div>
+    <div class="kpi ac"><div class="kl">Deals ativos</div><div class="kv">${at.length}</div><div class="ks">${maDeals.length} M&A · ${dcmDeals.length} DCM</div></div>
     <div class="kpi"><div class="kl">Deal value total</div><div class="kv">${fmt(tDV)}</div></div>
     <div class="kpi"><div class="kl">Success fee potencial</div><div class="kv">${fmt(tSF)}</div></div>
     <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Alta probabilidade</div><div class="kv" style="color:var(--green)">${at.filter(d=>d.prob==='Alta').length}</div></div>
   </div>
   <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px">
-    ${fases.map(f=>`<div class="pipe-col"><div class="pipe-header">${f} <span style="font-size:9px;opacity:.6">${mapa[f].length}</span></div><div class="pipe-body">${mapa[f].length===0?'<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">ÔÇö</div>':mapa[f].map(d=>pCard(d,'var(--blue)')).join('')}</div></div>`).join('')}
+    ${fases.map(f=>`<div class="pipe-col"><div class="pipe-header">${f} <span style="font-size:9px;opacity:.6">${mapa[f].length}</span></div><div class="pipe-body">${mapa[f].length===0?'<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>':mapa[f].map(d=>pCard(d,'var(--blue)')).join('')}</div></div>`).join('')}
   </div>
   <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
-    ${fasesDCM.map(f=>`<div class="pipe-col"><div class="pipe-header" style="border-bottom-color:var(--cyan);color:var(--cyan)">${f} <span style="font-size:9px;opacity:.6">${mapaDCM[f].length}</span></div><div class="pipe-body">${mapaDCM[f].length===0?'<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">ÔÇö</div>':mapaDCM[f].map(d=>pCard(d,'var(--cyan)')).join('')}</div></div>`).join('')}
+    ${fasesDCM.map(f=>`<div class="pipe-col"><div class="pipe-header" style="border-bottom-color:var(--cyan);color:var(--cyan)">${f} <span style="font-size:9px;opacity:.6">${mapaDCM[f].length}</span></div><div class="pipe-body">${mapaDCM[f].length===0?'<div style="font-size:11px;color:var(--text2);text-align:center;padding:12px">—</div>':mapaDCM[f].map(d=>pCard(d,'var(--cyan)')).join('')}</div></div>`).join('')}
   </div>`;
 }
 
@@ -1289,9 +1289,9 @@ function renderProjetos(){
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     ${enc?`<div class="seg">
       <button class="seg-btn ${!S.filtroResultado?'active':''}" onclick="S.filtroResultado='';render()">Todos</button>
-      <button class="seg-btn ${S.filtroResultado==='Encerrado ÔÇô Ganho'?'active':''}" onclick="S.filtroResultado='Encerrado ÔÇô Ganho';render()">­ƒÅå Ganhos</button>
-      <button class="seg-btn ${S.filtroResultado==='Encerrado ÔÇô Perdido'?'active':''}" onclick="S.filtroResultado='Encerrado ÔÇô Perdido';render()">Ô£ù Perdidos</button>
-      <button class="seg-btn ${S.filtroResultado==='Encerrado ÔÇô Rescindido'?'active':''}" onclick="S.filtroResultado='Encerrado ÔÇô Rescindido';render()">Ôèÿ Rescindidos</button>
+      <button class="seg-btn ${S.filtroResultado==='Encerrado – Ganho'?'active':''}" onclick="S.filtroResultado='Encerrado – Ganho';render()">🏆 Ganhos</button>
+      <button class="seg-btn ${S.filtroResultado==='Encerrado – Perdido'?'active':''}" onclick="S.filtroResultado='Encerrado – Perdido';render()">✗ Perdidos</button>
+      <button class="seg-btn ${S.filtroResultado==='Encerrado – Rescindido'?'active':''}" onclick="S.filtroResultado='Encerrado – Rescindido';render()">⊘ Rescindidos</button>
     </div>`:'<div></div>'}
     ${!enc&&!isOH?`<button class="btn" onclick="openAddDeal()">+ Novo projeto</button>`:''}
   </div>
@@ -1305,17 +1305,17 @@ function renderProjetos(){
     <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Mandato</th>${isOH?'<th>Mandato restante</th>':''}${enc?'<th>Resultado</th>':'<th>Status</th>'}<th>Score</th><th>Prob.</th><th>Polo</th><th>Deal value</th><th>Fee</th><th>Retainer</th><th>Progresso</th><th>Equipe</th><th></th></tr></thead>
     <tbody>${list.map(d=>{const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const fasesTotal=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(feitas/fasesTotal*100);const dias=isOH?diasMandatoCalc(d):null;return`<tr style="cursor:pointer" onclick="S.detail='${d.id}';S.detailType='deal';render()">
       <td><div style="font-weight:600;color:var(--blue)">${d.cliente}</div><div style="font-size:10px;color:var(--text2)">${d.setor||''}</div></td>
-      <td style="color:var(--text2)">${d.projeto||'ÔÇö'}</td>
+      <td style="color:var(--text2)">${d.projeto||'—'}</td>
       <td>${bdg(d.mandato,MC[d.mandato]||'#888')}</td>
       ${isOH?`<td><span style="font-weight:700;color:${dias===null?'var(--text2)':dias<=0?'var(--red)':dias<=30?'var(--amber)':'var(--green)'}">${dias===null?'Sem prazo':dias<=0?'Vencido':dias+'d'}</span></td>`:''}
       ${enc?`<td>${statusNovoBdg(d.status_novo)}</td>`:`<td>${statusNovoBdg(d.status_novo||'Ativo')}</td>`}
       <td><span style="font-size:12px;font-weight:700;color:${dealScore(d).cor}">${dealScore(d).score}</span></td>
-      <td>${bdg(d.prob||'ÔÇö',PC[d.prob]||'#888')}</td><td>${pt(d.polo)}</td>
+      <td>${bdg(d.prob||'—',PC[d.prob]||'#888')}</td><td>${pt(d.polo)}</td>
       <td style="font-weight:600">${fmt(d.deal_value)}</td>
       <td style="color:var(--purple);font-weight:600">${d.success_fee||0}%</td>
-      <td>${fmt(d.retainer_f2)}/m├¬s</td>
+      <td>${fmt(d.retainer_f2)}/mês</td>
       <td><div style="min-width:80px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">${pct}%</div><div style="height:4px;background:var(--bg3);border-radius:2px"><div style="height:4px;background:var(--blue);border-radius:2px;width:${pct}%"></div></div></div></td>
-      <td style="font-size:11px;color:${d.diretor?'var(--text)':'var(--red)'}">${d.diretor||'ÔÇö'}</td>
+      <td style="font-size:11px;color:${d.diretor?'var(--text)':'var(--red)'}">${d.diretor||'—'}</td>
       <td style="white-space:nowrap"><button class="btn bsm" onclick="event.stopPropagation();S.detail='${d.id}';S.detailType='deal';render()">Ver</button></td>
     </tr>`;}).join('')}</tbody></table>`}
   </div></div>`;
@@ -1323,17 +1323,17 @@ function renderProjetos(){
 
 function renderEquipe(){
   return`
-  <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddUser()">+ Novo usu├írio</button></div>
-  <div class="card">${S.usuarios.length===0?`<div class="empty">Nenhum usu├írio.</div>`:`
-  <table><thead><tr><th>Nome</th><th>Cargo</th><th>Polo</th><th>├ürea</th><th>Gestor</th><th>Projetos</th><th>Horas</th><th>Status</th><th></th></tr></thead>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddUser()">+ Novo usuário</button></div>
+  <div class="card">${S.usuarios.length===0?`<div class="empty">Nenhum usuário.</div>`:`
+  <table><thead><tr><th>Nome</th><th>Cargo</th><th>Polo</th><th>Área</th><th>Gestor</th><th>Projetos</th><th>Horas</th><th>Status</th><th></th></tr></thead>
   <tbody>${S.usuarios.map(u=>{
     const proj=S.deals.filter(d=>d.diretor===u.nome||d.gerente===u.nome||d.analista===u.nome).length;
     const horasU=S.horas.filter(h=>h.usuario_id===u.id).reduce((s,h)=>s+(h.horas||0),0);
     return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:28px;height:28px;font-size:10px;cursor:pointer" onclick="S.detail='${u.id}';S.detailType='analista';render()">${ini(u.nome)}</div><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${u.id}';S.detailType='analista';render()">${u.nome}</span></div></td>
-    <td style="color:var(--text2)">${u.cargo}</td><td>${pt(u.polo)}</td><td style="color:var(--text2)">${u.area||'ÔÇö'}</td><td style="color:var(--text2)">${u.gestor||'ÔÇö'}</td>
+    <td style="color:var(--text2)">${u.cargo}</td><td>${pt(u.polo)}</td><td style="color:var(--text2)">${u.area||'—'}</td><td style="color:var(--text2)">${u.gestor||'—'}</td>
     <td style="font-weight:600">${proj}</td><td><span class="bib-tag">${horasU.toFixed(1)}h</span></td>
     <td>${bdg(u.ativo!==false?'Ativo':'Inativo',u.ativo!==false?'#22C55E':'#EF4444')}</td>
-    <td style="white-space:nowrap"><button class="bgh bsm" onclick="openEditUser('${u.id}')" style="margin-right:4px">Editar</button><button class="bdg bsm" onclick="hDelUser('${u.id}')">Ô£ò</button></td></tr>`;}).join('')}
+    <td style="white-space:nowrap"><button class="bgh bsm" onclick="openEditUser('${u.id}')" style="margin-right:4px">Editar</button><button class="bdg bsm" onclick="hDelUser('${u.id}')">✕</button></td></tr>`;}).join('')}
   </tbody></table>`}</div>`;
 }
 
@@ -1343,7 +1343,7 @@ function renderReceita(){
   if(S.filtroColabReceita){const dc=S.deals.filter(d=>d.diretor===S.filtroColabReceita||d.gerente===S.filtroColabReceita||d.analista===S.filtroColabReceita).map(d=>d.id);recFilt=recFilt.filter(r=>dc.includes(r.deal_id));}
   if(S.filtroTipo){const dc=S.deals.filter(d=>S.filtroTipo==='MA'?d.tipo!=='DCM':d.tipo==='DCM').map(d=>d.id);recFilt=recFilt.filter(r=>dc.includes(r.deal_id));}
 
-  const at=ativos();const ganhos=S.deals.filter(d=>d.status_novo==='Encerrado ÔÇô Ganho');
+  const at=ativos();const ganhos=S.deals.filter(d=>d.status_novo==='Encerrado – Ganho');
   const tRet=at.reduce((s,d)=>s+(d.retainer_f2||0),0);
   const tSF=at.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   const sfGanhos=ganhos.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
@@ -1353,8 +1353,8 @@ function renderReceita(){
   const retTotal=retRecebido+retPendente+retAtrasado;
   const retProg=retTotal?Math.round(retRecebido/retTotal*100):0;
   const nAtrasadas=S.retParcelas.filter(p=>p.status==='Atrasado').length;
-  const feeMedio=at.length?(at.reduce((s,d)=>s+(d.success_fee||0),0)/at.length).toFixed(1)+'%':'ÔÇö';
-  const ticketMedio=at.length?fmt(tSF/at.length):'ÔÇö';
+  const feeMedio=at.length?(at.reduce((s,d)=>s+(d.success_fee||0),0)/at.length).toFixed(1)+'%':'—';
+  const ticketMedio=at.length?fmt(tSF/at.length):'—';
 
   // META
   const anoAtual=new Date().getFullYear();
@@ -1364,7 +1364,7 @@ function renderReceita(){
   const pctMeta=metaTotal?Math.min(Math.round(receitaTotal/metaTotal*100),999):0;
   const gap=Math.max(0,metaTotal-receitaTotal);
 
-  // FUNIL DE CONVERS├âO
+  // FUNIL DE CONVERSÃO
   const totalDeals=S.deals.length;
   const ativosN=ativos().length;
   const ohN=onHold().length;
@@ -1374,19 +1374,19 @@ function renderReceita(){
   return`
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
     <select class="fsel" onchange="S.filtroColabReceita=this.value;render()"><option value="">Todos os analistas</option>${S.usuarios.map(u=>`<option value="${u.nome}"${S.filtroColabReceita===u.nome?' selected':''}>${u.nome}</option>`).join('')}</select>
-    <select class="fsel" onchange="S.filtroTipo=this.value;render()"><option value="">M&A + DCM</option><option value="MA"${S.filtroTipo==='MA'?' selected':''}>S├│ M&A</option><option value="DCM"${S.filtroTipo==='DCM'?' selected':''}>S├│ DCM</option></select>
+    <select class="fsel" onchange="S.filtroTipo=this.value;render()"><option value="">M&A + DCM</option><option value="MA"${S.filtroTipo==='MA'?' selected':''}>Só M&A</option><option value="DCM"${S.filtroTipo==='DCM'?' selected':''}>Só DCM</option></select>
   </div>
 
   <div class="kpis k4" style="margin-bottom:10px">
-    <div class="kpi ac3"><div class="kl">Receita total realizada</div><div class="kv">${fmt(receitaTotal)}</div><div class="ks">Ret: ${fmt(retRecebido)} ┬À SF: ${fmt(sfGanhos)}</div></div>
+    <div class="kpi ac3"><div class="kl">Receita total realizada</div><div class="kv">${fmt(receitaTotal)}</div><div class="ks">Ret: ${fmt(retRecebido)} · SF: ${fmt(sfGanhos)}</div></div>
     <div class="kpi ac"><div class="kl">Retainer mensal (a faturar)</div><div class="kv">${fmt(tRet)}</div><div class="ks">Anualizado: ${fmt(tRet*12)}</div></div>
-    <div class="kpi" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)"><div class="kl">Fee m├®dio</div><div class="kv" style="color:var(--purple)">${feeMedio}</div><div class="ks">Ticket m├®dio: ${ticketMedio}</div></div>
+    <div class="kpi" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)"><div class="kl">Fee médio</div><div class="kv" style="color:var(--purple)">${feeMedio}</div><div class="ks">Ticket médio: ${ticketMedio}</div></div>
     <div class="kpi ac2"><div class="kl">SF realizado</div><div class="kv">${fmt(sfGanhos)}</div><div class="ks">${ganhosN} deal${ganhosN!==1?'s':''} ganho${ganhosN!==1?'s':''}</div></div>
   </div>
 
   ${metaTotal?`<div class="card" style="margin-bottom:14px;padding:14px 18px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Meta ${anoAtual} ÔÇö Or├ºado vs Realizado</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Meta ${anoAtual} — Orçado vs Realizado</div>
       <div style="display:flex;gap:16px;font-size:11px">
         <span style="color:var(--text2)">Meta: <strong>${fmt(metaTotal)}</strong></span>
         <span style="color:var(--green)"><strong>${fmt(receitaTotal)}</strong> (${pctMeta}%)</span>
@@ -1397,14 +1397,14 @@ function renderReceita(){
       <div style="height:10px;background:linear-gradient(90deg,var(--green),#16A34A);border-radius:5px;width:${Math.min(pctMeta,100)}%"></div>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-top:6px">
-      <button class="bgh bsm" onclick="S.modal='meta';S.editForm={ano:${anoAtual},...getMeta(${anoAtual})};render()" style="font-size:9px">ÔÜÖ Editar meta</button>
+      <button class="bgh bsm" onclick="S.modal='meta';S.editForm={ano:${anoAtual},...getMeta(${anoAtual})};render()" style="font-size:9px">⚙ Editar meta</button>
     </div>
   </div>`:''}
 
   ${retTotal?`<div class="card" style="margin-bottom:14px;padding:14px 18px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Retainer ÔÇö Recebido vs A receber</div>
-      <div style="font-size:12px;font-weight:700;color:var(--green)">${fmt(retRecebido)} <span style="color:var(--text2);font-weight:400">de</span> ${fmt(retTotal)} ┬À ${retProg}%</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px">Retainer — Recebido vs A receber</div>
+      <div style="font-size:12px;font-weight:700;color:var(--green)">${fmt(retRecebido)} <span style="color:var(--text2);font-weight:400">de</span> ${fmt(retTotal)} · ${retProg}%</div>
     </div>
     <div style="height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;display:flex">
       <div style="height:10px;background:var(--green);width:${retProg}%"></div>
@@ -1420,7 +1420,7 @@ function renderReceita(){
 
   <div class="g2">
     <div class="card">
-      <div class="ct">Funil de Convers├úo</div>
+      <div class="ct">Funil de Conversão</div>
       <div class="funnel-wrap">
         ${[
           {label:'Total de deals',n:totalDeals,cor:'#0078D4',w:100},
@@ -1451,18 +1451,18 @@ function renderReceita(){
         <button class="btn bsm" onclick="openAddRecReal()">+ Registrar</button>
       </div>
       ${recFilt.length===0?`<div class="empty" style="padding:20px">Nenhuma receita registrada.</div>`:`
-      <div style="overflow-x:auto"><table><thead><tr><th>Projeto</th><th>Tipo</th><th>Valor</th><th>Per├¡odo</th><th>Data pgto</th><th></th></tr></thead>
+      <div style="overflow-x:auto"><table><thead><tr><th>Projeto</th><th>Tipo</th><th>Valor</th><th>Período</th><th>Data pgto</th><th></th></tr></thead>
       <tbody>${recFilt.slice(0,10).map(r=>{const d=S.deals.find(x=>x.id===r.deal_id);return`<tr style="cursor:pointer" onclick="S.detail='${r.deal_id}';S.detailType='deal';render()">
-        <td style="font-weight:600;color:var(--blue)">${d?d.cliente:'ÔÇö'}</td>
+        <td style="font-weight:600;color:var(--blue)">${d?d.cliente:'—'}</td>
         <td>${bdg(r.tipo==='retainer'?'Retainer':'Success Fee',r.tipo==='retainer'?'#0078D4':'#22C55E')}</td>
         <td style="font-weight:700;color:var(--green)">${fmt(r.valor)}</td>
-        <td style="color:var(--text2)">${r.periodo||'ÔÇö'}</td>
-        <td style="color:var(--text2)">${r.data_pagamento||'ÔÇö'}</td>
-        <td><button class="bdg bsm" onclick="event.stopPropagation();delRecReal('${r.id}')">Ô£ò</button></td>
+        <td style="color:var(--text2)">${r.periodo||'—'}</td>
+        <td style="color:var(--text2)">${r.data_pagamento||'—'}</td>
+        <td><button class="bdg bsm" onclick="event.stopPropagation();delRecReal('${r.id}')">✕</button></td>
       </tr>`;}).join('')}</tbody></table></div>`}
     </div>
     <div class="card">
-      <div class="ct">Proje├º├úo por projeto (ativos)</div>
+      <div class="ct">Projeção por projeto (ativos)</div>
       ${at.length===0?`<div class="empty">Sem projetos ativos</div>`:
       [...at].sort((a,b)=>(b.deal_value||0)*(b.success_fee||0)/100-(a.deal_value||0)*(a.success_fee||0)/100).slice(0,8).map((d,i,arr)=>{
         const sf=(d.deal_value||0)*((d.success_fee||0)/100);
@@ -1470,11 +1470,11 @@ function renderReceita(){
         return`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:${i<arr.length-1?'1px solid var(--border)':'none'}">
           <div>
             <div style="font-size:12px;font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';render()">${d.cliente}</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:2px">${bdg(d.tipo,d.tipo==='DCM'?'#00B4D8':'#0078D4')} ┬À Ret: ${fmt(d.retainer_f2)}/m├¬s ┬À ${d.success_fee||0}% SF</div>
+            <div style="font-size:10px;color:var(--text2);margin-top:2px">${bdg(d.tipo,d.tipo==='DCM'?'#00B4D8':'#0078D4')} · Ret: ${fmt(d.retainer_f2)}/mês · ${d.success_fee||0}% SF</div>
           </div>
           <div style="text-align:right">
             <div style="font-size:13px;font-weight:700;color:var(--cyan)">${fmt(sf)}</div>
-            <div style="font-size:10px;font-weight:700;color:${cor}">ÔùÅ ${score}</div>
+            <div style="font-size:10px;font-weight:700;color:${cor}">● ${score}</div>
           </div>
         </div>`;}).join('')}
     </div>
@@ -1488,11 +1488,11 @@ function renderHoras(){
   const bU={};S.horas.forEach(h=>{if(!bU[h.usuario_id])bU[h.usuario_id]={bib:0,nib:0};if(h.tipo_hora==='BIB')bU[h.usuario_id].bib+=h.horas||0;else bU[h.usuario_id].nib+=h.horas||0;});
   const bD={};S.horas.forEach(h=>{if(!bD[h.deal_id])bD[h.deal_id]={bib:0,nib:0};if(h.tipo_hora==='BIB')bD[h.deal_id].bib+=h.horas||0;else bD[h.deal_id].nib+=h.horas||0;});
   return`
-  <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddHora()">+ Lan├ºar horas</button></div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddHora()">+ Lançar horas</button></div>
   <div class="kpis k3">
     <div class="kpi ac"><div class="kl">Total de horas</div><div class="kv">${tH.toFixed(1)}h</div></div>
-    <div class="kpi ac3"><div class="kl">BIB ÔÇö Billable</div><div class="kv">${bib.toFixed(1)}h</div><div class="ks">${tH?Math.round(bib/tH*100):0}%</div></div>
-    <div class="kpi ac4"><div class="kl">NIB ÔÇö Non-billable</div><div class="kv">${nib.toFixed(1)}h</div><div class="ks">${tH?Math.round(nib/tH*100):0}%</div></div>
+    <div class="kpi ac3"><div class="kl">BIB — Billable</div><div class="kv">${bib.toFixed(1)}h</div><div class="ks">${tH?Math.round(bib/tH*100):0}%</div></div>
+    <div class="kpi ac4"><div class="kl">NIB — Non-billable</div><div class="kv">${nib.toFixed(1)}h</div><div class="ks">${tH?Math.round(nib/tH*100):0}%</div></div>
   </div>
   <div class="g2">
     <div class="card"><div class="ct">Horas por colaborador</div>
@@ -1502,46 +1502,46 @@ function renderHoras(){
       ${Object.entries(bD).map(([did,h])=>{const d=S.deals.find(x=>x.id===did);const tot=(h.bib||0)+(h.nib||0);const bibP=tot?Math.round(h.bib/tot*100):0;return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${d?d.cliente:did}</span><span><span class="bib-tag">${(h.bib||0).toFixed(1)}h</span> <span class="nib-tag">${(h.nib||0).toFixed(1)}h</span></span></div><div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;display:flex"><div style="height:8px;background:var(--green);width:${bibP}%"></div><div style="height:8px;background:var(--amber);width:${100-bibP}%"></div></div></div>`;}).join('')||`<div class="empty">Sem horas</div>`}
     </div>
   </div>
-  <div class="card"><div class="ct">Lan├ºamentos recentes</div>${S.horas.length===0?`<div class="empty">Nenhuma hora.</div>`:`
-  <table><thead><tr><th>Colaborador</th><th>Projeto</th><th>Tipo</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descri├º├úo</th><th></th></tr></thead>
-  <tbody>${S.horas.slice(0,20).map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);const d=S.deals.find(x=>x.id===h.deal_id);return`<tr><td style="font-weight:600">${u?u.nome:'ÔÇö'}</td><td style="color:var(--text2)">${d?d.cliente:'ÔÇö'}</td><td>${h.tipo_hora==='BIB'?'<span class="bib-tag">BIB</span>':'<span class="nib-tag">NIB</span>'}</td><td style="color:var(--text2)">${h.fase||'ÔÇö'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'ÔÇö'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">Ô£ò</button></td></tr>`;}).join('')}</tbody></table>`}</div>`;
+  <div class="card"><div class="ct">Lançamentos recentes</div>${S.horas.length===0?`<div class="empty">Nenhuma hora.</div>`:`
+  <table><thead><tr><th>Colaborador</th><th>Projeto</th><th>Tipo</th><th>Fase</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead>
+  <tbody>${S.horas.slice(0,20).map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);const d=S.deals.find(x=>x.id===h.deal_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td style="color:var(--text2)">${d?d.cliente:'—'}</td><td>${h.tipo_hora==='BIB'?'<span class="bib-tag">BIB</span>':'<span class="nib-tag">NIB</span>'}</td><td style="color:var(--text2)">${h.fase||'—'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}</div>`;
 }
 
 function renderTarefas(){
   const cu=S.currentUser;const minhas=S.tarefas.filter(t=>t.responsavel_id===cu?.id);
-  const abertas=minhas.filter(t=>t.status!=='Conclu├¡da');const conc=minhas.filter(t=>t.status==='Conclu├¡da');
+  const abertas=minhas.filter(t=>t.status!=='Concluída');const conc=minhas.filter(t=>t.status==='Concluída');
   const hoje=new Date();hoje.setHours(0,0,0,0);
   const vencidas=abertas.filter(t=>t.prazo&&new Date(t.prazo)<hoje);
   const corP={'Alta':'var(--red)','Normal':'var(--blue)','Baixa':'var(--green)'};
-  const card=t=>{const d=S.deals.find(x=>x.id===t.deal_id);const venc=t.prazo&&new Date(t.prazo)<hoje&&t.status!=='Conclu├¡da';return`<div class="tarefa-card ${t.prioridade||'Normal'}">
+  const card=t=>{const d=S.deals.find(x=>x.id===t.deal_id);const venc=t.prazo&&new Date(t.prazo)<hoje&&t.status!=='Concluída';return`<div class="tarefa-card ${t.prioridade||'Normal'}">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
       <div style="flex:1">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <input type="checkbox" ${t.status==='Conclu├¡da'?'checked':''} onchange="toggleTarefa('${t.id}')" style="cursor:pointer;width:14px;height:14px"/>
-          <span style="font-size:12px;font-weight:600;text-decoration:${t.status==='Conclu├¡da'?'line-through':'none'}">${t.titulo}</span>
+          <input type="checkbox" ${t.status==='Concluída'?'checked':''} onchange="toggleTarefa('${t.id}')" style="cursor:pointer;width:14px;height:14px"/>
+          <span style="font-size:12px;font-weight:600;text-decoration:${t.status==='Concluída'?'line-through':'none'}">${t.titulo}</span>
           <span style="font-size:10px;font-weight:700;color:${corP[t.prioridade||'Normal']}">${t.prioridade}</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          ${d?`<span style="font-size:10px;color:var(--text2)">­ƒôü ${d.cliente}</span>`:''}
-          ${t.prazo?`<span style="font-size:10px;color:${venc?'var(--red)':'var(--text2)'}">­ƒôà ${t.prazo}${venc?' ÔÜá':''}</span>`:''}
+          ${d?`<span style="font-size:10px;color:var(--text2)">📁 ${d.cliente}</span>`:''}
+          ${t.prazo?`<span style="font-size:10px;color:${venc?'var(--red)':'var(--text2)'}">📅 ${t.prazo}${venc?' ⚠':''}</span>`:''}
         </div>
       </div>
-      <div style="display:flex;gap:4px"><button class="bgh bsm" onclick="openEditTarefa('${t.id}')">Editar</button><button class="bdg bsm" onclick="hDelTarefa('${t.id}')">Ô£ò</button></div>
+      <div style="display:flex;gap:4px"><button class="bgh bsm" onclick="openEditTarefa('${t.id}')">Editar</button><button class="bdg bsm" onclick="hDelTarefa('${t.id}')">✕</button></div>
     </div>
   </div>`;};
   return`
   <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddTarefa()">+ Nova tarefa</button></div>
   <div class="kpis k3">
-    <div class="kpi ac"><div class="kl">Minhas tarefas</div><div class="kv">${abertas.length}</div><div class="ks">${conc.length} conclu├¡das</div></div>
+    <div class="kpi ac"><div class="kl">Minhas tarefas</div><div class="kv">${abertas.length}</div><div class="ks">${conc.length} concluídas</div></div>
     <div class="kpi"><div class="kl" style="color:var(--red)">Vencidas</div><div class="kv" style="color:${vencidas.length?'var(--red)':'var(--text)'}">${vencidas.length}</div></div>
     <div class="kpi"><div class="kl">Total</div><div class="kv">${minhas.length}</div></div>
   </div>
-  ${vencidas.length?`<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px;margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">ÔÜá ${vencidas.length} vencida${vencidas.length!==1?'s':''}</div>${vencidas.map(card).join('')}</div>`:''}
-  <div class="card"><div class="ct">Tarefas abertas</div>${abertas.length===0?`<div class="empty">Nenhuma tarefa ­ƒÄë</div>`:abertas.filter(t=>!vencidas.find(v=>v.id===t.id)).map(card).join('')}</div>
-  ${conc.length?`<div class="card"><div class="ct">Conclu├¡das</div>${conc.slice(0,10).map(card).join('')}</div>`:''} `;
+  ${vencidas.length?`<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px;margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">⚠ ${vencidas.length} vencida${vencidas.length!==1?'s':''}</div>${vencidas.map(card).join('')}</div>`:''}
+  <div class="card"><div class="ct">Tarefas abertas</div>${abertas.length===0?`<div class="empty">Nenhuma tarefa 🎉</div>`:abertas.filter(t=>!vencidas.find(v=>v.id===t.id)).map(card).join('')}</div>
+  ${conc.length?`<div class="card"><div class="ct">Concluídas</div>${conc.slice(0,10).map(card).join('')}</div>`:''} `;
 }
 
-// ÔòÉÔòÉÔòÉ CHARTS ÔòÉÔòÉÔòÉ
+// ═══ CHARTS ═══
 function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch{}});S.charts={};}
 function mkChart(id,cfg){const el=document.getElementById(id);if(!el)return;try{S.charts[id]=new Chart(el,cfg);}catch{}}
 function initCharts(){
@@ -1563,7 +1563,7 @@ function initCharts(){
     if((ativosN||onHoldN)&&document.getElementById('cS'))
       mkChart('cS',{type:'doughnut',data:{labels:['Ativo','On Hold'],datasets:[{data:[ativosN,onHoldN],backgroundColor:['#22C55E','#F59E0B'],borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} projeto${c.raw!==1?'s':''}`}}},responsive:true,maintainAspectRatio:false}});
 
-    const f1N=['Kickoff','An├ílise','Valuation','Materiais','Buyers','Go-to-mkt'];
+    const f1N=['Kickoff','Análise','Valuation','Materiais','Buyers','Go-to-mkt'];
     const f2N=['IO/NBO','Negoc.','LOI/MOU','Due Dilig.','Contratos','Closing'];
     const maN=[...f1N,...f2N];
     const maC=[...f1N.map((_,i)=>flMA.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===i).length),...f2N.map((_,i)=>flMA.filter(d=>Object.values(d.etapas||{}).filter(v=>v==='done').length===6+i).length)];
@@ -1586,7 +1586,7 @@ function initCharts(){
       } else {
         const mp=getMeses().slice(0,6).reverse();const pj=ativos(S.deals).reduce((s,d)=>s+(d.retainer_f2||0),0);
         mkChart('cMRR',{type:'bar',data:{labels:mp,datasets:[
-          {label:'Proje├º├úo',data:mp.map(()=>pj),backgroundColor:'rgba(0,120,212,.5)',borderRadius:5,borderWidth:0},
+          {label:'Projeção',data:mp.map(()=>pj),backgroundColor:'rgba(0,120,212,.5)',borderRadius:5,borderWidth:0},
           {label:'Meta mensal',data:mp.map(()=>metaMensalRet),type:'line',borderColor:'#EF4444',borderDash:[6,3],borderWidth:2,pointRadius:0,fill:false}
         ]},options:{plugins:{legend:{labels:lbl}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid}},responsive:true,maintainAspectRatio:false}});
       }
@@ -1612,9 +1612,9 @@ function initCharts(){
       mkChart('cAging',{type:'bar',data:{labels:agingBands,datasets:[{data:agingC,backgroundColor:['#22C55E','#84CC16','#F59E0B','#F97316','#EF4444'],borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' deal'+(c.raw!==1?'s':'')}}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,font:{size:10}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
     }
 
-    // Distribui├º├úo por Setor
+    // Distribuição por Setor
     if(document.getElementById('cSetor')){
-      const bySetor={};fl.forEach(d=>{const s=d.setor||'N├úo informado';bySetor[s]=(bySetor[s]||0)+1;});
+      const bySetor={};fl.forEach(d=>{const s=d.setor||'Não informado';bySetor[s]=(bySetor[s]||0)+1;});
       if(Object.keys(bySetor).length)
         mkChart('cSetor',{type:'doughnut',data:{labels:Object.keys(bySetor),datasets:[{data:Object.values(bySetor),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:lbl},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} deal${c.raw!==1?'s':''}`}}},responsive:true,maintainAspectRatio:false}});
     }
@@ -1628,7 +1628,7 @@ function initCharts(){
   }
 }
 
-// ÔòÉÔòÉÔòÉ RENDER ÔòÉÔòÉÔòÉ
+// ═══ RENDER ═══
 function render(){
   const app=document.getElementById('app');
   if(!S.loggedIn){
@@ -1639,16 +1639,16 @@ function render(){
         <div style="font-size:11px;color:var(--text2);margin-top:4px;letter-spacing:.5px">Investment Banking Platform</div>
       </div>
       <div class="lf"><label>E-mail</label><input type="email" value="${S.loginEmail}" oninput="S.loginEmail=this.value" placeholder="seu@apexpartners.com.br" onkeydown="if(event.key==='Enter')tentarLogin()"/></div>
-      <div class="lf"><label>Senha</label><input type="password" value="${S.loginSenha}" oninput="S.loginSenha=this.value" placeholder="ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó" onkeydown="if(event.key==='Enter')tentarLogin()"/></div>
+      <div class="lf"><label>Senha</label><input type="password" value="${S.loginSenha}" oninput="S.loginSenha=this.value" placeholder="••••••••" onkeydown="if(event.key==='Enter')tentarLogin()"/></div>
       <button class="login-btn" onclick="tentarLogin()">Entrar</button>
       ${S.loginErr?`<div class="login-err">${S.loginErr}</div>`:''}
     </div></div>`;return;
   }
-  const syncTime=S.lastSync?S.lastSync.toLocaleTimeString('pt-BR'):'ÔÇö';const u=S.currentUser;
+  const syncTime=S.lastSync?S.lastSync.toLocaleTimeString('pt-BR'):'—';const u=S.currentUser;
   let content='';
   if(S.loading){content=`<div style="display:flex;align-items:center;justify-content:center;padding:80px;gap:12px;color:var(--text2)"><div class="spinner"></div>Carregando...</div>`;}
   else if(S.detail&&S.detailType==='analista'){content=`<div class="topbar"><div><div class="page-title">Perfil do colaborador</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div></div>${renderPerfilAnalista(S.detail)}`;}
-  else if(S.detail&&S.detailType==='deal'){const d=S.deals.find(x=>x.id===S.detail);content=`<div class="topbar"><div><div class="page-title">Detalhes do projeto</div><div class="page-sub">${d?.cliente||''}</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div></div>${d?renderDetalhe(d):`<div class="empty">N├úo encontrado.</div>`}`;}
+  else if(S.detail&&S.detailType==='deal'){const d=S.deals.find(x=>x.id===S.detail);content=`<div class="topbar"><div><div class="page-title">Detalhes do projeto</div><div class="page-sub">${d?.cliente||''}</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div></div>${d?renderDetalhe(d):`<div class="empty">Não encontrado.</div>`}`;}
   else{
     const hasSeg=['dashboard','pipeline'].includes(S.page);
     const topbar=`<div class="topbar"><div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div>
@@ -1670,16 +1670,16 @@ function render(){
   const sidebar=`<div class="sidebar">
     <div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>
     ${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:
-    `<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Conclu├¡da'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()}</div>`).join('')}
+    `<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()}</div>`).join('')}
     <div style="flex:1"></div>
     <div class="sidebar-footer">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''} ┬À ${u?.polo||''}</div></div></div>
-      <button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'ÔÿÇ´©Å Modo claro':'­ƒîÖ Modo escuro'}</button>
-      <button class="logout-btn" onclick="logout()">Ôåù Sair</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''} · ${u?.polo||''}</div></div></div>
+      <button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button>
+      <button class="logout-btn" onclick="logout()">↗ Sair</button>
     </div>
   </div>`;
   const modal=S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():S.modal==='retparcela'?mRetParcela():S.modal==='meta'?mMeta():'';
-  app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS ÔÇö DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
+  app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
   if(!S.loading&&!S.detail)setTimeout(initCharts,80);
 }
 
