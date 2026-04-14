@@ -763,11 +763,30 @@ function renderPipeKanban(pipe){
         </div>
       </div>`;}).join('')}
   </div>
-  <div class="g3">
-    <div class="card" style="margin-bottom:0"><div class="ct">Probabilidade</div><div class="cw"><canvas id="cPipeProb"></canvas></div></div>
-    <div class="card" style="margin-bottom:0"><div class="ct">Status dos Deals</div><div class="cw"><canvas id="cPipeStatus"></canvas></div></div>
-    <div class="card" style="margin-bottom:0"><div class="ct">Tipo de M&A</div><div class="cw"><canvas id="cPipeTipo"></canvas></div></div>
-  </div>
+  ${(()=>{
+    const probItems=[['Alta',pipeF.filter(d=>d.prob==='Alta').length,'var(--green)'],['Média',pipeF.filter(d=>d.prob==='Média').length,'var(--amber)'],['Baixa',pipeF.filter(d=>d.prob==='Baixa').length,'var(--red)']];
+    const statusItems=[['Em andamento',pipeAll.filter(d=>d.status==='Em andamento').length,'#22C55E'],['Congelado',pipeAll.filter(d=>d.status==='Congelado').length,'#F59E0B'],['Fechado e Ganho',pipeAll.filter(d=>d.status==='Fechado e Ganho').length,'#0078D4'],['Fechado e Perdido',pipeAll.filter(d=>d.status==='Fechado e Perdido').length,'#EF4444']];
+    const tipoCount={};pipeF.forEach(d=>{if(d.tipo_ma)tipoCount[d.tipo_ma]=(tipoCount[d.tipo_ma]||0)+1;});
+    const tipoItems=Object.entries(tipoCount).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>([k,v,PAL[i%PAL.length]]));
+    const mkStatBars=(items,total)=>items.filter(([,n])=>n>=0).map(([lbl,n,cor])=>{const pct=total?Math.round(n/total*100):0;return`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="display:flex;align-items:center;gap:7px"><div style="width:9px;height:9px;border-radius:50%;background:${cor};flex-shrink:0"></div><span style="font-size:12px;font-weight:600">${lbl}</span></div><span style="font-size:12px;font-weight:700;color:${cor}">${n}<span style="font-size:10px;color:var(--text2);font-weight:400;margin-left:4px">${pct}%</span></span></div><div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:6px;background:${cor};border-radius:3px;width:${pct}%;transition:width .4s"></div></div></div>`;}).join('');
+    const probTotal=probItems.reduce((s,[,n])=>s+n,0)||1;
+    const statusTotal=statusItems.reduce((s,[,n])=>s+n,0)||1;
+    const tipoTotal=tipoItems.reduce((s,[,n])=>s+n,0)||1;
+    return`<div class="g3">
+      <div class="card" style="margin-bottom:0">
+        <div class="ct">Probabilidade</div>
+        ${probTotal===1&&probItems.every(([,n])=>n===0)?`<div class="empty" style="padding:16px">Sem dados</div>`:mkStatBars(probItems,probTotal)}
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ct">Status dos Deals</div>
+        ${statusTotal===1&&statusItems.every(([,n])=>n===0)?`<div class="empty" style="padding:16px">Sem dados</div>`:mkStatBars(statusItems,statusTotal)}
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ct">Tipo de M&A</div>
+        ${tipoItems.length===0?`<div class="empty" style="padding:16px">Sem dados</div>`:mkStatBars(tipoItems,tipoTotal)}
+      </div>
+    </div>`;
+  })()}
   <div style="height:14px"></div>
   <div class="g2">
     <div class="card" style="margin-bottom:0">
@@ -1017,24 +1036,7 @@ function mPipeAtiv(){
 }
 
 
-  if(S.page==='pipe'&&(S.pipeTab==='dashboard'||!S.pipeTab)&&!S.pipeDetail){
-    const pipeF=S.pipeVerTodos?S.pipe:S.pipe.filter(d=>d.status!=='Fechado e Perdido');
-    // Probabilidade donut
-    const byProb={Alta:0,Média:0,Baixa:0};
-    pipeF.forEach(d=>{if(d.prob)byProb[d.prob]=(byProb[d.prob]||0)+1;});
-    if(Object.values(byProb).some(v=>v>0)&&document.getElementById('cPipeProb'))
-      mkChart('cPipeProb',{type:'doughnut',data:{labels:['Alta','Média','Baixa'],datasets:[{data:[byProb.Alta,byProb.Média,byProb.Baixa],backgroundColor:['#22C55E','#F59E0B','#EF4444'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
-    // Tipo M&A donut
-    const byTipoP={};
-    pipeF.forEach(d=>{if(d.tipo_ma)byTipoP[d.tipo_ma]=(byTipoP[d.tipo_ma]||0)+1;});
-    if(Object.keys(byTipoP).length&&document.getElementById('cPipeTipo'))
-      mkChart('cPipeTipo',{type:'doughnut',data:{labels:Object.keys(byTipoP),datasets:[{data:Object.values(byTipoP),backgroundColor:PAL,borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
-    // Status donut
-    const byStatus={'Em andamento':0,'Congelado':0,'Fechado e Ganho':0,'Fechado e Perdido':0};
-    S.pipe.forEach(d=>{if(byStatus[d.status]!==undefined)byStatus[d.status]++;});
-    if(Object.values(byStatus).some(v=>v>0)&&document.getElementById('cPipeStatus'))
-      mkChart('cPipeStatus',{type:'doughnut',data:{labels:Object.keys(byStatus),datasets:[{data:Object.values(byStatus),backgroundColor:['#22C55E','#F59E0B','#0078D4','#EF4444'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
-  }
+  // Pipe dashboard uses CSS-based stats (no Chart.js needed)
 function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch{}});S.charts={};}
 function mkChart(id,cfg){
   const el=document.getElementById(id);if(!el)return;
