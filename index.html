@@ -1036,7 +1036,12 @@ function mPipeAtiv(){
       mkChart('cPipeStatus',{type:'doughnut',data:{labels:Object.keys(byStatus),datasets:[{data:Object.values(byStatus),backgroundColor:['#22C55E','#F59E0B','#0078D4','#EF4444'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
   }
 function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch{}});S.charts={};}
-function mkChart(id,cfg){const el=document.getElementById(id);if(!el)return;try{const ex=Chart.getChart(el);if(ex)ex.destroy();S.charts[id]=new Chart(el,cfg);}catch{}}
+function mkChart(id,cfg){
+  const el=document.getElementById(id);if(!el)return;
+  try{const ex=Chart.getChart(id);if(ex)ex.destroy();}catch{}
+  try{const ex2=Chart.getChart(el);if(ex2)ex2.destroy();}catch{}
+  try{S.charts[id]=new Chart(el,cfg);}catch(e){console.error('mkChart error ['+id+']:',e);}
+}
 function initCharts(){
   destroyCharts();
   const lbl={color:'#8899B0',font:{size:10},boxWidth:10};
@@ -1089,7 +1094,7 @@ function render(){
   const sidebar=`<div class="sidebar"><div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:`<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;S.detalheTab='fases';S.pipeDetail=null;render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()} </div>`).join('')}<div style="flex:1"></div><div class="sidebar-footer"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''}</div></div></div><button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button><button class="logout-btn" onclick="logout()">↗ Sair</button></div></div>`;
   const modal=S.modal==='pipeDeal'?mPipeDeal():S.modal==='pipeAtiv'?mPipeAtiv():S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():S.modal==='retparcela'?mRetParcela():S.modal==='meta'?mMeta():'';
   destroyCharts();app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
-  if(!S.loading&&!S.detail)setTimeout(initCharts,80);
+  if(!S.loading&&!S.detail)setTimeout(initCharts,150);
 }
 async function init(){const loginTime=parseInt(localStorage.getItem('apex_login_time')||'0');const agora=Date.now();if(S.loggedIn&&loginTime&&(agora-loginTime)>8*60*60*1000){logout();return;}if(S.loggedIn){await loadAll();}else{render();}setInterval(()=>{if(S.loggedIn)loadAll();},60000);if(S.loggedIn&&!loginTime)localStorage.setItem('apex_login_time',String(agora));}
 init();
