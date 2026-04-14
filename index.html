@@ -732,36 +732,39 @@ function renderPipeKanban(pipe){
     <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Fechados e Ganhos</div><div class="kv" style="color:var(--green)">${ganhos.length}</div><div class="ks">🏆 Convertidos</div></div>
   </div>
   <div class="card">
-    <div class="ct">Funil por Etapa</div>
-    ${ETAPAS_PIPE.map(e=>{
-      const deals=byEtapa[e]||[];const n=deals.length;const pct=Math.round(n/maxN*100);const cor=COR_ETAPA[e]||'var(--blue)';
-      const fee=deals.filter(d=>d.status==='Em andamento').reduce((s,d)=>s+(d.fee_valor||0),0);
-      const dv=deals.filter(d=>d.status==='Em andamento').reduce((s,d)=>s+(d.deal_value||0),0);
-      const nAtivo=deals.filter(d=>d.status==='Em andamento').length;
-      const nCongelado=deals.filter(d=>d.status==='Congelado').length;
-      const nGanho=deals.filter(d=>d.status==='Fechado e Ganho').length;
-      const nPerdido=deals.filter(d=>d.status==='Fechado e Perdido').length;
-      return`<div style="margin-bottom:18px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:13px;font-weight:700;color:${cor}">${e}</span>
-          <div style="display:flex;gap:12px;font-size:11px;align-items:center">
-            ${dv?`<span style="color:var(--text2)">DV: ${fmt(dv)}</span>`:''}
-            ${fee?`<span style="color:var(--cyan)">Fee: ${fmt(fee)}</span>`:''}
-            <span style="font-weight:700;color:${cor}">${n} deal${n!==1?'s':''}</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="ct" style="margin:0">Funil por Etapa</div>
+      <div style="font-size:11px;color:var(--text2)">${pipeF.length} deal${pipeF.length!==1?'s':''} no pipe</div>
+    </div>
+    ${(()=>{
+      const totalN=pipeF.length||1;
+      return ETAPAS_PIPE.map(e=>{
+        const deals=byEtapa[e]||[];const n=deals.length;
+        const barPct=Math.max(n>0?6:0,Math.round(n/totalN*100));
+        const cor=COR_ETAPA[e]||'var(--blue)';
+        const fee=deals.filter(d=>d.status==='Em andamento').reduce((s,d)=>s+(d.fee_valor||0),0);
+        const dv=deals.filter(d=>d.status==='Em andamento').reduce((s,d)=>s+(d.deal_value||0),0);
+        const nAtivo=deals.filter(d=>d.status==='Em andamento').length;
+        const nCongelado=deals.filter(d=>d.status==='Congelado').length;
+        const nGanho=deals.filter(d=>d.status==='Fechado e Ganho').length;
+        const nPerdido=deals.filter(d=>d.status==='Fechado e Perdido').length;
+        return`<div style="display:flex;align-items:center;gap:0;margin-bottom:7px">
+          <div style="width:118px;flex-shrink:0;font-size:12px;font-weight:600;color:${n>0?cor:'var(--text2)'};padding-right:12px;text-align:right;line-height:1.2">${e}</div>
+          <div style="flex:1;display:flex;align-items:center;gap:8px;min-width:0">
+            <div style="width:${barPct}%;min-width:${n>0?'48px':'4px'};height:36px;background:${n>0?`linear-gradient(90deg,${cor}ee,${cor}88)`:'var(--bg4)'};border-radius:0 7px 7px 0;display:flex;align-items:center;padding-left:${n>0?10:0}px;transition:width .5s;flex-shrink:0">
+              ${n>0?`<span style="color:#fff;font-size:13px;font-weight:800;white-space:nowrap">${n}</span>`:''}
+            </div>
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex-shrink:0">
+              ${n>0&&(fee||dv)?`<span style="font-size:11px;color:var(--cyan);font-weight:600;white-space:nowrap">${fee?fmt(fee):fmt(dv)}</span>`:''}
+              ${nAtivo?`<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid rgba(34,197,94,.25)">● ${nAtivo}</span>`:''}
+              ${nCongelado?`<span style="background:rgba(245,158,11,.15);color:var(--amber);font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid rgba(245,158,11,.25)">❄ ${nCongelado}</span>`:''}
+              ${nGanho?`<span style="background:rgba(0,120,212,.15);color:var(--blue);font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid rgba(0,120,212,.25)">🏆 ${nGanho}</span>`:''}
+              ${nPerdido?`<span style="background:rgba(239,68,68,.15);color:var(--red);font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid rgba(239,68,68,.25)">✗ ${nPerdido}</span>`:''}
+            </div>
+            <span style="margin-left:auto;font-size:11px;color:var(--text2);flex-shrink:0">${n>0?Math.round(n/totalN*100)+'%':''}</span>
           </div>
-        </div>
-        <div style="height:44px;background:var(--bg3);border-radius:10px;overflow:hidden;position:relative">
-          <div style="height:100%;background:linear-gradient(90deg,${cor},${cor}99);border-radius:10px;width:${pct}%;transition:width .5s;display:flex;align-items:center;padding-left:${pct>8?12:0}px">
-            ${n>0&&pct>15?`<span style="color:#fff;font-size:12px;font-weight:700;white-space:nowrap">${n} deal${n!==1?'s':''}</span>`:''}
-          </div>
-          ${n>0?`<div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;gap:5px">
-            ${nAtivo?`<span style="background:rgba(34,197,94,.3);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">● ${nAtivo}</span>`:''}
-            ${nCongelado?`<span style="background:rgba(245,158,11,.3);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">❄ ${nCongelado}</span>`:''}
-            ${nGanho?`<span style="background:rgba(0,120,212,.3);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">🏆 ${nGanho}</span>`:''}
-            ${nPerdido?`<span style="background:rgba(239,68,68,.3);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px">✗ ${nPerdido}</span>`:''}
-          </div>`:''}
-        </div>
-      </div>`;}).join('')}
+        </div>`;}).join('');
+    })()}
   </div>
   ${(()=>{
     const probItems=[['Alta',pipeF.filter(d=>d.prob==='Alta').length,'var(--green)'],['Média',pipeF.filter(d=>d.prob==='Média').length,'var(--amber)'],['Baixa',pipeF.filter(d=>d.prob==='Baixa').length,'var(--red)']];
