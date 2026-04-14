@@ -164,9 +164,9 @@ const SURL='https://oodehuyjatwvxgwvbmvd.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZGVodXlqYXR3dnhnd3ZibXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzEwMDAsImV4cCI6MjA5MDA0NzAwMH0.HXavB13CltYJ2_ivcFkLhkY_hF0zx7sdNtU-lxWk6wQ';
 const SHEET_ID='1va3HsPbT4Ac_50VTKvTsCNSLD4OMHpZaQBakDw0sdDM';
 const sb=supabase.createClient(SURL,SKEY);
-const ETAPAS_PIPE=['Preparação','Abordagem','Negociação','Due Diligence','Contratos','Closing'];
-const STATUS_PIPE=['Em andamento','Congelado','Fechado e Perdido','Fechado e Ganho'];
-const STATUS_PIPE_COR={'Em andamento':'#22C55E','Congelado':'#F59E0B','Fechado e Perdido':'#EF4444','Fechado e Ganho':'#0078D4'};
+const ETAPAS_PIPE=['Lista','Qualificação','Aceitação','Proposta','Formalização'];
+const STATUS_PIPE=['Ativo','Fechado e Ganho','Fechado e Perdido'];
+const STATUS_PIPE_COR={'Ativo':'#22C55E','Fechado e Ganho':'#0078D4','Fechado e Perdido':'#EF4444'};
 const TIPO_ATIV=['Reunião','Ligação','E-mail','Nota','Proposta'];
 const TIPO_MA_PIPE=['Sell-side','Buy-side','Captação','Reestruturação','Outro'];
 const PAL=['#0078D4','#00B4D8','#22C55E','#A78BFA','#F59E0B','#EF4444','#3BA0E6','#F97316'];
@@ -237,7 +237,7 @@ function getMeta(ano){return S.metas.find(m=>m.ano===ano)||{ano,meta_retainer:0,
 async function uploadAnexo(dealId,etapaIdx,etapaNome,file){const path=`deals/${dealId}/etapa_${etapaIdx}/${Date.now()}_${file.name}`;const{error:upErr}=await sb.storage.from('apex-anexos').upload(path,file);if(upErr){alert('Erro ao enviar: '+upErr.message);return null;}const u=S.currentUser;const{data:nd}=await sb.from('anexos').insert({deal_id:dealId,etapa_idx:etapaIdx,etapa_nome:etapaNome,nome_arquivo:file.name,storage_path:path,tamanho_bytes:file.size,tipo_arquivo:file.type,usuario_id:u?.id,usuario_nome:u?.nome||'—'}).select().single();if(nd)S.anexos.push(nd);return nd;}
 async function delAnexo(id){const a=S.anexos.find(x=>x.id===id);if(a){await sb.storage.from('apex-anexos').remove([a.storage_path]);}await sb.from('anexos').delete().eq('id',id);S.anexos=S.anexos.filter(x=>x.id!==id);render();}
 async function downloadAnexo(id){const a=S.anexos.find(x=>x.id===id);if(!a)return;const{data}=await sb.storage.from('apex-anexos').createSignedUrl(a.storage_path,60);if(data?.signedUrl)window.open(data.signedUrl,'_blank');}
-async function hSetStatusNovo(dealId,statusNovo){const d=S.deals.find(x=>x.id===dealId);if(!d)return;let motivo='';if(statusNovo.startsWith('Encerrado')){const m=prompt('Motivo (opcional):','');if(m===null)return;motivo=m;}const upd={status_novo:statusNovo,motivo_encerramento:motivo||d.motivo_encerramento||'',updated_at:new Date()};if(statusNovo==='Encerrado – Ganho')upd.resultado='Fechado e Ganho';else if(statusNovo==='Encerrado – Perdido')upd.resultado='Fechado e Perdido';else if(statusNovo==='Encerrado – Rescindido')upd.resultado='Cancelado';else if(statusNovo==='On Hold')upd.resultado='Congelado';else upd.resultado=null;await sb.from('deals').update(upd).eq('id',dealId);const i=S.deals.findIndex(x=>x.id===dealId);if(i>=0)S.deals[i]={...S.deals[i],...upd};await addH(dealId,'Status',d.status_novo||'Ativo',statusNovo);render();}
+async function hSetStatusNovo(dealId,statusNovo){const d=S.deals.find(x=>x.id===dealId);if(!d)return;let motivo='';if(statusNovo.startsWith('Encerrado')){const m=prompt('Motivo (opcional):','');if(m===null)return;motivo=m;}const upd={status_novo:statusNovo,motivo_encerramento:motivo||d.motivo_encerramento||'',updated_at:new Date()};if(statusNovo==='Encerrado – Ganho')upd.resultado='Fechado e Ganho';else if(statusNovo==='Encerrado – Perdido')upd.resultado='Fechado e Perdido';else if(statusNovo==='Encerrado – Rescindido')upd.resultado='Cancelado';else upd.resultado=null;await sb.from('deals').update(upd).eq('id',dealId);const i=S.deals.findIndex(x=>x.id===dealId);if(i>=0)S.deals[i]={...S.deals[i],...upd};await addH(dealId,'Status',d.status_novo||'Ativo',statusNovo);render();}
 async function saveRecReal(d){const isN=!d.id||d.id.startsWith('new_');if(isN){const t={...d,valor:parseFloat(d.valor)||0};delete t.id;const{data:nd}=await sb.from('receita_realizada').insert(t).select().single();if(nd)S.recReal.unshift(nd);}else{await sb.from('receita_realizada').update(d).eq('id',d.id);const i=S.recReal.findIndex(x=>x.id===d.id);if(i>=0)S.recReal[i]={...S.recReal[i],...d};}}
 async function delRecReal(id){await sb.from('receita_realizada').delete().eq('id',id);S.recReal=S.recReal.filter(x=>x.id!==id);render();}
 async function saveTarefa(d){const isN=!d.id||d.id.startsWith('new_');if(isN){const t={...d};delete t.id;const{data:nd}=await sb.from('tarefas').insert(t).select().single();if(nd)S.tarefas.push(nd);}else{await sb.from('tarefas').update({...d,updated_at:new Date()}).eq('id',d.id);const i=S.tarefas.findIndex(x=>x.id===d.id);if(i>=0)S.tarefas[i]={...S.tarefas[i],...d};}}
@@ -625,6 +625,14 @@ function renderReceita(){let recFilt=S.recReal;if(S.filtroColabReceita){const dc
 function renderHoras(){const tH=S.horas.reduce((s,h)=>s+(h.horas||0),0);const bib=S.horas.filter(h=>h.tipo_hora==='BIB').reduce((s,h)=>s+(h.horas||0),0);const nib=S.horas.filter(h=>h.tipo_hora!=='BIB').reduce((s,h)=>s+(h.horas||0),0);const bU={};S.horas.forEach(h=>{if(!bU[h.usuario_id])bU[h.usuario_id]={bib:0,nib:0};if(h.tipo_hora==='BIB')bU[h.usuario_id].bib+=h.horas||0;else bU[h.usuario_id].nib+=h.horas||0;});return`<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddHora()">+ Lançar horas</button></div><div class="kpis k3"><div class="kpi ac"><div class="kl">Total de horas</div><div class="kv">${tH.toFixed(1)}h</div></div><div class="kpi ac3"><div class="kl">BIB — Billable</div><div class="kv">${bib.toFixed(1)}h</div><div class="ks">${tH?Math.round(bib/tH*100):0}%</div></div><div class="kpi ac4"><div class="kl">NIB — Non-billable</div><div class="kv">${nib.toFixed(1)}h</div></div></div><div class="card"><div class="ct">Horas por colaborador</div>${Object.entries(bU).map(([uid,h])=>{const u=S.usuarios.find(x=>x.id===uid);const tot=(h.bib||0)+(h.nib||0);const bibP=tot?Math.round(h.bib/tot*100):0;return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${uid}';S.detailType='analista';render()">${u?u.nome:uid}</span><span><span class="bib-tag">${(h.bib||0).toFixed(1)}h</span> <span class="nib-tag">${(h.nib||0).toFixed(1)}h</span></span></div><div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;display:flex"><div style="height:8px;background:var(--green);width:${bibP}%"></div><div style="height:8px;background:var(--amber);width:${100-bibP}%"></div></div></div>`;}).join('')||`<div class="empty">Sem horas</div>`}</div><div class="card"><div class="ct">Lançamentos recentes</div>${S.horas.length===0?`<div class="empty">Nenhuma hora.</div>`:`<table><thead><tr><th>Colaborador</th><th>Projeto</th><th>Tipo</th><th>Horas</th><th>Data</th><th>Descrição</th><th></th></tr></thead><tbody>${S.horas.slice(0,20).map(h=>{const u=S.usuarios.find(x=>x.id===h.usuario_id);const d=S.deals.find(x=>x.id===h.deal_id);return`<tr><td style="font-weight:600">${u?u.nome:'—'}</td><td style="color:var(--text2)">${d?d.cliente:'—'}</td><td>${h.tipo_hora==='BIB'?'<span class="bib-tag">BIB</span>':'<span class="nib-tag">NIB</span>'}</td><td style="font-weight:600;color:var(--blue)">${h.horas}h</td><td style="color:var(--text2)">${h.data||'—'}</td><td style="color:var(--text2);font-size:11px">${h.descricao||''}</td><td><button class="bdg bsm" onclick="hDelHora('${h.id}')">✕</button></td></tr>`;}).join('')}</tbody></table>`}</div>`;}
 function renderTarefas(){const cu=S.currentUser;const minhas=S.tarefas.filter(t=>t.responsavel_id===cu?.id);const abertas=minhas.filter(t=>t.status!=='Concluída');const conc=minhas.filter(t=>t.status==='Concluída');const hoje=new Date();hoje.setHours(0,0,0,0);const vencidas=abertas.filter(t=>t.prazo&&new Date(t.prazo)<hoje);const corP={'Alta':'var(--red)','Normal':'var(--blue)','Baixa':'var(--green)'};const card=t=>{const d=S.deals.find(x=>x.id===t.deal_id);const venc=t.prazo&&new Date(t.prazo)<hoje&&t.status!=='Concluída';return`<div class="tarefa-card ${t.prioridade||'Normal'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><input type="checkbox" ${t.status==='Concluída'?'checked':''} onchange="toggleTarefa('${t.id}')" style="cursor:pointer;width:14px;height:14px"/><span style="font-size:12px;font-weight:600;text-decoration:${t.status==='Concluída'?'line-through':'none'}">${t.titulo}</span><span style="font-size:10px;font-weight:700;color:${corP[t.prioridade||'Normal']}">${t.prioridade}</span></div><div style="display:flex;gap:12px;flex-wrap:wrap">${d?`<span style="font-size:10px;color:var(--text2)">📁 ${d.cliente}</span>`:''} ${t.prazo?`<span style="font-size:10px;color:${venc?'var(--red)':'var(--text2)'}">📅 ${t.prazo}${venc?' ⚠':''}</span>`:''}</div></div><div style="display:flex;gap:4px"><button class="bgh bsm" onclick="openEditTarefa('${t.id}')">Editar</button><button class="bdg bsm" onclick="hDelTarefa('${t.id}')">✕</button></div></div></div>`;};return`<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddTarefa()">+ Nova tarefa</button></div><div class="kpis k3"><div class="kpi ac"><div class="kl">Minhas tarefas</div><div class="kv">${abertas.length}</div><div class="ks">${conc.length} concluídas</div></div><div class="kpi"><div class="kl" style="color:var(--red)">Vencidas</div><div class="kv" style="color:${vencidas.length?'var(--red)':'var(--text)'}">${vencidas.length}</div></div><div class="kpi"><div class="kl">Total</div><div class="kv">${minhas.length}</div></div></div>${vencidas.length?`<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px;margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">⚠ ${vencidas.length} vencida${vencidas.length!==1?'s':''}</div>${vencidas.map(card).join('')}</div>`:''}<div class="card"><div class="ct">Tarefas abertas</div>${abertas.length===0?`<div class="empty">Nenhuma tarefa 🎉</div>`:abertas.filter(t=>!vencidas.find(v=>v.id===t.id)).map(card).join('')}</div>${conc.length?`<div class="card"><div class="ct">Concluídas</div>${conc.slice(0,10).map(card).join('')}</div>`:''}`;}
 
+
+function fmtInputBRL(val){
+  const n=parseFloat(String(val).replace(/[^0-9]/g,''))||0;
+  return n===0?'':new Intl.NumberFormat('pt-BR').format(n);
+}
+function parseBRL(val){
+  return parseFloat(String(val).replace(/\./g,'').replace(',','.'))||0;
+}
 function diasMandato(d){if(!d.data_fim_mandato)return null;const diff=new Date(d.data_fim_mandato)-new Date();return Math.round(diff/(1000*60*60*24));}
 function getAnos(){const r=[];const y=new Date().getFullYear();for(let i=0;i<5;i++)r.push(String(y-i));return r;}
 function resTag(r){if(r==='Fechado e Ganho')return'<span class="tg">🏆 Ganho</span>';if(r==='Fechado e Perdido')return'<span class="tp">✗ Perdido</span>';if(r==='Cancelado')return'<span class="tcan">⊘ Cancelado</span>';if(r==='Congelado')return'<span class="tc">❄ Congelado</span>';if(r==='Ativo')return'<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">✓ Ativo</span>';return'<span style="color:var(--text2)">—</span>';}
@@ -694,7 +702,7 @@ async function hMovePipeEtapa(id,etapa){
 }
 
 // PIPE ACTIONS
-function openAddPipeDeal(){S.editForm={id:'new_',nome:'',setor:'',fee_valor:'',fee_pct:'3',tipo_ma:'Sell-side',prob:'Média',status:'Em andamento',etapa:'Preparação',deal_value:'',responsavel:'',cnpj:'',contato:'',email:'',descricao:'',obs:''};S.modal='pipeDeal';render();}
+function openAddPipeDeal(){S.editForm={id:'new_',nome:'',setor:'',fee_valor:'',fee_pct:'3',tipo_ma:'Sell-side',prob:'Média',status:'Ativo',etapa:'Lista',deal_value:'',responsavel:'',cnpj:'',contato:'',email:'',descricao:'',obs:''};S.modal='pipeDeal';render();}
 function openEditPipeDeal(id){const d=S.pipe.find(x=>x.id===id);if(!d)return;S.editForm={...d,fee_valor:String(d.fee_valor||''),fee_pct:String(d.fee_pct||3),deal_value:String(d.deal_value||'')};S.modal='pipeDeal';render();}
 async function hSavePipeDeal(){const f=S.editForm;if(!f.nome?.trim())return;const dv=pN(f.deal_value)||0;const fp=pN(f.fee_pct)||3;const r={...f,fee_valor:Math.round(dv*fp/100),fee_pct:fp,deal_value:dv};S.modal=null;S.editForm=null;await savePipeDeal(r);render();}
 async function hDelPipeDeal(id){if(!confirm('Excluir este deal do pipe permanentemente?'))return;S.pipeDetail=null;await delPipeDeal(id);render();}
@@ -712,23 +720,24 @@ function renderPipe(){
 function renderPipeKanban(pipe){
   const pipeAll=S.pipe;
   const pipeF=S.pipeVerTodos?pipeAll:pipeAll.filter(d=>d.status!=='Fechado e Perdido');
-  const emAndamento=pipeAll.filter(d=>d.status==='Em andamento');
+  const emAndamento=pipeAll.filter(d=>d.status==='Ativo');
   const ganhos=pipeAll.filter(d=>d.status==='Fechado e Ganho');
   const feeTotal=emAndamento.reduce((s,d)=>s+(d.fee_valor||0),0);
   const dvTotal=emAndamento.reduce((s,d)=>s+(d.deal_value||0),0);
   const COR_ETAPA={'Preparação':'#64748B','Abordagem':'#0078D4','Negociação':'#A78BFA','Due Diligence':'#F59E0B','Contratos':'#00B4D8','Closing':'#22C55E'};
   const byEtapa={};ETAPAS_PIPE.forEach(e=>byEtapa[e]=pipeF.filter(d=>d.etapa===e));
   const maxN=Math.max(...ETAPAS_PIPE.map(e=>byEtapa[e].length),1);
-  const bySetor={};pipeF.forEach(d=>{if(d.setor)bySetor[d.setor]=(bySetor[d.setor]||0)+1;});
+  const bySetor={};pipeAll.forEach(d=>{if(d.setor)bySetor[d.setor]=(bySetor[d.setor]||0)+1;});
   const sortedSetor=Object.entries(bySetor).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const maxS=Math.max(...sortedSetor.map(x=>x[1]),1);
   const ultimas=[...S.pipeAtiv].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,6);
   const ICONES={'Reunião':'📅','Ligação':'📞','E-mail':'✉️','Nota':'📝','Proposta':'📄'};
   return`
-  <div class="kpis k4" style="margin-bottom:16px">
+  <div class="kpis k5" style="margin-bottom:16px">
     <div class="kpi ac"><div class="kl">Deals no pipe</div><div class="kv">${pipeF.length}</div><div class="ks">${emAndamento.length} em andamento</div></div>
-    <div class="kpi"><div class="kl">Fee potencial</div><div class="kv">${fmt(feeTotal)}</div><div class="ks">Deals em andamento</div></div>
-    <div class="kpi ac2"><div class="kl">Deal value total</div><div class="kv">${fmt(dvTotal)}</div><div class="ks">Em andamento</div></div>
+    <div class="kpi"><div class="kl">Fee potencial</div><div class="kv">${fmt(feeTotal)}</div><div class="ks">Deals ativos</div></div>
+    <div class="kpi"><div class="kl">Fee % médio</div><div class="kv" style="color:var(--cyan)">${emAndamento.length?((emAndamento.reduce((s,d)=>s+(d.fee_pct||0),0)/emAndamento.length).toFixed(1)+'%'):'—'}</div><div class="ks">Deals em andamento</div></div>
+    <div class="kpi ac2"><div class="kl">Deal value total</div><div class="kv">${fmt(dvTotal)}</div><div class="ks">Ativos</div></div>
     <div class="kpi" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)"><div class="kl">Fechados e Ganhos</div><div class="kv" style="color:var(--green)">${ganhos.length}</div><div class="ks">🏆 Convertidos</div></div>
   </div>
   <div class="card">
@@ -742,9 +751,9 @@ function renderPipeKanban(pipe){
         const deals=byEtapa[e]||[];const n=deals.length;
         const barPct=Math.max(n>0?6:0,Math.round(n/totalN*100));
         const cor=COR_ETAPA[e]||'var(--blue)';
-        const fee=deals.filter(d=>d.status==='Em andamento').reduce((s,d)=>s+(d.fee_valor||0),0);
-        const dv=deals.filter(d=>d.status==='Em andamento').reduce((s,d)=>s+(d.deal_value||0),0);
-        const nAtivo=deals.filter(d=>d.status==='Em andamento').length;
+        const fee=deals.filter(d=>d.status==='Ativo').reduce((s,d)=>s+(d.fee_valor||0),0);
+        const dv=deals.filter(d=>d.status==='Ativo').reduce((s,d)=>s+(d.deal_value||0),0);
+        const nAtivo=deals.filter(d=>d.status==='Ativo').length;
         const nCongelado=deals.filter(d=>d.status==='Congelado').length;
         const nGanho=deals.filter(d=>d.status==='Fechado e Ganho').length;
         const nPerdido=deals.filter(d=>d.status==='Fechado e Perdido').length;
@@ -768,19 +777,15 @@ function renderPipeKanban(pipe){
     })()}
   </div>
   ${(()=>{
-    const probItems=[['Alta',pipeF.filter(d=>d.prob==='Alta').length,'var(--green)'],['Média',pipeF.filter(d=>d.prob==='Média').length,'var(--amber)'],['Baixa',pipeF.filter(d=>d.prob==='Baixa').length,'var(--red)']];
-    const statusItems=[['Em andamento',pipeAll.filter(d=>d.status==='Em andamento').length,'#22C55E'],['Congelado',pipeAll.filter(d=>d.status==='Congelado').length,'#F59E0B'],['Fechado e Ganho',pipeAll.filter(d=>d.status==='Fechado e Ganho').length,'#0078D4'],['Fechado e Perdido',pipeAll.filter(d=>d.status==='Fechado e Perdido').length,'#EF4444']];
+    
+    const statusItems=[['Em andamento',pipeAll.filter(d=>d.status==='Ativo').length,'#22C55E'],['Congelado',pipeAll.filter(d=>d.status==='Congelado').length,'#F59E0B'],['Fechado e Ganho',pipeAll.filter(d=>d.status==='Fechado e Ganho').length,'#0078D4'],['Fechado e Perdido',pipeAll.filter(d=>d.status==='Fechado e Perdido').length,'#EF4444']];
     const tipoCount={};pipeF.forEach(d=>{if(d.tipo_ma)tipoCount[d.tipo_ma]=(tipoCount[d.tipo_ma]||0)+1;});
     const tipoItems=Object.entries(tipoCount).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>([k,v,PAL[i%PAL.length]]));
     const mkStatBars=(items,total)=>items.filter(([,n])=>n>=0).map(([lbl,n,cor])=>{const pct=total?Math.round(n/total*100):0;return`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="display:flex;align-items:center;gap:7px"><div style="width:9px;height:9px;border-radius:50%;background:${cor};flex-shrink:0"></div><span style="font-size:12px;font-weight:600">${lbl}</span></div><span style="font-size:12px;font-weight:700;color:${cor}">${n}<span style="font-size:10px;color:var(--text2);font-weight:400;margin-left:4px">${pct}%</span></span></div><div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:6px;background:${cor};border-radius:3px;width:${pct}%;transition:width .4s"></div></div></div>`;}).join('');
-    const probTotal=probItems.reduce((s,[,n])=>s+n,0)||1;
+    
     const statusTotal=statusItems.reduce((s,[,n])=>s+n,0)||1;
     const tipoTotal=tipoItems.reduce((s,[,n])=>s+n,0)||1;
-    return`<div class="g3">
-      <div class="card" style="margin-bottom:0">
-        <div class="ct">Probabilidade</div>
-        ${probTotal===1&&probItems.every(([,n])=>n===0)?`<div class="empty" style="padding:16px">Sem dados</div>`:mkStatBars(probItems,probTotal)}
-      </div>
+    return`<div class="g2">
       <div class="card" style="margin-bottom:0">
         <div class="ct">Status dos Deals</div>
         ${statusTotal===1&&statusItems.every(([,n])=>n===0)?`<div class="empty" style="padding:16px">Sem dados</div>`:mkStatBars(statusItems,statusTotal)}
@@ -805,7 +810,7 @@ function renderPipeKanban(pipe){
 }
 
 function renderPipeRanking(pipe){
-  const pipeAll=S.pipeVerTodos?S.pipe:S.pipe.filter(d=>d.status!=='Fechado e Perdido');
+  const pipeAll=S.pipeVerTodos?S.pipe:S.pipe.filter(d=>d.status==='Ativo'||d.status==='Fechado e Ganho');
   const sorted=[...pipeAll].sort((a,b)=>(b.fee_valor||0)-(a.fee_valor||0));
   const probCor={'Alta':'var(--green)','Média':'var(--amber)','Baixa':'var(--red)'};
   const probBg={'Alta':'rgba(34,197,94,.15)','Média':'rgba(245,158,11,.15)','Baixa':'rgba(239,68,68,.15)'};
@@ -815,7 +820,7 @@ function renderPipeRanking(pipe){
     </div>
     ${sorted.length===0?`<div class="empty" style="padding:50px 20px"><div style="font-size:40px;margin-bottom:14px;opacity:.4">◈</div><div style="font-size:14px;font-weight:600;color:var(--text2)">Nenhum deal no pipe</div><div style="font-size:12px;color:var(--text2);margin-top:6px">Clique em "+ Novo deal" para começar</div></div>`:`
     <div style="overflow-x:auto"><table>
-      <thead><tr><th style="width:30px">#</th><th>Deal</th><th>Setor</th><th>Fee (R$)</th><th>Fee (%)</th><th>Tipo M&A</th><th>Probabilidade</th><th>Etapa</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th style="width:30px">#</th><th>Deal</th><th>Setor</th><th>Fee (R$)</th><th>Fee (%)</th><th>Tipo M&A</th><th>Etapa</th><th>Status</th><th></th></tr></thead>
       <tbody>${sorted.map((d,idx)=>{
         const pc=probCor[d.prob]||'var(--text2)';
         const pb=probBg[d.prob]||'var(--bg3)';
@@ -827,7 +832,6 @@ function renderPipeRanking(pipe){
           <td><span style="font-weight:700">${d.fee_valor?fmt(d.fee_valor):'—'}</span></td>
           <td><span style="color:var(--cyan);font-weight:700">${d.fee_pct?d.fee_pct+'%':'—'}</span></td>
           <td>${bdg(d.tipo_ma,MC[d.tipo_ma]||'#888')}</td>
-          <td><span style="background:${pb};color:${pc};font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px">${d.prob||'—'}</span></td>
           <td><span style="font-size:11px;color:var(--text2)">${d.etapa||'—'}</span></td>
           <td><span style="background:${sc}22;color:${sc};font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">${d.status}</span></td>
           <td><button class="btn bsm" onclick="event.stopPropagation();S.pipeDetail='${d.id}';S.pipeDetalheTab='info';render()">Ver</button></td>
@@ -852,7 +856,6 @@ function renderPipeDetalhe(d){
     <div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
         ${bdg(d.tipo_ma,MC[d.tipo_ma]||'#888')}
-        <span style="background:${pc}22;color:${pc};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px">● ${d.prob||'Média'}</span>
         <span style="background:${sc}22;color:${sc};font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px">${d.status}</span>
         ${d.setor?`<span style="background:rgba(0,180,216,.12);color:var(--cyan);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px">${d.setor}</span>`:''}
         <span style="background:var(--bg3);color:var(--text2);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px">📍 ${d.etapa}</span>
@@ -977,7 +980,7 @@ function renderPipeDetalhe(d){
       <div class="g2">
         <div class="card">
           <div class="ct">Financeiro</div>
-          ${[['Deal value (empresa)',d.deal_value?fmt(d.deal_value):'—'],['Fee estimado (auto)',d.fee_valor?fmt(d.fee_valor):'Calcular após salvar'],['Fee percentual (%)',d.fee_pct?d.fee_pct+'%':'—'],['Tipo de M&A',d.tipo_ma||'—'],['Probabilidade de fechamento',d.prob||'—']].map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:700;font-size:13px">${v}</span></div>`).join('')}
+          ${[['Deal value (empresa)',d.deal_value?fmt(d.deal_value):'—'],['Fee estimado (auto)',d.fee_valor?fmt(d.fee_valor):'Calcular após salvar'],['Fee percentual (%)',d.fee_pct?d.fee_pct+'%':'—'],['Tipo de M&A',d.tipo_ma||'—']].map(([k,v],i,a)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><span style="color:var(--text2);font-size:12px">${k}</span><span style="font-weight:700;font-size:13px">${v}</span></div>`).join('')}
         </div>
         <div class="card">
           <div class="ct">Status do fechamento</div>
@@ -1016,11 +1019,11 @@ function mPipeDeal(){
   const isE=f.id&&!f.id.startsWith('new_');
   return`<div class="modal-bg" onclick="if(event.target===this){S.modal=null;render()}"><div class="modal"><h3>${isE?'Editar deal':'Novo deal no Pipe M&A'}</h3>
     <div class="fgrid"><div class="fg"><label>Nome da empresa *</label><input value="${f.nome||''}" oninput="uf('nome',this.value)" placeholder="Ex: Empresa ABC Ltda"/></div>${sl('setor',setores,'Setor')}</div>
-    <div class="fgrid">${sl('tipo_ma',TIPO_MA_PIPE,'Tipo de M&A')}${sl('prob',['Alta','Média','Baixa'],'Probabilidade de fechamento')}</div>
+    <div class="fgrid">${sl('tipo_ma',TIPO_MA_PIPE,'Tipo de M&A')}<div></div></div>
     <div class="fgrid">${sl('etapa',ETAPAS_PIPE,'Etapa atual')}${sl('status',STATUS_PIPE,'Status')}</div>
     <div class="sdiv">Financeiro</div>
-    <div class="fgrid"><div class="fg"><label>Deal value (R$)</label><input type="number" value="${f.deal_value||''}" oninput="uf('deal_value',this.value)" placeholder="Valor da empresa" data-dv oninput="uf('deal_value',this.value);const fp=parseFloat(document.querySelector('[step=\"0.1\"]')?.value||S.editForm?.fee_pct||3);const fee=Math.round((parseFloat(this.value)||0)*fp/100);document.getElementById('fee_calc_pipe').textContent=fee?'Fee estimado: '+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(fee):'Fee calculado automaticamente'"/></div></div>
-    <div class="fgrid"><div class="fg"><label>Fee percentual (%)</label><input type="number" step="0.1" value="${f.fee_pct||3}" oninput="uf('fee_pct',this.value);const dv=parseFloat(document.querySelector('[data-dv]')?.value||S.editForm?.deal_value||0);const fee=Math.round(dv*(parseFloat(this.value)||0)/100);document.getElementById('fee_calc_pipe').textContent=fee?'Fee estimado: '+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(fee):'Fee calculado automaticamente';"/></div><div class="fg"><label>Data de entrada</label><input type="date" value="${f.data_entrada||new Date().toISOString().split('T')[0]}" oninput="uf('data_entrada',this.value)"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Deal value (R$)</label><input type="text" inputmode="numeric" value="${f.deal_value?new Intl.NumberFormat('pt-BR').format(f.deal_value):''}" placeholder="Ex: 1.500.000" data-dv oninput="const raw=this.value.replace(/[^0-9]/g,'');const n=parseInt(raw)||0;this.value=n?new Intl.NumberFormat('pt-BR').format(n):'';uf('deal_value',n);const fp=parseFloat(document.getElementById('pipe_fee_pct')?.value||S.editForm?.fee_pct||3);const feeV=Math.round(n*fp/100);document.getElementById('fee_calc_pipe').textContent=feeV?'Fee estimado: '+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(feeV):'Fee calculado automaticamente'"/></div></div>
+    <div class="fgrid"><div class="fg"><label>Fee percentual (%)</label><input id="pipe_fee_pct" type="number" step="0.1" min="0" max="100" value="${f.fee_pct||3}" oninput="uf('fee_pct',parseFloat(this.value)||0);const dvRaw=S.editForm?.deal_value||0;const feeV=Math.round(dvRaw*(parseFloat(this.value)||0)/100);document.getElementById('fee_calc_pipe').textContent=feeV?'Fee estimado: '+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(feeV):'Fee calculado automaticamente';"/></div><div class="fg"><label>Data de entrada</label><input type="date" value="${f.data_entrada||new Date().toISOString().split('T')[0]}" oninput="uf('data_entrada',this.value)"/></div></div>
     <div class="sdiv">Contato</div>
     <div class="fgrid"><div class="fg"><label>CNPJ</label><input value="${f.cnpj||''}" oninput="uf('cnpj',this.value)"/></div><div class="fg"><label>Contato</label><input value="${f.contato||''}" oninput="uf('contato',this.value)"/></div></div>
     <div class="fgrid"><div class="fg"><label>E-mail</label><input type="email" value="${f.email||''}" oninput="uf('email',this.value)"/></div><div class="fg"><label>Responsável</label><select onchange="uf('responsavel',this.value)"><option value="">— Selecione —</option>${S.usuarios.map(u=>`<option value="${u.nome}"${f.responsavel===u.nome?' selected':''}>${u.nome}</option>`).join('')}</select></div></div>
