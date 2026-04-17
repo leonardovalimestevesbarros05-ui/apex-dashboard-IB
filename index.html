@@ -299,7 +299,6 @@ function renderDetalhe(d){
   const tab=S.detalheTab||'fases';
   const fasesRef=isDCM?FASES_DCM:FASES;
   const nAnexosTotal=S.anexos.filter(a=>a.deal_id===d.id).length;
-
   const header=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
@@ -322,7 +321,6 @@ function renderDetalhe(d){
       </div>
     </div>
   </div>`;
-
   const kpis=`<div class="kpis k5" style="margin-bottom:22px">
     <div class="kpi ac"><div class="kl">Deal value</div><div class="kv">${fmt(d.deal_value)}</div></div>
     <div class="kpi"><div class="kl">Retainer F2/mês</div><div class="kv">${fmt(d.retainer_f2)}</div><div class="ks">F1: ${fmt(d.retainer_f1||15000)} × 2</div></div>
@@ -332,7 +330,6 @@ function renderDetalhe(d){
       <div class="kl">Aging</div><div class="kv" style="font-size:18px;color:${agingDias(d)>60?'var(--red)':agingDias(d)>30?'var(--amber)':'var(--text)'}">${agingDias(d)}d</div><div class="ks">Desde abertura</div>
     </div>
   </div>`;
-
   const tabNav=`<div class="tab-nav">
     <button class="tab-btn ${tab==='fases'?'active':''}" onclick="S.detalheTab='fases';render()">
       ${isDCM?'⬡ Fases DCM':'◈ Fases M&A'}&nbsp;<span style="font-size:9px;opacity:.7">${pct}%</span>
@@ -350,7 +347,6 @@ function renderDetalhe(d){
       💰 Retainer${S.retParcelas.filter(p=>p.deal_id===d.id).length?` <span style="font-size:9px;opacity:.7">(${S.retParcelas.filter(p=>p.deal_id===d.id).length})</span>`:''}
     </button>
   </div>`;
-
   function mkArqCard(a,col){const fi=fileIcon(a.tipo_arquivo,a.nome_arquivo);return`<div class="arquivo-card" style="flex:1;min-width:${col||180}px;max-width:${col?col+80:280}px">
     <div class="arquivo-icon ${fi.cls}">${fi.icon}</div>
     <div class="arquivo-info">
@@ -362,9 +358,7 @@ function renderDetalhe(d){
       <button class="bdg bsm" onclick="delAnexo('${a.id}')">✕</button>
     </div>
   </div>`;}
-
   function mkAnexarBtn(idx,nome){return`<label class="anexar-btn">📎 Anexar<input type="file" style="display:none" accept="${ACCEPT_FILES}" onchange="(async f=>{if(!f.target.files[0])return;const r=await uploadAnexo('${d.id}',${idx},'${nome.replace(/'/g,"\\'").replace(/"/g,'&quot;')}',f.target.files[0]);if(r)render();})(event)"/></label>`;}
-
   function tabFases(){
     return`<div class="tab-content">
       <div class="card">
@@ -401,7 +395,6 @@ function renderDetalhe(d){
       </div>
     </div>`;
   }
-
   function tabArquivos(){
     const todos=S.anexos.filter(a=>a.deal_id===d.id);
     return`<div class="tab-content">
@@ -440,7 +433,6 @@ function renderDetalhe(d){
       </div>
     </div>`;
   }
-
   function tabContrato(){
     return`<div class="tab-content">
       ${isDealEncerrado&&pl?`<div class="card" style="border:1px solid ${pl.lucro>=0?'rgba(34,197,94,.3)':'rgba(239,68,68,.3)'};background:${pl.lucro>=0?'rgba(34,197,94,.04)':'rgba(239,68,68,.04)'}">
@@ -480,7 +472,6 @@ function renderDetalhe(d){
       <div style="display:flex;justify-content:flex-end;padding-top:4px"><button class="bdg" onclick="hDelDeal('${d.id}')">Excluir projeto</button></div>
     </div>`;
   }
-
   function tabHoras(){
     const bib=horasD.filter(h=>h.tipo_hora==='BIB').reduce((s,h)=>s+(h.horas||0),0);
     const nib=horasD.filter(h=>h.tipo_hora!=='BIB').reduce((s,h)=>s+(h.horas||0),0);
@@ -506,7 +497,6 @@ function renderDetalhe(d){
       </div>
     </div>`;
   }
-
   function tabRetainer(){
     const parc=[...S.retParcelas.filter(p=>p.deal_id===d.id)].sort((a,b)=>{const[ma,ya]=a.mes.split('/');const[mb,yb]=b.mes.split('/');return new Date(ya,ma-1)-new Date(yb,mb-1);});
     const recebido=parc.filter(p=>p.status==='Recebido').reduce((s,p)=>s+(p.valor||0),0);
@@ -567,17 +557,14 @@ function renderDetalhe(d){
       </div>
     </div>`;
   }
-
   let tabContent='';
   if(tab==='fases')tabContent=tabFases();
   else if(tab==='arquivos')tabContent=tabArquivos();
   else if(tab==='contrato')tabContent=tabContrato();
   else if(tab==='horas')tabContent=tabHoras();
   else if(tab==='retainer')tabContent=tabRetainer();
-
   return header+kpis+tabNav+tabContent;
 }
-
 function renderPerfilAnalista(uid){const u=S.usuarios.find(x=>x.id===uid);if(!u)return'';const deals=S.deals.filter(d=>d.diretor===u.nome||d.gerente===u.nome||d.analista===u.nome);const horasU=S.horas.filter(h=>h.usuario_id===uid);const totalH=horasU.reduce((s,h)=>s+(h.horas||0),0);const bib=horasU.filter(h=>h.tipo_hora==='BIB').reduce((s,h)=>s+(h.horas||0),0);const nib=horasU.filter(h=>h.tipo_hora!=='BIB').reduce((s,h)=>s+(h.horas||0),0);const byDeal={};horasU.forEach(h=>{byDeal[h.deal_id]=(byDeal[h.deal_id]||0)+(h.horas||0);});const totalRet=deals.filter(d=>isAtivo(d)).reduce((s,d)=>s+(d.retainer_f2||0),0);const totalSF=deals.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);return`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px"><div style="display:flex;align-items:center;gap:16px"><div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff">${ini(u.nome)}</div><div><h2 style="font-size:18px;font-weight:700">${u.nome}</h2><div style="font-size:12px;color:var(--text2);margin-top:4px">${u.cargo} · ${pt(u.polo)} · ${u.area||'—'}</div></div></div><div style="display:flex;gap:8px"><button class="btn bsm" onclick="openAddHora()">+ Lançar horas</button><button class="bgh" onclick="S.detail=null;S.detailType=null;S.detalheTab='fases';render()">← Voltar</button></div></div><div class="kpis k4"><div class="kpi ac"><div class="kl">Projetos</div><div class="kv">${deals.length}</div></div><div class="kpi"><div class="kl">Retainer</div><div class="kv">${fmt(totalRet)}</div></div><div class="kpi ac2"><div class="kl">SF potencial</div><div class="kv">${fmt(totalSF)}</div></div><div class="kpi ac3"><div class="kl">Horas totais</div><div class="kv">${totalH.toFixed(1)}h</div><div class="ks">BIB ${bib.toFixed(1)}h · NIB ${nib.toFixed(1)}h</div></div></div><div class="g2"><div class="card"><div class="ct">Horas por projeto</div>${Object.entries(byDeal).length===0?`<div class="empty">Sem horas</div>`:Object.entries(byDeal).map(([did,h])=>{const d=S.deals.find(x=>x.id===did);const mx=Math.max(...Object.values(byDeal),1);const pct=Math.round(h/mx*100);return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="font-weight:600">${d?d.cliente:did}</span><span style="color:var(--blue)">${h.toFixed(1)}h</span></div><div style="height:6px;background:var(--bg3);border-radius:3px"><div style="height:6px;background:var(--blue);border-radius:3px;width:${pct}%"></div></div></div>`;}).join('')}</div><div class="card"><div class="ct">Projetos</div>${deals.length===0?`<div class="empty">Nenhum projeto</div>`:deals.slice(0,8).map((d,i,a)=>{const feitas=Object.values(d.etapas||{}).filter(v=>v==='done').length;const fT=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const pct=Math.round(feitas/fT*100);return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?'1px solid var(--border)':'none'}"><div><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${d.id}';S.detailType='deal';S.detalheTab='fases';render()">${d.cliente}</span>${statusNovoBdg(d.status_novo||'Ativo')}</div><div style="text-align:right"><div style="font-size:11px;font-weight:600">${fmt(d.deal_value)}</div><div style="font-size:10px;color:var(--text2)">${pct}%</div></div></div>`;}).join('')}</div></div>`;
 }
 function filtrados(){let l=S.deals;if(S.filtroColab)l=l.filter(d=>d.diretor===S.filtroColab||d.gerente===S.filtroColab||d.analista===S.filtroColab);return l;}
@@ -598,7 +585,7 @@ function renderFaseBoardMA(fl){
   maDeals.forEach(d=>byFase[getFaseIdx(d)].push(d));
   const totalSF=maDeals.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
   const N=fases.length;
-  const arrowCP=(fi)=>fi===0?`clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)`:fi===N-1?`clip-path:polygon(0 0,100% 0,100% 100%,0 100%,14px 50%)`:` clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%)`;
+  const arrowCP=(fi)=>fi===0?`clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)`:fi===N-1?`clip-path:polygon(0 0,100% 0,100% 100%,0 100%,14px 50%)`:`clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%)`;
   const cols=fases.map((fase,fi)=>{
     const deals=byFase[fi];
     const faseSF=deals.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
@@ -611,7 +598,7 @@ function renderFaseBoardMA(fl){
       const diasP=agingDias(d);
       return`<div style="background:${cardCor};border-radius:6px;padding:8px 10px;margin-bottom:6px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .15s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform='none'" onclick="S.detail='${d.id}';S.detailType='deal';S.detalheTab='fases';render()" title="${d.cliente} — ${diasP} dias"><div style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px">${nome}</div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#fff;font-weight:700">${sf?fmt(sf):'—'}</span><span style="font-size:9px;background:rgba(0,0,0,.25);color:#fff;padding:2px 7px;border-radius:3px;font-weight:700">${d.success_fee||0}%</span></div></div>`;
     }).join('');
-    return`<div style="flex:1;min-width:130px;display:flex;flex-direction:column"><div style="text-align:center;padding:3px 0 6px;font-size:10px;font-weight:600;color:var(--text2)">${fasesLabel[fi]}</div><div style="background:${cor};${arrowCP(fi)};padding:11px ${pr} 11px ${pl};text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.6px;line-height:1.5">${fase.replace(' / ','<br>')}</div></div><div style="background:var(--bg3);flex:1;padding:8px;min-height:70px;border-left:1px solid var(--border);border-right:1px solid var(--border)">${cards||'<div style="text-align:center;padding:20px 0;color:var(--text2);font-size:11px">—</div>'}</div><div style="background:var(--bg4);padding:8px 10px;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-top:2px solid ${cor}"><div style="font-size:9px;color:var(--text2);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px">SF potencial</div><div style="font-size:13px;font-weight:700;color:${cor}">${faseSF?fmt(faseSF):'—'}</div></div></div>`;
+    return`<div style="flex:1;min-width:130px;display:flex;flex-direction:column"><div style="text-align:center;padding:3px 0 6px;font-size:10px;font-weight:600;color:var(--text2)">${fasesLabel[fi]}</div><div style="background:${cor};${arrowCP(fi)};padding:11px ${pr} 11px ${pl};text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.6px;line-height:1.5">${fase.replace(' / ','<br>').replace(' / ','<br>')}</div></div><div style="background:var(--bg3);flex:1;padding:8px;min-height:70px;border-left:1px solid var(--border);border-right:1px solid var(--border)">${cards||'<div style="text-align:center;padding:20px 0;color:var(--text2);font-size:11px">—</div>'}</div><div style="background:var(--bg4);padding:8px 10px;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-top:2px solid ${cor}"><div style="font-size:9px;color:var(--text2);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px">SF potencial</div><div style="font-size:13px;font-weight:700;color:${cor}">${faseSF?fmt(faseSF):'—'}</div></div></div>`;
   }).join('');
   const sfColHtml=`<div style="min-width:145px;max-width:160px;display:flex;flex-direction:column;margin-left:10px"><div style="padding:3px 0 6px;font-size:10px;color:transparent">—</div><div style="background:rgba(0,120,212,.18);border:1px solid rgba(0,120,212,.4);border-radius:8px 8px 0 0;padding:10px;text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.6px;line-height:1.6">SUCCESS FEE<br>POTENCIAL</div></div><div style="background:rgba(0,120,212,.05);flex:1;padding:12px 8px;display:flex;align-items:center;justify-content:center;border-left:1px solid rgba(0,120,212,.2);border-right:1px solid rgba(0,120,212,.2)"><div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--blue)">${fmt(totalSF)}</div><div style="font-size:9px;color:var(--text2);margin-top:4px">total potencial</div></div></div><div style="background:rgba(0,120,212,.15);padding:8px 10px;text-align:center;border:1px solid rgba(0,120,212,.3);border-top:2px solid var(--blue);border-radius:0 0 8px 8px"><div style="font-size:9px;color:var(--text2);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px">Fee Médio</div><div style="font-size:13px;font-weight:700;color:var(--blue)">${maDeals.length?(maDeals.reduce((s,d)=>s+(d.success_fee||0),0)/maDeals.length).toFixed(1)+'%':'—'}</div></div></div>`;
   if(!maDeals.length)return'';
@@ -637,17 +624,6 @@ ${renderFaseBoardMA(fl)}
 <div class="card" style="margin-bottom:0"><div class="ct">Pipeline Aging</div><div class="cw-lg"><canvas id="cAging"></canvas></div></div>
 <div class="card" style="margin-bottom:0"><div class="ct">Projetos por analista</div>${byA.length===0?`<div class="empty">Cadastre analistas na aba Equipe</div>`:byA.map((x,i)=>{const pct=Math.round(x.n/maxA*100);return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><div class="av" style="width:30px;height:30px;font-size:10px;flex-shrink:0;background:linear-gradient(135deg,${PAL[i%PAL.length]},${PAL[(i+1)%PAL.length]})">${ini(x.nome)}</div><div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600;cursor:pointer;color:var(--blue)" onclick="S.detail='${x.id}';S.detailType='analista';render()">${x.nome}</span><span style="font-weight:700">${x.n} deal${x.n!==1?'s':''}</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="height:5px;background:${PAL[i%PAL.length]};border-radius:3px;width:${pct}%"></div></div></div></div>`;}).join('')}
 </div></div>
-<div style="height:14px"></div>
-<div style="height:14px"></div>
-  <div class="card" style="margin-bottom:0">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div><div class="ct" style="margin:0">Acompanhamento por Fase M&A</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Distribuição por fase M&A</div></div>
-      <span style="font-size:11px;color:var(--text2)">${fl.length} ativos</span>
-    </div>
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
-      ${(['Preparação','Abordagem','Negociação','Due Diligence','Contratos','Closing']).map((fase,fi)=>{const faseDeals=fl.filter(d=>{const n=Object.values(d.etapas||{}).filter(v=>v==='done').length;const t=d.tipo==='DCM'?FASES_DCM.length:FASES.length;const p=n/t;if(fi===0)return p<0.17;if(fi===1)return p>=0.17&&p<0.33;if(fi===2)return p>=0.33&&p<0.5;if(fi===3)return p>=0.5&&p<0.67;if(fi===4)return p>=0.67&&p<0.83;return p>=0.83;});const cores=['#64748B','#0078D4','#A78BFA','#F59E0B','#00B4D8','#22C55E'];const cor=cores[fi];return`<div style="flex:0 0 160px;min-width:160px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:7px 10px;background:var(--bg3);border-radius:8px 8px 0 0;border-bottom:2px solid ${cor};color:${cor};display:flex;justify-content:space-between;align-items:center">${fase}<span style="background:${cor}22;padding:1px 7px;border-radius:8px">${faseDeals.length}</span></div><div style="background:var(--bg3);border-radius:0 0 8px 8px;padding:6px;min-height:70px">${faseDeals.length===0?'<div style="text-align:center;padding:14px 0;color:var(--text2);font-size:10px">—</div>':faseDeals.slice(0,4).map((d,di)=>`<div style="background:var(--card);border-radius:7px;padding:7px 9px;margin-bottom:5px;border-left:2px solid ${cor};cursor:pointer" onclick="S.detail='${d.id}';S.detailType='deal';S.detalheTab='fases';render()"><div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.cliente}</div>${di===3&&faseDeals.length>4?`<div style="font-size:9px;color:var(--text2);margin-top:2px">+${faseDeals.length-4} mais</div>`:''}</div>`).join('')}</div></div>`;}).join('')}
-    </div>
-  </div>
   <div style="height:14px"></div>
   <div class="card"><div class="ct">🎯 Radar de Oportunidades</div>
 <div style="display:flex;gap:16px;flex-wrap:wrap">
@@ -674,7 +650,6 @@ function renderHoras(){
   const diasSet=new Set(fH.map(h=>h.data).filter(Boolean));
   const mediaDia=diasSet.size>0?(tH/diasSet.size).toFixed(1):'0';
 
-  // By user
   const bU={};
   fH.forEach(h=>{
     const k=h.usuario_id;
@@ -748,26 +723,25 @@ function renderHoras(){
     </div>`;
   }
 
-  // ── DASHBOARD ─────────────────────────────────────────────────────────────
   return topbar+kpis+`
   <div class="g2">
-    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Pessoa</div><div class="cw-lg"><canvas id="cHorasPessoa" role="img" aria-label="Horas por pessoa">Horas por colaborador BIB/NIB</canvas></div></div>
-    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Projeto/Atividade</div><div class="cw-lg"><canvas id="cHorasProjeto" role="img" aria-label="Horas por projeto">Horas BIB por projeto</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Pessoa</div><div class="cw-lg"><canvas id="cHorasPessoa"></canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Projeto/Atividade</div><div class="cw-lg"><canvas id="cHorasProjeto"></canvas></div></div>
   </div>
   <div style="height:14px"></div>
   <div class="g2">
-    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas por Mês</div><div class="cw-lg"><canvas id="cHorasMes" role="img" aria-label="Horas por mês">Horas mensais</canvas></div></div>
-    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Código de Débito</div><div class="cw-lg"><canvas id="cHorasCodigo" role="img" aria-label="Horas por código">Horas por código de débito</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas por Mês</div><div class="cw-lg"><canvas id="cHorasMes"></canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Código de Débito</div><div class="cw-lg"><canvas id="cHorasCodigo"></canvas></div></div>
   </div>
   <div style="height:14px"></div>
   <div class="g2">
-    <div class="card" style="margin-bottom:0"><div class="ct">Taxa de Ocupação x Pessoa</div><div class="cw-lg"><canvas id="cTaxaPessoa" role="img" aria-label="Taxa de ocupação por pessoa">Taxa de conversão por colaborador</canvas></div></div>
-    <div class="card" style="margin-bottom:0"><div class="ct">Horas por Tipo</div><div style="display:flex;align-items:center;gap:20px;padding:10px 0"><div style="position:relative;height:220px;flex:1"><canvas id="cHorasTipo" role="img" aria-label="Horas por tipo BIB NIB DED">Distribuição de horas</canvas></div><div style="display:flex;flex-direction:column;gap:10px">${[['BIB','var(--green)',bib],['NIB','var(--amber)',nibCalc],['DED','#64748B',ded]].map(([l,c,v])=>`<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:${c}"></div><div><div style="font-size:11px;font-weight:700;color:${c}">${v.toFixed(1)}h</div><div style="font-size:9px;color:var(--text2)">${l}</div></div></div>`).join('')}</div></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Taxa de Ocupação x Pessoa</div><div class="cw-lg"><canvas id="cTaxaPessoa"></canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas por Tipo</div><div style="display:flex;align-items:center;gap:20px;padding:10px 0"><div style="position:relative;height:220px;flex:1"><canvas id="cHorasTipo"></canvas></div><div style="display:flex;flex-direction:column;gap:10px">${[['BIB','var(--green)',bib],['NIB','var(--amber)',nibCalc],['DED','#64748B',ded]].map(([l,c,v])=>`<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:${c}"></div><div><div style="font-size:11px;font-weight:700;color:${c}">${v.toFixed(1)}h</div><div style="font-size:9px;color:var(--text2)">${l}</div></div></div>`).join('')}</div></div></div>
   </div>
   <div style="height:14px"></div>
   <div class="g2">
-    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Mês (total)</div><div style="position:relative;height:280px"><canvas id="cHorasDebMes" role="img" aria-label="Total horas por mês">Total de horas debitadas por mês</canvas></div></div>
-    <div class="card" style="margin-bottom:0"><div class="ct">Evolução da Taxa de Conversão</div><div class="cw-lg"><canvas id="cTaxaMes" role="img" aria-label="Taxa de conversão mensal">Evolução da taxa mensal</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Mês (total)</div><div style="position:relative;height:280px"><canvas id="cHorasDebMes"></canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Evolução da Taxa de Conversão</div><div class="cw-lg"><canvas id="cTaxaMes"></canvas></div></div>
   </div>
   <div style="height:14px"></div>
   <div class="card">
@@ -802,10 +776,7 @@ function renderHoras(){
     </div>
   </div>`;
 }
-
 function renderTarefas(){const cu=S.currentUser;const minhas=S.tarefas.filter(t=>t.responsavel_id===cu?.id);const abertas=minhas.filter(t=>t.status!=='Concluída');const conc=minhas.filter(t=>t.status==='Concluída');const hoje=new Date();hoje.setHours(0,0,0,0);const vencidas=abertas.filter(t=>t.prazo&&new Date(t.prazo)<hoje);const corP={'Alta':'var(--red)','Normal':'var(--blue)','Baixa':'var(--green)'};const card=t=>{const d=S.deals.find(x=>x.id===t.deal_id);const venc=t.prazo&&new Date(t.prazo)<hoje&&t.status!=='Concluída';return`<div class="tarefa-card ${t.prioridade||'Normal'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><input type="checkbox" ${t.status==='Concluída'?'checked':''} onchange="toggleTarefa('${t.id}')" style="cursor:pointer;width:14px;height:14px"/><span style="font-size:12px;font-weight:600;text-decoration:${t.status==='Concluída'?'line-through':'none'}">${t.titulo}</span><span style="font-size:10px;font-weight:700;color:${corP[t.prioridade||'Normal']}">${t.prioridade}</span></div><div style="display:flex;gap:12px;flex-wrap:wrap">${d?`<span style="font-size:10px;color:var(--text2)">📁 ${d.cliente}</span>`:''} ${t.prazo?`<span style="font-size:10px;color:${venc?'var(--red)':'var(--text2)'}">📅 ${t.prazo}${venc?' ⚠':''}</span>`:''}</div></div><div style="display:flex;gap:4px"><button class="bgh bsm" onclick="openEditTarefa('${t.id}')">Editar</button><button class="bdg bsm" onclick="hDelTarefa('${t.id}')">✕</button></div></div></div>`;};return`<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn" onclick="openAddTarefa()">+ Nova tarefa</button></div><div class="kpis k3"><div class="kpi ac"><div class="kl">Minhas tarefas</div><div class="kv">${abertas.length}</div><div class="ks">${conc.length} concluídas</div></div><div class="kpi"><div class="kl" style="color:var(--red)">Vencidas</div><div class="kv" style="color:${vencidas.length?'var(--red)':'var(--text)'}">${vencidas.length}</div></div><div class="kpi"><div class="kl">Total</div><div class="kv">${minhas.length}</div></div></div>${vencidas.length?`<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px;margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">⚠ ${vencidas.length} vencida${vencidas.length!==1?'s':''}</div>${vencidas.map(card).join('')}</div>`:''}<div class="card"><div class="ct">Tarefas abertas</div>${abertas.length===0?`<div class="empty">Nenhuma tarefa 🎉</div>`:abertas.filter(t=>!vencidas.find(v=>v.id===t.id)).map(card).join('')}</div>${conc.length?`<div class="card"><div class="ct">Concluídas</div>${conc.slice(0,10).map(card).join('')}</div>`:''}`;}
-
-
 function fmtInputBRL(val){
   const n=parseFloat(String(val).replace(/[^0-9]/g,''))||0;
   return n===0?'':new Intl.NumberFormat('pt-BR').format(n);
@@ -816,7 +787,6 @@ function parseBRL(val){
 function diasMandato(d){if(!d.data_fim_mandato)return null;const diff=new Date(d.data_fim_mandato)-new Date();return Math.round(diff/(1000*60*60*24));}
 function getAnos(){const r=[];const y=new Date().getFullYear();for(let i=0;i<5;i++)r.push(String(y-i));return r;}
 function resTag(r){if(r==='Fechado e Ganho')return'<span class="tg">🏆 Ganho</span>';if(r==='Fechado e Perdido')return'<span class="tp">✗ Perdido</span>';if(r==='Cancelado')return'<span class="tcan">⊘ Cancelado</span>';if(r==='Congelado')return'<span class="tc">❄ Congelado</span>';if(r==='Ativo')return'<span style="background:rgba(34,197,94,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block">✓ Ativo</span>';return'<span style="color:var(--text2)">—</span>';}
-
 // ═══════════════════════════════════════════════════════════════
 // PIPE M&A — CRUD
 // ═══════════════════════════════════════════════════════════════
@@ -880,7 +850,6 @@ async function hMovePipeEtapa(id,etapa){
   const i=S.pipe.findIndex(x=>x.id===id);if(i>=0)S.pipe[i].etapa=etapa;
   render();
 }
-
 // PIPE ACTIONS
 function openAddPipeDeal(){S.editForm={id:'new_',nome:'',setor:'',fee_valor:'',fee_pct:'3',tipo_ma:'Sell-side',prob:'Média',status:'Ativo',etapa:'Lista',deal_value:'',responsavel:'',cnpj:'',contato:'',email:'',descricao:'',obs:''};S.modal='pipeDeal';render();}
 function openEditPipeDeal(id){const d=S.pipe.find(x=>x.id===id);if(!d)return;S.editForm={...d,fee_valor:String(d.fee_valor||''),fee_pct:String(d.fee_pct||3),deal_value:String(d.deal_value||'')};S.modal='pipeDeal';render();}
@@ -888,7 +857,6 @@ async function hSavePipeDeal(){const f=S.editForm;if(!f.nome?.trim())return;cons
 async function hDelPipeDeal(id){if(!confirm('Excluir este deal do pipe permanentemente?'))return;S.pipeDetail=null;await delPipeDeal(id);render();}
 function openAddPipeAtiv(pipeId){S.editForm={id:'new_',pipe_deal_id:pipeId,tipo:'Reunião',titulo:'',descricao:'',data:new Date().toISOString().split('T')[0],usuario_id:S.currentUser?.id||'',usuario_nome:S.currentUser?.nome||''};S.modal='pipeAtiv';render();}
 async function hSavePipeAtiv(){const f=S.editForm;if(!f.titulo?.trim())return;S.modal=null;S.editForm=null;await savePipeAtiv(f);render();}
-
 // ═══════════════════════════════════════════════════════════════
 // PIPE — RENDERS
 // ═══════════════════════════════════════════════════════════════
@@ -896,11 +864,10 @@ function renderPipe(){
   const view=S.pipeTab||'dashboard';
   return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px"><div class="seg"><button class="seg-btn ${view==='dashboard'?'active':''}" onclick="S.pipeTab='dashboard';render()">⬡ Dashboard</button><button class="seg-btn ${view==='detalhamento'?'active':''}" onclick="S.pipeTab='detalhamento';render()">◈ Detalhamento</button></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><label style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"><input type="checkbox" ${S.pipeVerTodos?'checked':''} onchange="S.pipeVerTodos=this.checked;render()"/> Incluir perdidos e congelados</label><button class="btn" onclick="openAddPipeDeal()">+ Novo deal</button></div></div>${view==='dashboard'?renderPipeKanban():renderPipeRanking()}`;
 }
-
 function renderPipeKanban(pipe){
   const pipeAll=S.pipe;
   const pipeF=S.pipeVerTodos?pipeAll:pipeAll.filter(d=>d.status!=='Fechado e Perdido');
-  const emAndamento=pipeAll.filter(d=>d.status==='Ativo'||d.status==='Em andamento');
+  const emAndamento=pipeAll.filter(d=>d.status==='Ativo');
   const ganhos=pipeAll.filter(d=>d.status==='Fechado e Ganho');
   const feeTotal=emAndamento.reduce((s,d)=>s+(d.fee_valor||0),0);
   const dvTotal=emAndamento.reduce((s,d)=>s+(d.deal_value||0),0);
@@ -933,7 +900,7 @@ function renderPipeKanban(pipe){
         const cor=COR_ETAPA[e]||'var(--blue)';
         const fee=deals.filter(d=>d.status==='Ativo').reduce((s,d)=>s+(d.fee_valor||0),0);
         const dv=deals.filter(d=>d.status==='Ativo').reduce((s,d)=>s+(d.deal_value||0),0);
-        const nAtivo=deals.filter(d=>d.status==='Ativo'||d.status==='Em andamento').length;
+        const nAtivo=deals.filter(d=>d.status==='Ativo').length;
         const nCongelado=deals.filter(d=>d.status==='Congelado').length;
         const nGanho=deals.filter(d=>d.status==='Fechado e Ganho').length;
         const nPerdido=deals.filter(d=>d.status==='Fechado e Perdido').length;
@@ -988,9 +955,8 @@ function renderPipeKanban(pipe){
     </div>
   </div>`;
 }
-
 function renderPipeRanking(pipe){
-  const pipeAll=S.pipeVerTodos?S.pipe:S.pipe.filter(d=>d.status!=='Fechado e Perdido');
+  const pipeAll=S.pipeVerTodos?S.pipe:S.pipe.filter(d=>d.status==='Ativo'||d.status==='Fechado e Ganho');
   const sorted=[...pipeAll].sort((a,b)=>(b.fee_valor||0)-(a.fee_valor||0));
   const probCor={'Alta':'var(--green)','Média':'var(--amber)','Baixa':'var(--red)'};
   const probBg={'Alta':'rgba(34,197,94,.15)','Média':'rgba(245,158,11,.15)','Baixa':'rgba(239,68,68,.15)'};
@@ -1020,7 +986,6 @@ function renderPipeRanking(pipe){
     </table></div>`}
   </div>`;
 }
-
 function renderPipeDetalhe(d){
   if(!d)return`<div class="empty">Deal não encontrado.</div>`;
   const atvsD=[...S.pipeAtiv.filter(a=>a.pipe_deal_id===d.id)].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
@@ -1031,7 +996,6 @@ function renderPipeDetalhe(d){
   const temContrato=anex.some(a=>a.is_contrato);
   const ICONES={'Reunião':'📅','Ligação':'📞','E-mail':'✉️','Nota':'📝','Proposta':'📄'};
   const etapaIdx=ETAPAS_PIPE.indexOf(d.etapa);
-
   const header=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
@@ -1053,7 +1017,6 @@ function renderPipeDetalhe(d){
       </div>
     </div>
   </div>`;
-
   const kpis=`<div class="kpis k4" style="margin-bottom:22px">
     <div class="kpi ac"><div class="kl">Deal value</div><div class="kv">${d.deal_value?fmt(d.deal_value):'—'}</div></div>
     <div class="kpi"><div class="kl">Fee esperado</div><div class="kv">${d.fee_valor?fmt(d.fee_valor):'—'}</div><div class="ks">${d.fee_pct||0}% do deal</div></div>
@@ -1064,14 +1027,12 @@ function renderPipeDetalhe(d){
       <div class="ks" style="color:${temContrato?'var(--green)':'var(--amber)'}">Para fechar o deal</div>
     </div>
   </div>`;
-
   const tabNav=`<div class="tab-nav">
     <button class="tab-btn ${tab==='info'?'active':''}" onclick="S.pipeDetalheTab='info';render()">◈ Visão Geral</button>
     <button class="tab-btn ${tab==='atividades'?'active':''}" onclick="S.pipeDetalheTab='atividades';render()">📅 Atividades <span style="font-size:9px;opacity:.7">${atvsD.length}</span></button>
     <button class="tab-btn ${tab==='arquivos'?'active':''}" onclick="S.pipeDetalheTab='arquivos';render()">📎 Arquivos <span style="font-size:9px;opacity:.7">${anex.length}</span></button>
     <button class="tab-btn ${tab==='negociacao'?'active':''}" onclick="S.pipeDetalheTab='negociacao';render()">💰 Negociação</button>
   </div>`;
-
   function tabInfo(){
     return`<div class="tab-content">
       <div class="g2">
@@ -1092,7 +1053,6 @@ function renderPipeDetalhe(d){
       <div style="display:flex;justify-content:flex-end"><button class="bdg" onclick="hDelPipeDeal('${d.id}')">Excluir deal</button></div>
     </div>`;
   }
-
   function tabAtividades(){
     return`<div class="tab-content">
       <div class="card">
@@ -1126,7 +1086,6 @@ function renderPipeDetalhe(d){
       </div>
     </div>`;
   }
-
   function tabArquivos(){
     const contrato=anex.filter(a=>a.is_contrato);
     const outros=anex.filter(a=>!a.is_contrato);
@@ -1154,7 +1113,6 @@ function renderPipeDetalhe(d){
       </div>
     </div>`;
   }
-
   function tabNegociacao(){
     return`<div class="tab-content">
       <div class="g2">
@@ -1181,16 +1139,13 @@ function renderPipeDetalhe(d){
       </div>
     </div>`;
   }
-
   let tabContent='';
   if(tab==='info')tabContent=tabInfo();
   else if(tab==='atividades')tabContent=tabAtividades();
   else if(tab==='arquivos')tabContent=tabArquivos();
   else if(tab==='negociacao')tabContent=tabNegociacao();
-
   return header+kpis+tabNav+tabContent;
 }
-
 // PIPE MODALS
 function mPipeDeal(){
   const f=S.editForm;
@@ -1221,8 +1176,6 @@ function mPipeAtiv(){
     <div class="mf"><button class="bgh" onclick="S.modal=null;render()">Cancelar</button><button class="btn" onclick="hSavePipeAtiv()">Salvar</button></div>
   </div></div>`;
 }
-
-
   // Pipe dashboard uses CSS-based stats (no Chart.js needed)
 function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch{}});S.charts={};}
 function mkChart(id,cfg){
@@ -1258,42 +1211,34 @@ function initCharts(){
     mkChart('cRecMensal',{type:'bar',data:{labels:mesesBar,datasets:[{label:'Receita realizada',data:recPorMes,backgroundColor:recPorMes.map(v=>v>0?'rgba(0,120,212,.7)':'rgba(0,120,212,.2)'),borderRadius:6,borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});}
         if(document.getElementById('cAging')){const bands=['0-30d','30-60d','60-90d','90-120d','>120d'];const aC=[0,0,0,0,0];fl.forEach(d=>{const dias=agingDias(d);if(dias<=30)aC[0]++;else if(dias<=60)aC[1]++;else if(dias<=90)aC[2]++;else if(dias<=120)aC[3]++;else aC[4]++;});mkChart('cAging',{type:'bar',data:{labels:bands,datasets:[{data:aC,backgroundColor:['#22C55E','#84CC16','#F59E0B','#F97316','#EF4444'],borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,font:{size:10}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});}
   }
-  if(S.page==='horas'&&S.horasTab==='dashboard'){
+    if(S.page==='horas'&&S.horasTab==='dashboard'){
     let fH2=S.horas;
     if(S.horasFiltroColab)fH2=fH2.filter(h=>h.usuario_id===S.horasFiltroColab);
     if(S.horasFiltroMes)fH2=fH2.filter(h=>h.data&&h.data.substring(0,7)===S.horasFiltroMes);
-    // By user stacked BIB/NIB
     const bU2={};fH2.forEach(h=>{const k=h.usuario_id;if(!bU2[k])bU2[k]={bib:0,nib:0,total:0,nome:''};if(h.tipo_hora==='BIB')bU2[k].bib+=h.horas||0;else bU2[k].nib+=h.horas||0;bU2[k].total+=h.horas||0;const u=S.usuarios.find(x=>x.id===k);if(u)bU2[k].nome=u.nome;});
     const sortU2=Object.values(bU2).sort((a,b)=>b.total-a.total).slice(0,12);
     if(document.getElementById('cHorasPessoa'))mkChart('cHorasPessoa',{type:'bar',data:{labels:sortU2.map(u=>u.nome.split(' ')[0]),datasets:[{label:'BIB',data:sortU2.map(u=>u.bib),backgroundColor:'rgba(34,197,94,.7)',borderRadius:4,borderWidth:0},{label:'NIB',data:sortU2.map(u=>u.nib),backgroundColor:'rgba(245,158,11,.7)',borderRadius:4,borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},scales:{x:{stacked:true,ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
-    // Horas x Projeto (BIB only)
     const bP2={};fH2.filter(h=>h.tipo_hora==='BIB').forEach(h=>{const d=S.deals.find(x=>x.id===h.deal_id);const nome=d?(d.projeto||d.cliente):(h.codigo_debito||'?');if(!bP2[nome])bP2[nome]=0;bP2[nome]+=h.horas||0;});
     const sortP2=Object.entries(bP2).sort((a,b)=>b[1]-a[1]).slice(0,10);
     if(document.getElementById('cHorasProjeto')&&sortP2.length)mkChart('cHorasProjeto',{type:'bar',data:{labels:sortP2.map(x=>x[0].length>14?x[0].substring(0,14)+'…':x[0]),datasets:[{data:sortP2.map(x=>x[1]),backgroundColor:PAL.map(c=>c+'BB'),borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
-    // Horas por Mês (stacked by user)
     const bMes2={};fH2.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bMes2[m])bMes2[m]={};const uid=h.usuario_id||'?';if(!bMes2[m][uid])bMes2[m][uid]=0;bMes2[m][uid]+=h.horas||0;});
     const meses2=Object.keys(bMes2).sort();
     const uids2=[...new Set(fH2.map(h=>h.usuario_id))];
     if(document.getElementById('cHorasMes')&&meses2.length)mkChart('cHorasMes',{type:'bar',data:{labels:meses2.map(m=>{const[y,mo]=m.split('-');return['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)]+'/'+y.substring(2);}),datasets:uids2.map((uid,i)=>{const u=S.usuarios.find(x=>x.id===uid);return{label:u?u.nome.split(' ')[0]:uid.substring(0,6),data:meses2.map(m=>(bMes2[m]||{})[uid]||0),backgroundColor:PAL[i%PAL.length]+'AA',borderRadius:3,borderWidth:0};})},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:9},boxWidth:8}}},scales:{x:{stacked:true,ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
-    // Horas x Código de Débito
     const bCod2={};fH2.forEach(h=>{const c=h.codigo_debito||(h.tipo_hora||'?');if(!bCod2[c])bCod2[c]=0;bCod2[c]+=h.horas||0;});
     const sortCod2=Object.entries(bCod2).sort((a,b)=>b[1]-a[1]).slice(0,15);
     if(document.getElementById('cHorasCodigo'))mkChart('cHorasCodigo',{type:'bar',data:{labels:sortCod2.map(x=>x[0]),datasets:[{data:sortCod2.map(x=>x[1]),backgroundColor:sortCod2.map(x=>x[0].startsWith('B')?'rgba(34,197,94,.7)':x[0].startsWith('D')?'rgba(100,116,139,.7)':'rgba(245,158,11,.7)'),borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:8},autoSkip:false},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
-    // Taxa de Ocupação x Pessoa (combo bar+line)
     if(document.getElementById('cTaxaPessoa')&&sortU2.length)mkChart('cTaxaPessoa',{type:'bar',data:{labels:sortU2.map(u=>u.nome.split(' ')[0]),datasets:[{label:'Horas BIB',data:sortU2.map(u=>u.bib),backgroundColor:'rgba(0,120,212,.6)',borderRadius:4,borderWidth:0,order:2,yAxisID:'y'},{label:'Taxa %',data:sortU2.map(u=>u.bib+u.nib>0?Math.round(u.bib/(u.bib+u.nib)*100):0),type:'line',borderColor:'#22C55E',borderWidth:2,pointBackgroundColor:'#22C55E',pointRadius:4,fill:false,order:1,yAxisID:'y1'}]},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{position:'left',ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y1:{position:'right',min:0,max:100,ticks:{color:'#22C55E',font:{size:9},callback:v=>v+'%'},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
-    // Horas por Tipo (donut)
     const bibT=fH2.filter(h=>h.tipo_hora==='BIB').reduce((s,h)=>s+(h.horas||0),0);
     const nibT=fH2.filter(h=>h.tipo_hora!=='BIB'&&h.tipo_hora!=='DED').reduce((s,h)=>s+(h.horas||0),0);
     const dedT=fH2.filter(h=>h.tipo_hora==='DED').reduce((s,h)=>s+(h.horas||0),0);
     if(document.getElementById('cHorasTipo'))mkChart('cHorasTipo',{type:'doughnut',data:{labels:['BIB','NIB','DED'],datasets:[{data:[bibT,nibT,dedT],backgroundColor:['#22C55E','#F59E0B','#64748B'],borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
-    // Horas Debitadas x Mês — horizontal total (NOVO)
     const bDebMes={};fH2.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bDebMes[m])bDebMes[m]=0;bDebMes[m]+=h.horas||0;});
     const mesesDeb=Object.keys(bDebMes).sort();
     const MESES_PT=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const mesesDebLabel=mesesDeb.map(m=>{const[y,mo]=m.split('-');return y+' '+MESES_PT[parseInt(mo)];});
     const mesesDebData=mesesDeb.map(m=>Math.round(bDebMes[m]*10)/10);
     if(document.getElementById('cHorasDebMes')&&mesesDeb.length)mkChart('cHorasDebMes',{type:'bar',data:{labels:mesesDebLabel,datasets:[{data:mesesDebData,backgroundColor:'rgba(0,120,212,.75)',borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:11},autoSkip:false},grid:{display:false}}}}});
-    // Evolução da Taxa de Conversão (NOVO)
     const bMesTaxa={};fH2.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bMesTaxa[m])bMesTaxa[m]={bib:0,nib:0};if(h.tipo_hora==='BIB')bMesTaxa[m].bib+=h.horas||0;else if(h.tipo_hora!=='DED')bMesTaxa[m].nib+=h.horas||0;});
     const mesesT=Object.keys(bMesTaxa).sort();
     const taxaMesV=mesesT.map(m=>{const d=bMesTaxa[m];return d.bib+d.nib>0?Math.round(d.bib/(d.bib+d.nib)*100):0;});
@@ -1307,11 +1252,7 @@ function initCharts(){
     const recPMes=new Array(12).fill(0);
     S.retParcelas.filter(p=>p.status==='Recebido').forEach(p=>{const[m,y]=p.mes.split('/');if(parseInt(y)===anoRecR){const idx=parseInt(m)-1;if(idx>=0&&idx<12)recPMes[idx]+=p.valor||0;}});
     S.recReal.forEach(r=>{if(r.data_pagamento){const dr=new Date(r.data_pagamento);if(dr.getFullYear()===anoRecR)recPMes[dr.getMonth()]+=r.valor||0;}});
-    if(document.getElementById('cRecMensalReceita'))mkChart('cRecMensalReceita',{type:'bar',data:{labels:mesesRecR,datasets:[{label:'Receita',data:recPMes,backgroundColor:recPMes.map(v=>v>0?'rgba(0,120,212,.7)':'rgba(0,120,212,.18)'),borderRadius:6,borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
-    const mrrR=atR.reduce((s,d)=>s+(d.retainer_f2||0),0);
-    const sfPotR=atR.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
-    if(document.getElementById('cRetSF'))mkChart('cRetSF',{type:'doughnut',data:{labels:['Retainer mensal','Success Fee potencial'],datasets:[{data:[mrrR,sfPotR],backgroundColor:['#0078D4','#00B4D8'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
-  }
+    if(document.getElementById('cRecMensalReceita'))mkChart('cRecMensalReceita',{type:'bar',data:{labels:mesesRecR,datasets:[{label:'Receita',data:recPMes,backgroundColor:recPMes.map(v=>v>0?'rgba(0,120,212,.7)':'rgba(0,120,212,.18)'),borderRadius:6,borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});const mrrR=atR.reduce((s,d)=>s+(d.retainer_f2||0),0);const sfPotR=atR.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);if(document.getElementById('cRetSF'))mkChart('cRetSF',{type:'doughnut',data:{labels:['Retainer mensal','Success Fee potencial'],datasets:[{data:[mrrR,sfPotR],backgroundColor:['#0078D4','#00B4D8'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});}
 }
 function clearHorasFilter(){S.horasFiltroColab='';S.horasFiltroMes='';render();}
 function clearDateFilter(){S.filtroDataDe='';S.filtroDataAte='';render();}
@@ -1329,7 +1270,7 @@ function render(){
     const topbar=`<div class="topbar"><div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div><div class="topbar-right"><span style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</span>${hasSeg?`<div class="seg"><button class="seg-btn ${S.seg==='ma'?'active':''}" onclick="S.seg='ma';render()">M&A</button><button class="seg-btn ${S.seg==='dcm'?'active':''}" onclick="S.seg='dcm';render()">DCM</button></div>`:''} ${S.page==='dashboard'?`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text2)">De</span><input type="date" class="fsel" style="padding:5px 8px" value="${S.filtroDataDe||''}" onchange="S.filtroDataDe=this.value;render()"/><span style="font-size:10px;color:var(--text2)">Até</span><input type="date" class="fsel" style="padding:5px 8px" value="${S.filtroDataAte||''}" onchange="S.filtroDataAte=this.value;render()"/>${(S.filtroDataDe||S.filtroDataAte)?'<button class="bgh bsm" onclick="clearDateFilter()">✕</button>':''}</div>`:''} ${hasSeg?`<select class="fsel" onchange="S.filtroColab=this.value;render()"><option value="">Todos os colaboradores</option>${S.usuarios.map(uu=>`<option value="${uu.nome}"${S.filtroColab===uu.nome?' selected':''}>${uu.nome}</option>`).join('')}</select>`:''}</div></div>`;
     switch(S.page){case'pipe':content=topbar+renderPipe();break;case'dashboard':content=topbar+renderDash();break;case'pipeline':content=topbar+renderPipeline();break;case'ma':case'dcm':case'encerrados':case'onhold':content=topbar+renderProjetos();break;case'receita':content=topbar+renderReceita();break;case'horas':content=topbar+renderHoras();break;case'equipe':content=topbar+renderEquipe();break;case'tarefas':content=topbar+renderTarefas();break;}
   }
-  const sidebar=`<div class="sidebar"><div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:`<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;S.detalheTab='fases';S.pipeDetail=null;S.pipeTab='dashboard';render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()} </div>`).join('')}<div style="flex:1"></div><div class="sidebar-footer"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''}</div></div></div><button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button><button class="logout-btn" onclick="logout()">↗ Sair</button></div></div>`;
+  const sidebar=`<div class="sidebar"><div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:`<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;S.detalheTab='fases';S.pipeDetail=null;render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()} </div>`).join('')}<div style="flex:1"></div><div class="sidebar-footer"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''}</div></div></div><button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button><button class="logout-btn" onclick="logout()">↗ Sair</button></div></div>`;
   const modal=S.modal==='pipeDeal'?mPipeDeal():S.modal==='pipeAtiv'?mPipeAtiv():S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():S.modal==='retparcela'?mRetParcela():S.modal==='meta'?mMeta():'';
   destroyCharts();app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
   if(!S.loading&&!S.detail)setTimeout(initCharts,150);
