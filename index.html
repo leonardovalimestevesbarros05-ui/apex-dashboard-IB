@@ -687,55 +687,6 @@ function renderHoras(){
     if(u){bU[k].nome=u.nome;bU[k].cargo=u.cargo||'';}
   });
   const sortedUsers=Object.values(bU).sort((a,b)=>b.total-a.total);
-  const maxTotal=Math.max(...sortedUsers.map(u=>u.total),1);
-
-  // By cargo
-  const CARGOS_ORDER=['Sócio / Diretor','Gerente','Analista Sênior','Analista','Assistente','Estagiário'];
-  const bCargo={};
-  sortedUsers.forEach(u=>{
-    const c=u.cargo||'Outros';
-    const cKey=CARGOS_ORDER.find(x=>u.cargo&&u.cargo.includes(x.split(' ')[u.cargo.includes('Diretor')?1:0]))||c;
-    const label=u.cargo&&u.cargo.toLowerCase().includes('diretor')?'Diretor':u.cargo&&u.cargo.toLowerCase().includes('gerente')?'Gerente':'Analista';
-    if(!bCargo[label])bCargo[label]={bib:0,nib:0,ded:0,total:0};
-    bCargo[label].bib+=u.bib;bCargo[label].nib+=u.nib;bCargo[label].ded+=u.ded;bCargo[label].total+=u.total;
-  });
-
-  // By task (BIB only)
-  const bTask={};
-  fH.filter(h=>h.tipo_hora==='BIB').forEach(h=>{
-    const t=h.task||h.fase||'Outros';
-    if(!bTask[t])bTask[t]=0;bTask[t]+=h.horas||0;
-  });
-  const sortedTasks=Object.entries(bTask).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const maxTask=Math.max(...sortedTasks.map(x=>x[1]),1);
-
-  // By project (BIB only)
-  const bProj={};
-  fH.filter(h=>h.tipo_hora==='BIB').forEach(h=>{
-    const d=S.deals.find(x=>x.id===h.deal_id);
-    const nome=d?(d.projeto||d.cliente):(h.codigo_debito||'Sem projeto');
-    if(!bProj[nome])bProj[nome]=0;bProj[nome]+=h.horas||0;
-  });
-  const sortedProj=Object.entries(bProj).sort((a,b)=>b[1]-a[1]).slice(0,10);
-
-  // By month
-  const bMes={};
-  fH.forEach(h=>{
-    if(!h.data)return;
-    const m=h.data.substring(0,7);
-    if(!bMes[m])bMes[m]={bib:0,nib:0,ded:0};
-    if(h.tipo_hora==='BIB')bMes[m].bib+=h.horas||0;
-    else if(h.tipo_hora==='DED')bMes[m].ded+=h.horas||0;
-    else bMes[m].nib+=h.horas||0;
-  });
-  const mesesSorted=Object.keys(bMes).sort();
-
-  // Taxa por mes
-  const taxaMes=mesesSorted.map(m=>{
-    const d=bMes[m];
-    return d.bib+d.nib>0?Math.round(d.bib/(d.bib+d.nib)*100):0;
-  });
-  const mediaGlobalTaxa=taxaMes.length?Math.round(taxaMes.reduce((s,v)=>s+v,0)/taxaMes.length):0;
 
   const allMeses=[...new Set(allH.map(h=>h.data?.substring(0,7)).filter(Boolean))].sort().reverse();
 
@@ -758,16 +709,12 @@ function renderHoras(){
     </div>
   </div>`;
 
-  const kpis=`<div class="kpis k5" style="margin-bottom:20px">
-    <div class="kpi"><div class="kl">Total horas</div><div class="kv">${tH.toFixed(1)}h</div><div class="ks">${diasSet.size} dias · ${mediaDia}h/dia</div></div>
-    <div class="kpi" style="background:rgba(0,120,212,.08);border:1px solid rgba(0,120,212,.2)"><div class="kl">BIB — Billable</div><div class="kv" style="color:var(--blue)">${bib.toFixed(1)}h</div><div class="ks">${tH?Math.round(bib/tH*100):0}% do total</div></div>
-    <div class="kpi" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)"><div class="kl">NIB — Non-billable</div><div class="kv" style="color:var(--amber)">${nibCalc.toFixed(1)}h</div><div class="ks">${tH?Math.round(nibCalc/tH*100):0}% do total</div></div>
-    <div class="kpi" style="background:rgba(100,116,139,.08);border:1px solid rgba(100,116,139,.2)"><div class="kl">DED — Dedutível</div><div class="kv" style="color:#64748B">${ded.toFixed(1)}h</div><div class="ks">${tH?Math.round(ded/tH*100):0}% do total</div></div>
-    <div class="kpi" style="background:${taxa>=70?'rgba(34,197,94,.08)':taxa>=55?'rgba(0,120,212,.08)':'rgba(245,158,11,.08)'};border:1px solid ${taxa>=70?'rgba(34,197,94,.2)':taxa>=55?'rgba(0,120,212,.2)':'rgba(245,158,11,.2)'}">
-      <div class="kl">Taxa de conversão</div>
-      <div class="kv" style="color:${taxa>=70?'var(--green)':taxa>=55?'var(--blue)':'var(--amber)'}">${taxa}%</div>
-      <div class="ks">BIB ÷ (BIB+NIB)</div>
-    </div>
+  const kpis=`<div class="kpis k5">
+    <div class="kpi ac"><div class="kl">Total horas</div><div class="kv">${tH.toFixed(1)}h</div><div class="ks">${diasSet.size} dias · ${mediaDia}h/dia</div></div>
+    <div class="kpi ac3"><div class="kl">BIB — Billable</div><div class="kv">${bib.toFixed(1)}h</div><div class="ks">${tH?Math.round(bib/tH*100):0}%</div></div>
+    <div class="kpi ac4"><div class="kl">NIB — Non-billable</div><div class="kv">${nibCalc.toFixed(1)}h</div><div class="ks">${tH?Math.round(nibCalc/tH*100):0}%</div></div>
+    <div class="kpi" style="background:rgba(100,116,139,.08);border:1px solid rgba(100,116,139,.2)"><div class="kl">DED — Dedutível</div><div class="kv" style="color:#64748B">${ded.toFixed(1)}h</div></div>
+    <div class="kpi ac2"><div class="kl">Taxa de conversão</div><div class="kv">${taxa}%</div><div class="ks">BIB / (BIB+NIB)</div></div>
   </div>`;
 
   if(tab==='lancamentos'){
@@ -777,7 +724,7 @@ function renderHoras(){
         <div class="ct" style="margin:0">Lançamentos</div>
         <span style="font-size:11px;color:var(--text2)">${recentes.length} de ${fH.length}</span>
       </div>
-      ${fH.length===0?`<div style="text-align:center;padding:50px"><div style="font-size:40px;margin-bottom:12px;opacity:.4">⏱</div><div style="font-size:14px;font-weight:600;color:var(--text2)">Nenhuma hora lançada</div></div>`:`
+      ${fH.length===0?`<div style="text-align:center;padding:50px"><div style="font-size:40px;opacity:.4">⏱</div><div style="font-size:14px;font-weight:600;color:var(--text2)">Nenhuma hora lançada</div></div>`:`
       <div style="overflow-x:auto"><table>
         <thead><tr><th>Código</th><th>Colaborador</th><th>Projeto</th><th>Task</th><th>Tipo</th><th>Horas</th><th>Data</th><th>Detalhe</th><th></th></tr></thead>
         <tbody>${recentes.map(h=>{
@@ -801,143 +748,30 @@ function renderHoras(){
     </div>`;
   }
 
-  // ── DASHBOARD ──────────────────────────────────────────────────────────────
-  // Row 1: horas por colaborador + horas por cargo
-  const cargoKeys=Object.keys(bCargo);
-  const cargoHtml=cargoKeys.length===0?`<div class="empty">Sem dados</div>`:`
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      ${cargoKeys.map(c=>{
-        const d=bCargo[c];
-        const t2=d.bib+d.nib>0?Math.round(d.bib/(d.bib+d.nib)*100):0;
-        const cor=t2>=70?'var(--green)':t2>=55?'var(--blue)':'var(--amber)';
-        return`<div style="flex:1;background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${c}</div>
-          <div style="font-size:20px;font-weight:700">${d.total.toFixed(0)}h</div>
-          <div style="font-size:11px;color:${cor};margin-top:3px;font-weight:600">${t2}% BIB</div>
-        </div>`;
-      }).join('')}
-    </div>
-    <div class="ct" style="margin-bottom:10px">Taxa por cargo</div>
-    ${cargoKeys.map(c=>{
-      const d=bCargo[c];
-      const t2=d.bib+d.nib>0?Math.round(d.bib/(d.bib+d.nib)*100):0;
-      const cor=t2>=70?'var(--green)':t2>=55?'var(--blue)':'var(--amber)';
-      return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="width:90px;font-size:12px;font-weight:500;flex-shrink:0">${c}</div>
-        <div style="flex:1;height:12px;background:var(--bg3);border-radius:6px;overflow:hidden">
-          <div style="height:12px;background:${cor};border-radius:6px;width:${t2}%;transition:width .5s"></div>
-        </div>
-        <div style="width:36px;font-size:12px;font-weight:700;color:${cor};text-align:right">${t2}%</div>
-      </div>`;
-    }).join('')}
-    <div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:8px;border-top:1px solid var(--border)">
-      <div style="width:90px;font-size:12px;font-weight:600;flex-shrink:0;color:var(--text2)">Média geral</div>
-      <div style="flex:1;height:10px;background:var(--bg3);border-radius:5px;overflow:hidden">
-        <div style="height:10px;background:#64748B;border-radius:5px;width:${taxa}%;transition:width .5s"></div>
-      </div>
-      <div style="width:36px;font-size:12px;font-weight:700;text-align:right">${taxa}%</div>
-    </div>`;
-
-  // Horas por colaborador stacked bars
-  const maxU=Math.max(...sortedUsers.map(u=>u.total),1);
-  const colabHtml=sortedUsers.length===0?`<div class="empty">Sem dados</div>`:sortedUsers.map((u,i)=>{
-    const bPct=Math.round(u.bib/maxU*100);
-    const nPct=Math.round(u.nib/maxU*100);
-    const dPct=Math.round(u.ded/maxU*100);
-    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
-      <div style="width:100px;font-size:12px;font-weight:500;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:var(--blue)" onclick="S.horasFiltroColab='${u.id}';render()">${u.nome.split(' ')[0]+' '+(u.nome.split(' ')[1]||'')}</div>
-      <div style="flex:1;height:18px;background:var(--bg3);border-radius:3px;overflow:hidden;display:flex">
-        <div style="height:18px;background:var(--blue);width:${bPct}%"></div>
-        <div style="height:18px;background:var(--amber);width:${nPct}%"></div>
-        <div style="height:18px;background:#64748B;width:${dPct}%"></div>
-      </div>
-      <div style="width:38px;font-size:11px;color:var(--text2);text-align:right;flex-shrink:0">${u.total.toFixed(0)}h</div>
-    </div>`;
-  }).join('');
-
-  // Taxa por colaborador
-  const taxaColabHtml=sortedUsers.length===0?`<div class="empty">Sem dados</div>`:sortedUsers.map(u=>{
-    const t2=u.bib+u.nib>0?Math.round(u.bib/(u.bib+u.nib)*100):0;
-    const cor=t2>=70?'var(--green)':t2>=55?'var(--blue)':'var(--amber)';
-    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="width:100px;font-size:12px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.nome.split(' ')[0]+' '+(u.nome.split(' ')[1]||'')}</div>
-      <div style="flex:1;height:12px;background:var(--bg3);border-radius:6px;overflow:hidden">
-        <div style="height:12px;background:${cor};border-radius:6px;width:${t2}%;transition:width .5s"></div>
-      </div>
-      <div style="width:36px;font-size:12px;font-weight:700;color:${cor};text-align:right">${t2}%</div>
-    </div>`;
-  }).join('');
-
-  // Tasks
-  const taskHtml=sortedTasks.length===0?`<div class="empty">Sem dados BIB</div>`:sortedTasks.map(([label,h])=>{
-    const pct=Math.round(h/maxTask*100);
-    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
-      <div style="width:130px;font-size:12px;flex-shrink:0">${label}</div>
-      <div style="flex:1;height:14px;background:var(--bg3);border-radius:3px;overflow:hidden">
-        <div style="height:14px;background:var(--blue);border-radius:3px;width:${pct}%"></div>
-      </div>
-      <div style="width:42px;font-size:11px;color:var(--text2);text-align:right;flex-shrink:0">${h.toFixed(0)}h</div>
-    </div>`;
-  }).join('');
-
+  // ── DASHBOARD ─────────────────────────────────────────────────────────────
   return topbar+kpis+`
-  <div class="g2" style="margin-bottom:14px">
-    <div class="card" style="margin-bottom:0">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <div class="ct" style="margin:0">Horas por colaborador</div>
-        <div style="display:flex;gap:10px;margin-left:auto;font-size:11px;color:var(--text2)">
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:var(--blue)"></span>BIB</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:var(--amber)"></span>NIB</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#64748B"></span>DED</span>
-        </div>
-      </div>
-      ${colabHtml}
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Horas por cargo</div>
-      ${cargoHtml}
-    </div>
+  <div class="g2">
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Pessoa</div><div class="cw-lg"><canvas id="cHorasPessoa" role="img" aria-label="Horas por pessoa">Horas por colaborador BIB/NIB</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Projeto/Atividade</div><div class="cw-lg"><canvas id="cHorasProjeto" role="img" aria-label="Horas por projeto">Horas BIB por projeto</canvas></div></div>
   </div>
-
-  <div class="g2" style="margin-bottom:14px">
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Taxa de conversão por colaborador</div>
-      <div style="font-size:10px;color:var(--text2);margin-bottom:10px">
-        <span style="color:var(--green)">■</span> ≥70% excelente &nbsp;
-        <span style="color:var(--blue)">■</span> ≥55% ok &nbsp;
-        <span style="color:var(--amber)">■</span> &lt;55% atenção
-      </div>
-      ${taxaColabHtml}
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Horas por project task (BIB)</div>
-      ${taskHtml}
-    </div>
+  <div style="height:14px"></div>
+  <div class="g2">
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas por Mês</div><div class="cw-lg"><canvas id="cHorasMes" role="img" aria-label="Horas por mês">Horas mensais</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Código de Débito</div><div class="cw-lg"><canvas id="cHorasCodigo" role="img" aria-label="Horas por código">Horas por código de débito</canvas></div></div>
   </div>
-
-  <div class="g2" style="margin-bottom:14px">
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Evolução mensal — horas</div>
-      <div style="position:relative;height:200px"><canvas id="cHorasMes" role="img" aria-label="Evolução mensal de horas">Horas por mês</canvas></div>
-    </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="ct">Evolução da taxa de conversão</div>
-      <div style="position:relative;height:200px"><canvas id="cTaxaMes" role="img" aria-label="Taxa de conversão mensal">Taxa de conversão por mês</canvas></div>
-    </div>
+  <div style="height:14px"></div>
+  <div class="g2">
+    <div class="card" style="margin-bottom:0"><div class="ct">Taxa de Ocupação x Pessoa</div><div class="cw-lg"><canvas id="cTaxaPessoa" role="img" aria-label="Taxa de ocupação por pessoa">Taxa de conversão por colaborador</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas por Tipo</div><div style="display:flex;align-items:center;gap:20px;padding:10px 0"><div style="position:relative;height:220px;flex:1"><canvas id="cHorasTipo" role="img" aria-label="Horas por tipo BIB NIB DED">Distribuição de horas</canvas></div><div style="display:flex;flex-direction:column;gap:10px">${[['BIB','var(--green)',bib],['NIB','var(--amber)',nibCalc],['DED','#64748B',ded]].map(([l,c,v])=>`<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:${c}"></div><div><div style="font-size:11px;font-weight:700;color:${c}">${v.toFixed(1)}h</div><div style="font-size:9px;color:var(--text2)">${l}</div></div></div>`).join('')}</div></div></div>
   </div>
-
-  <div class="card" style="margin-bottom:14px">
-    <div class="ct">Horas debitadas x mês (total)</div>
-    <div style="position:relative;height:${Math.max(200,(()=>{const bMesT={};fH.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bMesT[m])bMesT[m]=0;bMesT[m]+=h.horas||0;});return Object.keys(bMesT).length;})()*38+60)}px"><canvas id="cHorasDebMes" role="img" aria-label="Horas debitadas por mês">Total de horas por mês</canvas></div>
+  <div style="height:14px"></div>
+  <div class="g2">
+    <div class="card" style="margin-bottom:0"><div class="ct">Horas Debitadas x Mês (total)</div><div style="position:relative;height:280px"><canvas id="cHorasDebMes" role="img" aria-label="Total horas por mês">Total de horas debitadas por mês</canvas></div></div>
+    <div class="card" style="margin-bottom:0"><div class="ct">Evolução da Taxa de Conversão</div><div class="cw-lg"><canvas id="cTaxaMes" role="img" aria-label="Taxa de conversão mensal">Evolução da taxa mensal</canvas></div></div>
   </div>
-
-  <div class="card" style="margin-bottom:14px">
-    <div class="ct">Horas por projeto (BIB)</div>
-    <div style="position:relative;height:${Math.max(200,sortedProj.length*36+60)}px"><canvas id="cHorasProjeto" role="img" aria-label="Horas por projeto">Horas billable por projeto</canvas></div>
-  </div>
-
+  <div style="height:14px"></div>
   <div class="card">
-    <div class="ct">Acompanhamento por colaborador</div>
+    <div class="ct">Acompanhamento por Colaborador</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
     ${sortedUsers.map((u,i)=>{
       const taxaU=u.bib+u.nib>0?Math.round(u.bib/(u.bib+u.nib)*100):0;
@@ -951,12 +785,12 @@ function renderHoras(){
             <div style="font-size:10px;color:var(--text2)">${u.total.toFixed(1)}h total${u.cargo?' · '+u.cargo:''}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:18px;font-weight:800;color:${taxaU>=70?'var(--green)':taxaU>=55?'var(--blue)':'var(--amber)'}">${taxaU}%</div>
+            <div style="font-size:18px;font-weight:800;color:${taxaU>=70?'var(--green)':taxaU>=40?'var(--amber)':'var(--red)'}">${taxaU}%</div>
             <div style="font-size:9px;color:var(--text2)">taxa</div>
           </div>
         </div>
         <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex">
-          <div style="height:8px;background:var(--blue);width:${pctB}%"></div>
+          <div style="height:8px;background:var(--green);width:${pctB}%"></div>
           <div style="height:8px;background:var(--amber);width:${pctN}%"></div>
           <div style="height:8px;background:#64748B;width:${100-pctB-pctN>0?100-pctB-pctN:0}%"></div>
         </div>
@@ -1425,39 +1259,59 @@ function initCharts(){
         if(document.getElementById('cAging')){const bands=['0-30d','30-60d','60-90d','90-120d','>120d'];const aC=[0,0,0,0,0];fl.forEach(d=>{const dias=agingDias(d);if(dias<=30)aC[0]++;else if(dias<=60)aC[1]++;else if(dias<=90)aC[2]++;else if(dias<=120)aC[3]++;else aC[4]++;});mkChart('cAging',{type:'bar',data:{labels:bands,datasets:[{data:aC,backgroundColor:['#22C55E','#84CC16','#F59E0B','#F97316','#EF4444'],borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:darkTick,grid},y:{ticks:{...darkTick,font:{size:10}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});}
   }
   if(S.page==='horas'&&S.horasTab==='dashboard'){
-    let fH3=S.horas;
-    if(S.horasFiltroColab)fH3=fH3.filter(h=>h.usuario_id===S.horasFiltroColab);
-    if(S.horasFiltroMes)fH3=fH3.filter(h=>h.data&&h.data.substring(0,7)===S.horasFiltroMes);
-    // By month stacked
-    const bMes3={};
-    fH3.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bMes3[m])bMes3[m]={bib:0,nib:0,ded:0};if(h.tipo_hora==='BIB')bMes3[m].bib+=h.horas||0;else if(h.tipo_hora==='DED')bMes3[m].ded+=h.horas||0;else bMes3[m].nib+=h.horas||0;});
-    const meses3=Object.keys(bMes3).sort();
-    const mesesLabel3=meses3.map(m=>{const[y,mo]=m.split('-');return['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)]+'/'+y.substring(2);});
-    if(document.getElementById('cHorasMes')&&meses3.length)mkChart('cHorasMes',{type:'bar',data:{labels:mesesLabel3,datasets:[{label:'BIB',data:meses3.map(m=>bMes3[m].bib),backgroundColor:'rgba(0,120,212,.75)',borderRadius:3,stack:'a'},{label:'NIB',data:meses3.map(m=>bMes3[m].nib),backgroundColor:'rgba(245,158,11,.75)',borderRadius:3,stack:'a'},{label:'DED',data:meses3.map(m=>bMes3[m].ded),backgroundColor:'rgba(100,116,139,.6)',borderRadius:3,stack:'a'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
-    // Taxa por mês
-    const taxaMes3=meses3.map(m=>{const d=bMes3[m];return d.bib+d.nib>0?Math.round(d.bib/(d.bib+d.nib)*100):0;});
-    const mediaT3=taxaMes3.length?Math.round(taxaMes3.reduce((s,v)=>s+v,0)/taxaMes3.length):0;
-    if(document.getElementById('cTaxaMes')&&meses3.length)mkChart('cTaxaMes',{type:'line',data:{labels:mesesLabel3,datasets:[{label:'Taxa',data:taxaMes3,borderColor:'#0078D4',backgroundColor:'rgba(0,120,212,.08)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#0078D4'},{label:'Média',data:meses3.map(()=>mediaT3),borderColor:'#64748B',borderDash:[5,3],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'}}}}}); 
-    // Horas por projeto horizontal bar
-    const bProj3={};fH3.filter(h=>h.tipo_hora==='BIB').forEach(h=>{const d=S.deals.find(x=>x.id===h.deal_id);const nome=d?(d.projeto||d.cliente):(h.codigo_debito||'?');if(!bProj3[nome])bProj3[nome]=0;bProj3[nome]+=h.horas||0;});
-    const sortP3=Object.entries(bProj3).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    // Horas debitadas x mês (total, horizontal)
-    const bDebMes={};
-    fH3.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bDebMes[m])bDebMes[m]=0;bDebMes[m]+=h.horas||0;});
+    let fH2=S.horas;
+    if(S.horasFiltroColab)fH2=fH2.filter(h=>h.usuario_id===S.horasFiltroColab);
+    if(S.horasFiltroMes)fH2=fH2.filter(h=>h.data&&h.data.substring(0,7)===S.horasFiltroMes);
+    // By user stacked BIB/NIB
+    const bU2={};fH2.forEach(h=>{const k=h.usuario_id;if(!bU2[k])bU2[k]={bib:0,nib:0,total:0,nome:''};if(h.tipo_hora==='BIB')bU2[k].bib+=h.horas||0;else bU2[k].nib+=h.horas||0;bU2[k].total+=h.horas||0;const u=S.usuarios.find(x=>x.id===k);if(u)bU2[k].nome=u.nome;});
+    const sortU2=Object.values(bU2).sort((a,b)=>b.total-a.total).slice(0,12);
+    if(document.getElementById('cHorasPessoa'))mkChart('cHorasPessoa',{type:'bar',data:{labels:sortU2.map(u=>u.nome.split(' ')[0]),datasets:[{label:'BIB',data:sortU2.map(u=>u.bib),backgroundColor:'rgba(34,197,94,.7)',borderRadius:4,borderWidth:0},{label:'NIB',data:sortU2.map(u=>u.nib),backgroundColor:'rgba(245,158,11,.7)',borderRadius:4,borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},scales:{x:{stacked:true,ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+    // Horas x Projeto (BIB only)
+    const bP2={};fH2.filter(h=>h.tipo_hora==='BIB').forEach(h=>{const d=S.deals.find(x=>x.id===h.deal_id);const nome=d?(d.projeto||d.cliente):(h.codigo_debito||'?');if(!bP2[nome])bP2[nome]=0;bP2[nome]+=h.horas||0;});
+    const sortP2=Object.entries(bP2).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(document.getElementById('cHorasProjeto')&&sortP2.length)mkChart('cHorasProjeto',{type:'bar',data:{labels:sortP2.map(x=>x[0].length>14?x[0].substring(0,14)+'…':x[0]),datasets:[{data:sortP2.map(x=>x[1]),backgroundColor:PAL.map(c=>c+'BB'),borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+    // Horas por Mês (stacked by user)
+    const bMes2={};fH2.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bMes2[m])bMes2[m]={};const uid=h.usuario_id||'?';if(!bMes2[m][uid])bMes2[m][uid]=0;bMes2[m][uid]+=h.horas||0;});
+    const meses2=Object.keys(bMes2).sort();
+    const uids2=[...new Set(fH2.map(h=>h.usuario_id))];
+    if(document.getElementById('cHorasMes')&&meses2.length)mkChart('cHorasMes',{type:'bar',data:{labels:meses2.map(m=>{const[y,mo]=m.split('-');return['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)]+'/'+y.substring(2);}),datasets:uids2.map((uid,i)=>{const u=S.usuarios.find(x=>x.id===uid);return{label:u?u.nome.split(' ')[0]:uid.substring(0,6),data:meses2.map(m=>(bMes2[m]||{})[uid]||0),backgroundColor:PAL[i%PAL.length]+'AA',borderRadius:3,borderWidth:0};})},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:9},boxWidth:8}}},scales:{x:{stacked:true,ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+    // Horas x Código de Débito
+    const bCod2={};fH2.forEach(h=>{const c=h.codigo_debito||(h.tipo_hora||'?');if(!bCod2[c])bCod2[c]=0;bCod2[c]+=h.horas||0;});
+    const sortCod2=Object.entries(bCod2).sort((a,b)=>b[1]-a[1]).slice(0,15);
+    if(document.getElementById('cHorasCodigo'))mkChart('cHorasCodigo',{type:'bar',data:{labels:sortCod2.map(x=>x[0]),datasets:[{data:sortCod2.map(x=>x[1]),backgroundColor:sortCod2.map(x=>x[0].startsWith('B')?'rgba(34,197,94,.7)':x[0].startsWith('D')?'rgba(100,116,139,.7)':'rgba(245,158,11,.7)'),borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:8},autoSkip:false},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+    // Taxa de Ocupação x Pessoa (combo bar+line)
+    if(document.getElementById('cTaxaPessoa')&&sortU2.length)mkChart('cTaxaPessoa',{type:'bar',data:{labels:sortU2.map(u=>u.nome.split(' ')[0]),datasets:[{label:'Horas BIB',data:sortU2.map(u=>u.bib),backgroundColor:'rgba(0,120,212,.6)',borderRadius:4,borderWidth:0,order:2,yAxisID:'y'},{label:'Taxa %',data:sortU2.map(u=>u.bib+u.nib>0?Math.round(u.bib/(u.bib+u.nib)*100):0),type:'line',borderColor:'#22C55E',borderWidth:2,pointBackgroundColor:'#22C55E',pointRadius:4,fill:false,order:1,yAxisID:'y1'}]},options:{plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{position:'left',ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y1:{position:'right',min:0,max:100,ticks:{color:'#22C55E',font:{size:9},callback:v=>v+'%'},grid:{display:false}}},responsive:true,maintainAspectRatio:false}});
+    // Horas por Tipo (donut)
+    const bibT=fH2.filter(h=>h.tipo_hora==='BIB').reduce((s,h)=>s+(h.horas||0),0);
+    const nibT=fH2.filter(h=>h.tipo_hora!=='BIB'&&h.tipo_hora!=='DED').reduce((s,h)=>s+(h.horas||0),0);
+    const dedT=fH2.filter(h=>h.tipo_hora==='DED').reduce((s,h)=>s+(h.horas||0),0);
+    if(document.getElementById('cHorasTipo'))mkChart('cHorasTipo',{type:'doughnut',data:{labels:['BIB','NIB','DED'],datasets:[{data:[bibT,nibT,dedT],backgroundColor:['#22C55E','#F59E0B','#64748B'],borderWidth:0}]},options:{cutout:'62%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
+    // Horas Debitadas x Mês — horizontal total (NOVO)
+    const bDebMes={};fH2.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bDebMes[m])bDebMes[m]=0;bDebMes[m]+=h.horas||0;});
     const mesesDeb=Object.keys(bDebMes).sort();
     const MESES_PT=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const mesesDebLabel=mesesDeb.map(m=>{const[y,mo]=m.split('-');return y+' '+MESES_PT[parseInt(mo)];});
     const mesesDebData=mesesDeb.map(m=>Math.round(bDebMes[m]*10)/10);
-    if(document.getElementById('cHorasDebMes')&&mesesDeb.length)mkChart('cHorasDebMes',{type:'bar',data:{labels:mesesDebLabel,datasets:[{data:mesesDebData,backgroundColor:'rgba(0,120,212,.75)',borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:11},autoSkip:false},grid:{display:false}}},layout:{padding:{right:50}}},plugins:[{afterDatasetsDraw:(chart)=>{const{ctx,data,scales:{x,y}}=chart;ctx.save();ctx.font='bold 11px Segoe UI, system-ui, sans-serif';ctx.fillStyle='#8899B0';ctx.textAlign='left';data.datasets[0].data.forEach((val,i)=>{const xPos=x.getPixelForValue(val);const yPos=y.getPixelForValue(i);ctx.fillText(val.toLocaleString('pt-BR'),xPos+6,yPos+4);});ctx.restore();}}]});
-        if(document.getElementById('cHorasProjeto')&&sortP3.length)mkChart('cHorasProjeto',{type:'bar',data:{labels:sortP3.map(x=>x[0].length>18?x[0].substring(0,18)+'…':x[0]),datasets:[{data:sortP3.map(x=>x[1]),backgroundColor:PAL.map(c=>c+'BB'),borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:10}},grid:{display:false}}}}});
+    if(document.getElementById('cHorasDebMes')&&mesesDeb.length)mkChart('cHorasDebMes',{type:'bar',data:{labels:mesesDebLabel,datasets:[{data:mesesDebData,backgroundColor:'rgba(0,120,212,.75)',borderRadius:4,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'h'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:11},autoSkip:false},grid:{display:false}}}}});
+    // Evolução da Taxa de Conversão (NOVO)
+    const bMesTaxa={};fH2.forEach(h=>{if(!h.data)return;const m=h.data.substring(0,7);if(!bMesTaxa[m])bMesTaxa[m]={bib:0,nib:0};if(h.tipo_hora==='BIB')bMesTaxa[m].bib+=h.horas||0;else if(h.tipo_hora!=='DED')bMesTaxa[m].nib+=h.horas||0;});
+    const mesesT=Object.keys(bMesTaxa).sort();
+    const taxaMesV=mesesT.map(m=>{const d=bMesTaxa[m];return d.bib+d.nib>0?Math.round(d.bib/(d.bib+d.nib)*100):0;});
+    const mediaTaxa=taxaMesV.length?Math.round(taxaMesV.reduce((s,v)=>s+v,0)/taxaMesV.length):0;
+    if(document.getElementById('cTaxaMes')&&mesesT.length)mkChart('cTaxaMes',{type:'line',data:{labels:mesesT.map(m=>{const[y,mo]=m.split('-');return['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)]+'/'+y.substring(2);}),datasets:[{label:'Taxa',data:taxaMesV,borderColor:'#0078D4',backgroundColor:'rgba(0,120,212,.08)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#0078D4'},{label:'Média',data:mesesT.map(()=>mediaTaxa),borderColor:'#64748B',borderDash:[5,3],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#8899B0',font:{size:9},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
   }
-    if(S.page==='receita'){const atR=ativos(S.deals);
+
+  if(S.page==='receita'){const atR=ativos(S.deals);
     const anoRecR=new Date().getFullYear();
     const mesesRecR=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     const recPMes=new Array(12).fill(0);
     S.retParcelas.filter(p=>p.status==='Recebido').forEach(p=>{const[m,y]=p.mes.split('/');if(parseInt(y)===anoRecR){const idx=parseInt(m)-1;if(idx>=0&&idx<12)recPMes[idx]+=p.valor||0;}});
     S.recReal.forEach(r=>{if(r.data_pagamento){const dr=new Date(r.data_pagamento);if(dr.getFullYear()===anoRecR)recPMes[dr.getMonth()]+=r.valor||0;}});
-    if(document.getElementById('cRecMensalReceita'))mkChart('cRecMensalReceita',{type:'bar',data:{labels:mesesRecR,datasets:[{label:'Receita',data:recPMes,backgroundColor:recPMes.map(v=>v>0?'rgba(0,120,212,.7)':'rgba(0,120,212,.18)'),borderRadius:6,borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});const mrrR=atR.reduce((s,d)=>s+(d.retainer_f2||0),0);const sfPotR=atR.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);if(document.getElementById('cRetSF'))mkChart('cRetSF',{type:'doughnut',data:{labels:['Retainer mensal','Success Fee potencial'],datasets:[{data:[mrrR,sfPotR],backgroundColor:['#0078D4','#00B4D8'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:lbl}},responsive:true,maintainAspectRatio:false}});}
+    if(document.getElementById('cRecMensalReceita'))mkChart('cRecMensalReceita',{type:'bar',data:{labels:mesesRecR,datasets:[{label:'Receita',data:recPMes,backgroundColor:recPMes.map(v=>v>0?'rgba(0,120,212,.7)':'rgba(0,120,212,.18)'),borderRadius:6,borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899B0',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8899B0',font:{size:9},callback:v=>v>=1e6?`${(v/1e6).toFixed(1)}M`:v>=1e3?`${(v/1e3).toFixed(0)}K`:v},grid:{color:'rgba(255,255,255,0.04)'}}},responsive:true,maintainAspectRatio:false}});
+    const mrrR=atR.reduce((s,d)=>s+(d.retainer_f2||0),0);
+    const sfPotR=atR.reduce((s,d)=>s+(d.deal_value||0)*((d.success_fee||0)/100),0);
+    if(document.getElementById('cRetSF'))mkChart('cRetSF',{type:'doughnut',data:{labels:['Retainer mensal','Success Fee potencial'],datasets:[{data:[mrrR,sfPotR],backgroundColor:['#0078D4','#00B4D8'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{labels:{color:'#8899B0',font:{size:10},boxWidth:10}}},responsive:true,maintainAspectRatio:false}});
+  }
 }
 function clearHorasFilter(){S.horasFiltroColab='';S.horasFiltroMes='';render();}
 function clearDateFilter(){S.filtroDataDe='';S.filtroDataAte='';render();}
@@ -1472,10 +1326,10 @@ function render(){
   else if(S.detail&&S.detailType==='deal'){const d=S.deals.find(x=>x.id===S.detail);content=`<div class="topbar"><div><div class="page-title">Detalhes do projeto</div><div class="page-sub">${d?.cliente||''}</div></div><div style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</div></div>${d?renderDetalhe(d):`<div class="empty">Não encontrado.</div>`}`;}
   else{
     const hasSeg=['dashboard','pipeline'].includes(S.page);
-    const topbar=`<div class="topbar"><div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div><div class="topbar-right"><span style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</span>${hasSeg?`<div class="seg"><button class="seg-btn ${S.seg==='geral'?'active':''}" onclick="S.seg='geral';render()">Geral</button><button class="seg-btn ${S.seg==='ma'?'active':''}" onclick="S.seg='ma';render()">M&A</button><button class="seg-btn ${S.seg==='dcm'?'active':''}" onclick="S.seg='dcm';render()">DCM</button></div>`:''} ${S.page==='dashboard'?`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text2)">De</span><input type="date" class="fsel" style="padding:5px 8px" value="${S.filtroDataDe||''}" onchange="S.filtroDataDe=this.value;render()"/><span style="font-size:10px;color:var(--text2)">Até</span><input type="date" class="fsel" style="padding:5px 8px" value="${S.filtroDataAte||''}" onchange="S.filtroDataAte=this.value;render()"/>${(S.filtroDataDe||S.filtroDataAte)?'<button class="bgh bsm" onclick="clearDateFilter()">✕</button>':''}</div>`:''} ${hasSeg?`<select class="fsel" onchange="S.filtroColab=this.value;render()"><option value="">Todos os colaboradores</option>${S.usuarios.map(uu=>`<option value="${uu.nome}"${S.filtroColab===uu.nome?' selected':''}>${uu.nome}</option>`).join('')}</select>`:''}</div></div>`;
+    const topbar=`<div class="topbar"><div><div class="page-title">${TITLES[S.page]||''}</div><div class="page-sub">${SUBS[S.page]||''}</div></div><div class="topbar-right"><span style="font-size:11px;color:var(--text2)"><span class="sync-dot"></span>${syncTime}</span>${hasSeg?`<div class="seg"><button class="seg-btn ${S.seg==='ma'?'active':''}" onclick="S.seg='ma';render()">M&A</button><button class="seg-btn ${S.seg==='dcm'?'active':''}" onclick="S.seg='dcm';render()">DCM</button></div>`:''} ${S.page==='dashboard'?`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text2)">De</span><input type="date" class="fsel" style="padding:5px 8px" value="${S.filtroDataDe||''}" onchange="S.filtroDataDe=this.value;render()"/><span style="font-size:10px;color:var(--text2)">Até</span><input type="date" class="fsel" style="padding:5px 8px" value="${S.filtroDataAte||''}" onchange="S.filtroDataAte=this.value;render()"/>${(S.filtroDataDe||S.filtroDataAte)?'<button class="bgh bsm" onclick="clearDateFilter()">✕</button>':''}</div>`:''} ${hasSeg?`<select class="fsel" onchange="S.filtroColab=this.value;render()"><option value="">Todos os colaboradores</option>${S.usuarios.map(uu=>`<option value="${uu.nome}"${S.filtroColab===uu.nome?' selected':''}>${uu.nome}</option>`).join('')}</select>`:''}</div></div>`;
     switch(S.page){case'pipe':content=topbar+renderPipe();break;case'dashboard':content=topbar+renderDash();break;case'pipeline':content=topbar+renderPipeline();break;case'ma':case'dcm':case'encerrados':case'onhold':content=topbar+renderProjetos();break;case'receita':content=topbar+renderReceita();break;case'horas':content=topbar+renderHoras();break;case'equipe':content=topbar+renderEquipe();break;case'tarefas':content=topbar+renderTarefas();break;}
   }
-  const sidebar=`<div class="sidebar"><div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:`<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;S.detalheTab='fases';S.pipeDetail=null;render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()} </div>`).join('')}<div style="flex:1"></div><div class="sidebar-footer"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''}</div></div></div><button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button><button class="logout-btn" onclick="logout()">↗ Sair</button></div></div>`;
+  const sidebar=`<div class="sidebar"><div class="sidebar-logo"><div class="logo-row"><div class="logo-box"><div class="logo-diamond"></div></div><div><div class="logo-txt">APEX</div><div class="logo-sub">Investment Banking</div></div></div></div>${NAV.map(n=>n.s?`<div class="nav-section">${n.s}</div>`:`<div class="nav-item ${S.page===n.k&&!S.detail?'active':''}" onclick="S.page='${n.k}';S.detail=null;S.detailType=null;S.detalheTab='fases';S.pipeDetail=null;S.pipeTab='dashboard';render()"><span class="nav-icon">${n.i}</span>${n.l}${(()=>{if(!n.badge)return'';const hoje=new Date();hoje.setHours(0,0,0,0);const v=S.tarefas.filter(t=>t.responsavel_id===S.currentUser?.id&&t.status!=='Concluída'&&t.prazo&&new Date(t.prazo)<hoje).length;return v?`<span style="margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px">${v}</span>`:'';})()} </div>`).join('')}<div style="flex:1"></div><div class="sidebar-footer"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="av">${ini(u?.nome||'A')}</div><div><div style="font-size:12px;font-weight:600;color:var(--text)">${u?.nome||'Admin'}</div><div style="font-size:10px;color:var(--text2)">${u?.cargo||''}</div></div></div><button class="theme-btn" onclick="toggleTheme()">${S.theme==='dark'?'☀️ Modo claro':'🌙 Modo escuro'}</button><button class="logout-btn" onclick="logout()">↗ Sair</button></div></div>`;
   const modal=S.modal==='pipeDeal'?mPipeDeal():S.modal==='pipeAtiv'?mPipeAtiv():S.modal==='deal'?mDeal():S.modal==='user'?mUser():S.modal==='hora'?mHora():S.modal==='recreal'?mRecReal():S.modal==='tarefa'?mTarefa():S.modal==='retparcela'?mRetParcela():S.modal==='meta'?mMeta():'';
   destroyCharts();app.innerHTML=`<div class="layout">${sidebar}<div class="main">${content}<div class="footer-bar">APEX PARTNERS — DOCUMENTO CONFIDENCIAL</div></div></div>${modal}`;
   if(!S.loading&&!S.detail)setTimeout(initCharts,150);
